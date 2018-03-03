@@ -15,7 +15,7 @@ def usage():
     -h     : print this help message and exit (also --help)
     -q     : don't print version and copyright messages on interactive startup
     -v     : print the Rocket version number and exit (also --version)
-    
+
     file   : program read from script file
     """
 
@@ -41,8 +41,8 @@ def run_prompt(headerless=False):
         chunk = input('<>> ')
 
         if chunk != "exit":
-            print(chunk) # replace with actual shell interpreter (REPL)
-            
+            print(chunk)  # replace with actual shell interpreter (REPL)
+
         else:
             sys.exit(0)
 

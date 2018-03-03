@@ -1,0 +1,5 @@
+Flesh out stellar
+.
+| -Get an Ast running ASAP
+| -Test and tweak
+.
