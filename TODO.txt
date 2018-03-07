@@ -1,5 +1,6 @@
 Flesh out stellar
 .
+| - Hack up ast printer
 | -Get an Ast running ASAP
 | -Test and tweak
 .

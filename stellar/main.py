@@ -6,6 +6,9 @@
 import sys
 import readline
 
+from scanner import Scanner
+from tools.printer import dump_tokens
+
 
 def usage():
 
@@ -41,14 +44,16 @@ def run_prompt(headerless=False):
         chunk = input('<>> ')
 
         if chunk != "exit":
-            print(chunk)  # replace with actual shell interpreter (REPL)
+            run(chunk)  # replace with actual shell interpreter (REPL)
 
         else:
             sys.exit(0)
 
 
 def run(source):
-    print(f"Source Contents:\n\n\t{source}")
+    scanner = Scanner(source)
+    tokens = scanner.scan()
+    dump_tokens(tokens)
 
 
 def main():

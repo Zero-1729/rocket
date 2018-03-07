@@ -1,4 +1,4 @@
-# Rocket Lang Grammar
+# Rocket Lang Grammar :bowtie:
 
 ---
 

@@ -1,0 +1,3 @@
+// Sets variable name to 'ank'
+var name = "ank";
+print "Name: " + name;

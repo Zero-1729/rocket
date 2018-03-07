@@ -151,6 +151,7 @@ The following are the kinds of expressions that Rocket understands.
 add + me; // same meaning as expression above
 1024 * 6;
 9826 / 22.3;
+33 // 3; // Yes even though comments begin with '//' Rocket can tell the difference between the floor operator and a comment
 
 -333; // Also considered an expression
 ```
