@@ -2,7 +2,7 @@
 # License: GNU GPL V2
 
 from utils.reporter import report
-from utils.token import Token, TokenType
+from utils.tokens import Token, TokenType, Keywords
 
 class Scanner:
     def __init__(self, source):
@@ -18,48 +18,48 @@ class Scanner:
             # Check for lexemes
             # Starting with single character tokens
             if c == "(":
-                obj = "LEFT_PAREN"
-                self.addSingleToken(obj)
+                tok_type = TokenType.LEFT_PAREN # "LEFT_PAREN"
+                self.addSingleToken(tok_type)
 
             elif c == ")":
-                obj = "RIGHT_PAREN"
-                self.addSingleToken(obj)
+                tok_type = TokenType.RIGHT_PAREN # "RIGHT_PAREN"
+                self.addSingleToken(tok_type)
 
             elif c == "{":
-                obj = "LEFT_BRACE"
-                self.addSingleToken(obj)
+                tok_type = TokenType.LEFT_BRACE # "LEFT_BRACE"
+                self.addSingleToken(tok_type)
 
             elif c == "}":
-                obj = "RIGHT_BRACE"
-                self.addSingleToken(obj)
+                tok_type = TokenType.RIGHT # "RIGHT_BRACE"
+                self.addSingleToken(tok_type)
 
             elif c == ";":
-                obj = "SEMICOLON"
-                self.addSingleToken(obj)
+                tok_type = TokenType.SEMICOLON # "SEMICOLON"
+                self.addSingleToken(tok_type)
 
             elif c == ",":
-                obj = "COMMA"
-                self.addSingleToken(obj)
+                tok_type = TokenType.COMMA # "COMMA"
+                self.addSingleToken(tok_type)
 
             elif c == ".":
-                obj = "DOT"
-                self.addSingleToken(obj)
+                tok_type = TokenType.DOT # "DOT"
+                self.addSingleToken(tok_type)
 
             elif c == "+":
-                obj = "PLUS"
-                self.addSingleToken(obj)
+                tok_type = TokenType.PLUS # "PLUS"
+                self.addSingleToken(tok_type)
 
             elif c == "-":
-                obj = "MINUS"
-                self.addSingleToken(obj)
+                tok_type = TokenType.MINUS # "MINUS"
+                self.addSingleToken(tok_type)
 
             elif c == "*":
-                obj = "MULT"
-                self.addSingleToken(obj)
+                tok_type = TokenType.MULT # "MULT"
+                self.addSingleToken(tok_type)
 
             elif c == "%":
-                obj = "MOD"
-                self.addSingleToken(obj)
+                tok_type = TokenType.M0D # "MOD"
+                self.addSingleToken(tok_type)
 
             # Double character tokens
             # check for div and comment
@@ -69,8 +69,8 @@ class Scanner:
                 if self.match("/"):
 
                     if (self.futureNumberPeek()):
-                        obj = "FLOOR"
-                        self.addSingleToken(obj)
+                        tok_type = TokenType.FLOOR # "FLOOR"
+                        self.addSingleToken(tok_type)
 
                     else:
                         while ((self.peek() != "\n") and not (self.isAtEnd())):
@@ -100,41 +100,41 @@ class Scanner:
             # Comparison tokens
             elif c == "!":
                 if not self.match("="):
-                    obj = "BANG"
+                    tok_type = TokenType.BANG # "BANG"
 
                 else:
-                    obj = "BANG_EQUAL"
-                self.addSingleToken(obj)
+                    tok_type = TokenType.BANG_EQUAL # "BANG_EQUAL"
+                self.addSingleToken(tok_type)
 
             elif c == "=":
                 if not self.match("="):
-                    obj = "EQUAL"
+                    tok_type = TokenType.EQUAL # "EQUAL"
 
                 else:
-                    obj = "EQUAL_EQUAL"
-                self.addSingleToken(obj)
+                    tok_type = TokenType.EQUAL_EQUAL # "EQUAL_EQUAL"
+                self.addSingleToken(tok_type)
 
             elif c == "<":
                 if not self.match("="):
-                    obj = "LESS"
+                    tok_type = TokenType.LESS # "LESS"
 
                 else:
-                    obj = "LESS_EQUAL"
-                self.addSingleToken(obj)
+                    tok_type = TokenType.LESS_EQUAL # "LESS_EQUAL"
+                self.addSingleToken(tok_type)
 
             elif c == ">":
                 if not self.match("="):
-                    obj = "GREATER"
+                    tok_type = TokenType.GREATER # "GREATER"
 
                 else:
-                    obj = "GREATER_EQUAL"
+                    tok_type = TokenType.GREATER_EQUAL # "GREATER_EQUAL"
 
-                self.addSingleToken(obj)
+                self.addSingleToken(tok_type)
 
             # literals
             elif c == "":
-                obj = "IDENTIFIER"
-                self.addSingleToken(obj)
+                tok_type = TokenType.IDENTIFIER # "IDENTIFIER"
+                self.addSingleToken(tok_type)
 
             # string
             # NOTE: strings start with double (") or single (') quotes
@@ -160,7 +160,7 @@ class Scanner:
                 else:
                     report(self.line, f"Unrecognized symbol '{c}'")
 
-        self.addToken("EOF", '')
+        self.addToken(TokenType.EOF, '', None)
         return self.tokens
 
 
@@ -227,7 +227,7 @@ class Scanner:
 
         value = self.source[start:self.current - 1]
 
-        self.addToken("STRING", value)
+        self.addToken(TokenType.STRING, value, None)
 
 
     def number(self):
@@ -250,25 +250,27 @@ class Scanner:
             return err
 
         value = self.source[start - 1:self.current]
-        self.addToken("NUMBER", float(value))
+        self.addToken(TokenType.NUMBER, float(value), start)
 
     def identifier(self):
         start = self.current
-        keywords = TokenType['Keyword']
+        keywords = Keywords
 
         while (self.isAlphaNum(self.peek())):
             self.advance()
 
         value = self.source[start - 1:self.current]
 
+        print(value)
         if (value.upper() in keywords):
-            index = keywords.index(value.upper())
-            keyword = keywords[index]
+            keyword = keywords[value.upper()]
 
-            self.addToken('KEYWORD', keyword.lower())
+            print(keyword, value)
+            self.addToken(keyword, value, None)
 
         else:
-            self.addToken("IDENTIFIER", value)
+
+            self.addToken(TokenType.IDENTIFIER, value, None)
 
 
     def isDigit(self, c):
@@ -301,11 +303,12 @@ class Scanner:
 
 
     def addSingleToken(self, lex_type):
-        text = TokenType[lex_type]
-        self.addToken(lex_type, text)
+        start = self.current - 1
+        text = lex_type.name
+        self.addToken(lex_type, text, start)
 
 
-    def addToken(self, lex_type, text):
-        literal = None
+    def addToken(self, lex_type, text, literal):
+        literal = self.source[literal:self.current] if literal != None else None
         token = Token(lex_type, text, literal, self.line)
         self.tokens.append(token)
