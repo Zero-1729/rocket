@@ -1,8 +1,8 @@
 # Author: Abubakar NK (Zero-1729)
 # License: GNU GPL V2
 
-from utils.reporter import report
-from utils.tokens import Token, TokenType, Keywords
+from utils.reporter import ScanError as _ScanError
+from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 
 class Scanner:
     def __init__(self, source):
@@ -10,6 +10,7 @@ class Scanner:
         self.tokens = []
         self.current = 0
         self.line = 1
+        self.errors = []
 
     def scan(self):
         while not (self.isAtEnd()):
@@ -18,11 +19,11 @@ class Scanner:
             # Check for lexemes
             # Starting with single character tokens
             if c == "(":
-                tok_type = TokenType.LEFT_PAREN # "LEFT_PAREN"
+                tok_type = _TokenType.LEFT_PAREN # "LEFT_PAREN"
                 self.addSingleToken(tok_type)
 
             elif c == ")":
-                tok_type = TokenType.RIGHT_PAREN # "RIGHT_PAREN"
+                tok_type = _TokenType.RIGHT_PAREN # "RIGHT_PAREN"
                 self.addSingleToken(tok_type)
 
             elif c == "{":
@@ -30,35 +31,35 @@ class Scanner:
                 self.addSingleToken(tok_type)
 
             elif c == "}":
-                tok_type = TokenType.RIGHT # "RIGHT_BRACE"
+                tok_type = _TokenType.RIGHT # "RIGHT_BRACE"
                 self.addSingleToken(tok_type)
 
             elif c == ";":
-                tok_type = TokenType.SEMICOLON # "SEMICOLON"
+                tok_type = _TokenType.SEMICOLON # "SEMICOLON"
                 self.addSingleToken(tok_type)
 
             elif c == ",":
-                tok_type = TokenType.COMMA # "COMMA"
+                tok_type = _TokenType.COMMA # "COMMA"
                 self.addSingleToken(tok_type)
 
             elif c == ".":
-                tok_type = TokenType.DOT # "DOT"
+                tok_type = _TokenType.DOT # "DOT"
                 self.addSingleToken(tok_type)
 
             elif c == "+":
-                tok_type = TokenType.PLUS # "PLUS"
+                tok_type = _TokenType.PLUS # "PLUS"
                 self.addSingleToken(tok_type)
 
             elif c == "-":
-                tok_type = TokenType.MINUS # "MINUS"
+                tok_type = _TokenType.MINUS # "MINUS"
                 self.addSingleToken(tok_type)
 
             elif c == "*":
-                tok_type = TokenType.MULT # "MULT"
+                tok_type = _TokenType.MULT # "MULT"
                 self.addSingleToken(tok_type)
 
             elif c == "%":
-                tok_type = TokenType.M0D # "MOD"
+                tok_type = _TokenType.MOD # "MOD"
                 self.addSingleToken(tok_type)
 
             # Double character tokens
@@ -69,8 +70,8 @@ class Scanner:
                 if self.match("/"):
 
                     if (self.futureNumberPeek()):
-                        tok_type = TokenType.FLOOR # "FLOOR"
-                        self.addSingleToken(tok_type)
+                        self.addDoubleToken(_TokenType.FLOOR) # "FLOOR"
+                        # AddSingleToken can't do the job so we might aswell
 
                     else:
                         while ((self.peek() != "\n") and not (self.isAtEnd())):
@@ -83,7 +84,8 @@ class Scanner:
                             self.advance()
 
                         else:
-                            ret = report(self.line, "Unterminated comment: couldn't find matching '*/' for '/*'")
+                            err = _ScanError(self.line, "Unterminated comment: couldn't find matching '*/' for '/*'").report()
+                            self.errors.append(err)
                             break
 
                     # Continue ignoring comments
@@ -93,48 +95,41 @@ class Scanner:
                         self.advance()
 
                 else:
-                    obj = "DIV"
-                    self.addSingleToken(obj)
+                    self.addSingleToken(_TokenType.DIV) # DIV
 
 
             # Comparison tokens
             elif c == "!":
                 if not self.match("="):
-                    tok_type = TokenType.BANG # "BANG"
+                     self.addSingleToken(_TokenType.BANG) # "BANG"
 
                 else:
-                    tok_type = TokenType.BANG_EQUAL # "BANG_EQUAL"
-                self.addSingleToken(tok_type)
+                    self.addDoubleToken(_TokenType.BANG_EQUAL) # "BANG_EQUAL"
 
             elif c == "=":
                 if not self.match("="):
-                    tok_type = TokenType.EQUAL # "EQUAL"
+                    self.addSingleToken( _TokenType.EQUAL) # "EQUAL"
 
                 else:
-                    tok_type = TokenType.EQUAL_EQUAL # "EQUAL_EQUAL"
-                self.addSingleToken(tok_type)
+                    self.addDoubleToken(_TokenType.EQUAL_EQUAL) # "EQUAL_EQUAL"
 
             elif c == "<":
                 if not self.match("="):
-                    tok_type = TokenType.LESS # "LESS"
+                    self.addSingleToken(_TokenType.LESS) # "LESS"
 
                 else:
-                    tok_type = TokenType.LESS_EQUAL # "LESS_EQUAL"
-                self.addSingleToken(tok_type)
+                    self.addDoubleToken(_TokenType.LESS_EQUAL) # "LESS_EQUAL"
 
             elif c == ">":
                 if not self.match("="):
-                    tok_type = TokenType.GREATER # "GREATER"
+                    self.addSingleToken(_TokenType.GREATER) # "GREATER"
 
                 else:
-                    tok_type = TokenType.GREATER_EQUAL # "GREATER_EQUAL"
-
-                self.addSingleToken(tok_type)
+                    self.addDoubleToken(_TokenType.GREATER_EQUAL) # "GREATER_EQUAL"
 
             # literals
             elif c == "":
-                tok_type = TokenType.IDENTIFIER # "IDENTIFIER"
-                self.addSingleToken(tok_type)
+                self.addSingleToken(_TokenType.IDENTIFIER) # "IDENTIFIER"
 
             # string
             # NOTE: strings start with double (") or single (') quotes
@@ -158,9 +153,10 @@ class Scanner:
                     self.identifier()
 
                 else:
-                    report(self.line, f"Unrecognized symbol '{c}'")
+                    err = _ScanError(self.line, f"Unrecognized symbol '{c}'").report()
+                    self.errors.append(err)
 
-        self.addToken(TokenType.EOF, '', None)
+        self.addToken(_TokenType.EOF, '', None)
         return self.tokens
 
 
@@ -185,8 +181,9 @@ class Scanner:
     def futureNumberPeek(self):
         doublePeeked = self.doublePeek()
         future_character = self.source[self.source.index(doublePeeked) + 1]
+        short_future_character = self.source[self.source.index(doublePeeked)]
 
-        if (self.isDigit(future_character)):
+        if (self.isDigit(future_character) or self.isDigit(short_future_character)):
             return True
 
         else:
@@ -201,12 +198,13 @@ class Scanner:
 
 
     def match(self, symbol):
-        if self.source[self.current] != symbol or self.isAtEnd():
-            return False
+        if not self.isAtEnd():
+            if self.source[self.current] != symbol or self.isAtEnd():
+                return False
 
-        else:
-            self.current += 1
-            return True
+            else:
+                self.current += 1
+                return True
 
 
     def string(self, beg):
@@ -219,15 +217,17 @@ class Scanner:
             self.advance()
 
         if (self.isAtEnd()):
-            err = report(self.line, "Unterminated string")
-            return err
+            err = _ScanError(self.line, "Unterminated string").report()
+            self.errors.append(err)
+            return
 
         # seek next ' or "
         self.advance()
 
         value = self.source[start:self.current - 1]
+        text = self.source[start:self.current - 1]
 
-        self.addToken(TokenType.STRING, value, None)
+        self.addToken(_TokenType.STRING, text, value)
 
 
     def number(self):
@@ -246,31 +246,32 @@ class Scanner:
                 self.advance()
 
         elif ((self.peek() == '.') and not (self.isDigit(self.peekNext()))):
-            err = report(self.line, "Expected number after '.'. Did you mean float or int?")
-            return err
+            err = _ScanError(self.line, "Expected number after '.'. Did you mean float or int?").report()
+            self.errors.append(err)
+            return
 
         value = self.source[start - 1:self.current]
-        self.addToken(TokenType.NUMBER, float(value), start)
+        text = self.source[start - 1:self.current]
+
+        self.addToken(_TokenType.NUMBER, text, float(value))
 
     def identifier(self):
         start = self.current
-        keywords = Keywords
+        keywords = _Keywords
 
         while (self.isAlphaNum(self.peek())):
             self.advance()
 
         value = self.source[start - 1:self.current]
 
-        print(value)
         if (value.upper() in keywords):
             keyword = keywords[value.upper()]
 
-            print(keyword, value)
             self.addToken(keyword, value, None)
 
         else:
 
-            self.addToken(TokenType.IDENTIFIER, value, None)
+            self.addToken(_TokenType.IDENTIFIER, value, None)
 
 
     def isDigit(self, c):
@@ -303,12 +304,15 @@ class Scanner:
 
 
     def addSingleToken(self, lex_type):
-        start = self.current - 1
-        text = lex_type.name
-        self.addToken(lex_type, text, start)
+        text = self.source[self.current-1:self.current]
+        self.addToken(lex_type, text, None)
+
+
+    def addDoubleToken(self, lex_type):
+        text = self.source[self.current - 2:self.current]
+        self.addToken(lex_type, text, None)
 
 
     def addToken(self, lex_type, text, literal):
-        literal = self.source[literal:self.current] if literal != None else None
-        token = Token(lex_type, text, literal, self.line)
+        token = _Token(lex_type, text, literal, self.line)
         self.tokens.append(token)

@@ -7,12 +7,14 @@ import sys
 import readline
 
 from scanner import Scanner
+from parser import Parser
 from tools.printer import dump_tokens
+from tools.astprinter import LispAstPrinter, RPNAstPrinter
 
 
 def usage():
 
-    info = """usage: stellar [option] ... [ file ] [arg] ...
+    info = """usage: stellar [ <option> | <file> ]
 
     Options and arguments (and corresponding environment variables):
     -h     : print this help message and exit (also --help)
@@ -32,7 +34,7 @@ def run_file(path):
 
 def run_prompt(headerless=False):
 
-    header = f"""Rocket 0.0.1 | Rocket Labs | [Stellar 0.1.1-b] (Ubuntu 4.4.7-1)] on linux\n"""
+    header = f"""Rocket 0.1.1 | Rocket Labs | [Stellar 0.2.1-b] (Ubuntu 4.4.7-1)] on linux\n"""
 
     if not headerless:
         print(header)
@@ -53,7 +55,18 @@ def run_prompt(headerless=False):
 def run(source):
     scanner = Scanner(source)
     tokens = scanner.scan()
-    dump_tokens(tokens)
+
+    parser = Parser(tokens)
+    expression = parser.parse()
+
+    errors = scanner.errors + parser.errors
+    for error in errors:
+        print(error)
+
+    if errors:
+        return errors
+
+    print(LispAstPrinter().printAst(expression))
 
 
 def main():
@@ -72,7 +85,7 @@ def main():
             run_prompt(True)
 
         elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
-            print("Rocket v0.0.1 [Stellar v0.1.1-b]")
+            print("Rocket v0.1.1 [Stellar v0.2.1-b]")
 
         elif sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
             print(usage())

@@ -6,7 +6,8 @@ setup(name="stellar",
     author="Zero-1729",
     author_email="abubakarnurkhalil@gmail.com",
     py_modules=[
-        "tokens"
+        "tokens",
+        "expr"
     ],
     package_dir={"": "utils/"},
     license="MIT")

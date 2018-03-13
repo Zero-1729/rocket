@@ -1,5 +1,24 @@
-def report(line, err):
-    print(f"[line {line}]: {err}")
+from tokens import TokenType as _TokenType, Token as _Token
 
-    # error indicator number
-    return 5
+
+class ScanError(Exception):
+    def __init__(self, line: int, message: str):
+        self.line = line
+        self.message = message
+
+    def report(self):
+        return f"[line {self.line}] Error: {self.message}"
+
+
+class ParseError(Exception):
+    def __init__(self, token: _Token, message: str):
+        self.token = token
+        self.message = message
+
+    def report(self):
+        if self.token.type == _TokenType.EOF:
+            return f"[line {self.toke.line}]: Error at end: {self.message}"
+
+        else:
+            place = self.token.lexeme
+            return f"[line {self.token.line}]: Error at '{place}':  {self.message}"
