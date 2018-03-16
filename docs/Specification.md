@@ -31,7 +31,7 @@ Language's Specification info.
 print "Hello, World!";
 ```
 
-> Note that in Rocket single line comments begin with **//** and multi-line comments are contained in triple quotes **"""**.  
+> Note that in Rocket single line comments begin with `//` and multi-line comments are contained in `/**/` just like in C.  
 
 ---
 
@@ -86,18 +86,18 @@ Instilled in Rocket's brain is four fundamental particles - I mean *data types*:
 + **Boleans**. I.e. **True** or **False**.
 + **Numbers**. I.e. `2048`, `0.4546`, etc.
 + **Strings**. I.e. "Rocket is awesome".
-+ And **Nin**, as in *Nin is None*.
++ And **nin**, as in "*nin is None*".
 
 #### Booleans
 
-At the heart and soul of every computer is *logic* which is represented as **on** or **off**, **1** or **0**, **True** or **False** and is therefore the foundation for programming. Rocket features two bolean values:-
+At the heart and soul of every computer is *logic* which is represented as **on** or **off**, **1** or **0**, **True** or **False** and is therefore the foundation for programming. Rocket features two boolean values:-
 
 ```Rocket
 True; // Not False (aka true)
 False; // Not *not* false (aka false)
 ```
 
-By default all literals are set to true unless explicitly specified by setting it to **False**. Meaning are always *truthy* like in **Js**.
+By default all literals are set to true unless explicitly specified by setting it to **False** or **nin**. Meaning everything except for **False** and **nin** are  *truthy* like in **Ruby**.
 
 #### Numbers
 
@@ -124,17 +124,15 @@ Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text 
 "1024"; // String, not Number
 ```
 
-#### Nin
+#### nin
 
-A little over the board? maybe. Nin is Rocket's version of Java's **null** or Python's **None**. Nin stands for **N**in **I**s **n**one. It basically represents *no value*. The point of Nin is just to avoid any *null piont errors*, since **Luna** is written in C.
+A little over the board? maybe. nin is Rocket's version of Python's **None**. nin stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null piont errors*, since **Luna** is written in C.
 
 ---
 
 ### 4.0 Expressions :performing_arts:
 
-As The Creator of the lox aplty said
-
-> "If built-in types and their literals are atoms, then **expressions** must be the Molecules" - Cretor of the Lox Language
+> "If built-in types and their literals are atoms, then **expressions** must be the Molecules" - Robert Nystrom [Cretor of the Lox Language]
 
 Basically expressions are just groupings of literals linked together by some operator or just more literals, the same way in English clauses are groups of words put together. E.g:-
 
@@ -152,6 +150,7 @@ add + me; // same meaning as expression above
 1024 * 6;
 9826 / 22.3;
 33 // 3; // Yes even though comments begin with '//' Rocket can tell the difference between the floor operator and a comment
+12 % 2;
 
 -333; // Also considered an expression
 ```

@@ -1,6 +1,5 @@
 Flesh out stellar
 .
-| - Stuff parser until full language spec is implemented
-| - Hack up an interpreter
+| - Stuff scanner, parser and interpreter until workable (full) language spec is implemented
 | - Test and tweak
 .

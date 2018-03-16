@@ -4,12 +4,26 @@
 #!/usr/bin/python
 
 import sys
+import os
 import readline
 
 from scanner import Scanner
 from parser import Parser
+from interpreter import Interpreter
 from tools.printer import dump_tokens
 from tools.astprinter import LispAstPrinter, RPNAstPrinter
+
+
+# Make interpreter global
+#interpreter = Interpreter()
+
+
+def get_env():
+    env = os.environ
+    prompt = env.get("RCKTPROMPT")
+
+    if prompt:
+        return prompt
 
 
 def usage():
@@ -22,6 +36,8 @@ def usage():
     -v     : print the Rocket version number and exit (also --version)
 
     file   : program read from script file
+
+    RCKTPROMPT: Rocket Lang prompt environment variable. Default "><> ".
     """
 
     return info
@@ -32,9 +48,9 @@ def run_file(path):
         run(f.read())
 
 
-def run_prompt(headerless=False):
+def run_prompt(prompt, headerless=False):
 
-    header = f"""Rocket 0.1.1 | Rocket Labs | [Stellar 0.2.1-b] (Ubuntu 4.4.7-1)] on linux\n"""
+    header = f"""Rocket 0.1.1 | Rocket Labs | [Stellar 0.2.1-b] (Ubuntu 16.04.3 LTS)] on linux\n"""
 
     if not headerless:
         print(header)
@@ -43,13 +59,16 @@ def run_prompt(headerless=False):
 
         readline.set_auto_history('enabled')
 
-        chunk = input('<>> ')
+        chunk = input(prompt)
 
-        if chunk != "exit":
-            run(chunk)  # replace with actual shell interpreter (REPL)
+        if chunk == "exit":
+            sys.exit(0)
+
+        elif chunk == "":
+            pass
 
         else:
-            sys.exit(0)
+            run(chunk) # replace with actual shell interpreter (REPL)
 
 
 def run(source):
@@ -66,12 +85,25 @@ def run(source):
     if errors:
         return errors
 
-    print(LispAstPrinter().printAst(expression))
+    # create interpreter each time 'run' is called
+    # Avoids mixing error reports in REPL
+    interpreter = Interpreter() 
+    interpreter.interpret(expression)
+
+    runtime_errs = interpreter.errors
+
+    for err in runtime_errs: print(err)
+
+    return errors, runtime_errs
+
+    #print(LispAstPrinter().printAst(expression))
+
 
 
 def main():
 
     sca = ['-q', '--quite', '-v', '--version', '-h', '--help']
+    prompt = get_env() if get_env() != None else "><> "
 
     if len(sys.argv) > 2:
         print(usage())
@@ -82,7 +114,7 @@ def main():
 
     elif len(sys.argv) == 2:
         if sys.argv[-1] == '-q' or sys.argv[-1] == '--quite':
-            run_prompt(True)
+            run_prompt(prompt, True)
 
         elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
             print("Rocket v0.1.1 [Stellar v0.2.1-b]")
@@ -91,7 +123,7 @@ def main():
             print(usage())
 
     else:
-        run_prompt()
+        run_prompt(prompt)
 
 
 if __name__ == '__main__':

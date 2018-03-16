@@ -22,3 +22,9 @@ class ParseError(Exception):
         else:
             place = self.token.lexeme
             return f"[line {self.token.line}]: Error at '{place}':  {self.message}"
+
+
+class runtimeError(RuntimeError):
+    def __init__(self, token: _Token, message: str):
+        super(type(message))
+        self.token = token
