@@ -66,10 +66,10 @@ def run_prompt(prompt, headerless=False):
             pass
 
         else:
-            run(chunk) # replace with actual shell interpreter (REPL)
+            run(chunk, "REPL") # replace with actual shell interpreter (REPL)
 
 
-def run(source):
+def run(source, mode=None):
     scanner = Scanner(source)
     tokens = scanner.scan()
 
@@ -89,6 +89,11 @@ def run(source):
 
     runtime_errs = interpreter.errors
     for err in runtime_errs: print(err, file=sys.stderr)
+
+    if mode == "REPL":
+        # If running REPL session clear err logs for interpreter
+        # To avoid reporting old errors
+        interpreter.errors = []
 
     return errors, runtime_errs
 
