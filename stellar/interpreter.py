@@ -65,7 +65,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
 
-        # Arithmetic operators "-", "/", "%", "//", "*"
+        # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
             self.checkNumberOperands(expr.operator, left, right)
             return float(left) - float(right)
@@ -85,6 +85,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (expr.operator.type == _TokenType.MULT):
             self.checkNumberOperands(expr.operator, left, right)
             return float(left) * float(right)
+
+        if (expr.operator.type == _TokenType.EXP):
+            self.checkNumberOperands(expr.operator, left, right)
+            return float(left) ** float(right)
 
         # Comparison operators ">", "<", ">=", "<=", "!=", "=="
         if (expr.operator.type == _TokenType.GREATER):

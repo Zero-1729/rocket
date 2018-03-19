@@ -78,7 +78,7 @@ class Parser:
     def mult(self):
         expr = self.unary()
 
-        while (self.match(_TokenType.DIV, _TokenType.FLOOR, _TokenType.MOD, _TokenType.MULT)):
+        while (self.match(_TokenType.DIV, _TokenType.FLOOR, _TokenType.MOD, _TokenType.MULT, _TokenType.EXP)):
             operator = self.previous()
 
             right = self.unary()
@@ -133,8 +133,8 @@ class Parser:
             self.addition()
             return None
 
-        # '/', '//', '%', '*'
-        if (self.match(_TokenType.DIV, _TokenType.FLOOR, _TokenType.MOD, _TokenType.MULT)):
+        # '/', '//', '%', '*', '**'
+        if (self.match(_TokenType.DIV, _TokenType.FLOOR, _TokenType.MOD, _TokenType.MULT, _TokenType.EXP)):
             self.error(self.previous(), "Left-hand operand missing.")
             self.mult()
             return None
@@ -263,6 +263,7 @@ class Parser:
                 _TokenType.CLASS,
                 _TokenType.FUNC,
                 _TokenType.VAR,
+                _TokenType.CONST,
                 _TokenType.FOR,
                 _TokenType.IF,
                 _TokenType.WHILE,

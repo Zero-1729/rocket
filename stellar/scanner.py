@@ -55,8 +55,12 @@ class Scanner:
                 self.addSingleToken(tok_type)
 
             elif c == "*":
-                tok_type = _TokenType.MULT # "MULT"
-                self.addSingleToken(tok_type)
+                if self.match("*"):
+                    self.addDoubleToken(_TokenType.EXP)
+
+                else:
+                    tok_type = _TokenType.MULT # "MULT"
+                    self.addSingleToken(tok_type)
 
             elif c == "%":
                 tok_type = _TokenType.MOD # "MOD"
@@ -65,7 +69,6 @@ class Scanner:
             # Double character tokens
             # check for div and comment
             # NOTE: single line comment begin with "//"
-            # Floor division '//' would be in 'Math' stdlib
             elif c == "/":
                 if self.match("/"):
 

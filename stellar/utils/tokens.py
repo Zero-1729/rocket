@@ -19,20 +19,20 @@ class TokenType(_enum.Enum):
         MOD              = 12
 
         # rokcet v0.7.1
-        #"EXP": "**",
+        EXP              = 13
 
         # NOTE: floor division is detected only if 'RIGHT' operand is a number
-        FLOOR             = 13
+        FLOOR            = 14
 
         # One or Two character tokens
-        BANG              = 14
-        BANG_EQUAL        = 15
-        EQUAL             = 16
-        EQUAL_EQUAL       = 17
-        GREATER           = 18
-        GREATER_EQUAL     = 19
-        LESS              = 20
-        LESS_EQUAL        = 21
+        BANG             = 15
+        BANG_EQUAL       = 16
+        EQUAL            = 17
+        EQUAL_EQUAL      = 18
+        GREATER          = 19
+        GREATER_EQUAL    = 20
+        LESS             = 21
+        LESS_EQUAL       = 22
 
         # Arithmetic increment oprands
         # rocket v0.7.1
@@ -46,30 +46,31 @@ class TokenType(_enum.Enum):
 
 
         # literals
-        IDENTIFIER        = 22
-        STRING            = 23
-        NUMBER            = 24
+        IDENTIFIER        = 23
+        STRING            = 24
+        NUMBER            = 25
 
         # Keywords
-        AND               = 25
-        CLASS             = 26
-        ELSE              = 27
-        FALSE             = 28
-        FUNC              = 29
-        FOR               = 30
-        IF                = 31
-        NIN               = 32
-        OR                = 33
-        PRINT             = 34
-        RETURN            = 35
-        SUPER             = 36
-        THIS              = 37
-        TRUE              = 38
-        VAR               = 39
-        WHILE             = 40
+        AND               = 26
+        CLASS             = 27
+        ELSE              = 28
+        FALSE             = 29
+        FUNC              = 30
+        FOR               = 31
+        IF                = 32
+        NIN               = 33
+        OR                = 34
+        PRINT             = 35
+        RETURN            = 36
+        SUPER             = 37
+        THIS              = 38
+        TRUE              = 39
+        CONST             = 40
+        VAR               = 41
+        WHILE             = 42
 
         # EOF
-        EOF               = 41
+        EOF               = 43
 
 
 Keywords = {
@@ -86,6 +87,7 @@ Keywords = {
         "SUPER": TokenType.SUPER,
         "THIS": TokenType.THIS,
         "TRUE": TokenType.TRUE,
+        "CONST": TokenType.CONST,
         "VAR": TokenType.VAR,
         "WHILE": TokenType.WHILE
 
