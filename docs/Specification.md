@@ -152,7 +152,7 @@ add + me; // same meaning as expression above
 33 // 3; // Yes even though comments begin with '//' Rocket can tell the difference between the floor operator and a comment
 12 % 2;
 
--333; // Also considered an expression
+-333; // Also considered an expression. I.e Negate '333'
 ```
 
 ##### Comaprisons/Equality

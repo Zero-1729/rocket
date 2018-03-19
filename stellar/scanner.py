@@ -27,11 +27,11 @@ class Scanner:
                 self.addSingleToken(tok_type)
 
             elif c == "{":
-                tok_type = TokenType.LEFT_BRACE # "LEFT_BRACE"
+                tok_type = _TokenType.LEFT_BRACE # "LEFT_BRACE"
                 self.addSingleToken(tok_type)
 
             elif c == "}":
-                tok_type = _TokenType.RIGHT # "RIGHT_BRACE"
+                tok_type = _TokenType.RIGHT_BRACE # "RIGHT_BRACE"
                 self.addSingleToken(tok_type)
 
             elif c == ";":

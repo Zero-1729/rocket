@@ -10,12 +10,10 @@ import readline
 from scanner import Scanner
 from parser import Parser
 from interpreter import Interpreter
-from tools.printer import dump_tokens
-from tools.astprinter import LispAstPrinter, RPNAstPrinter
 
 
-# Make interpreter global
-#interpreter = Interpreter()
+# So that global env is static throughout execution. Especially in REPL
+interpreter = Interpreter()
 
 
 def get_env():
@@ -76,7 +74,7 @@ def run(source):
     tokens = scanner.scan()
 
     parser = Parser(tokens)
-    expression = parser.parse()
+    statements = parser.parse()
 
     errors = scanner.errors + parser.errors
     for error in errors:
@@ -87,17 +85,12 @@ def run(source):
 
     # create interpreter each time 'run' is called
     # Avoids mixing error reports in REPL
-    interpreter = Interpreter() 
-    interpreter.interpret(expression)
+    interpreter.interpret(statements)
 
     runtime_errs = interpreter.errors
-
-    for err in runtime_errs: print(err)
+    for err in runtime_errs: print(err, file=sys.stderr)
 
     return errors, runtime_errs
-
-    #print(LispAstPrinter().printAst(expression))
-
 
 
 def main():

@@ -1,3 +1,8 @@
+/* Author: Abubakar NK
+** License: MIT
+** Purpose: Proper tokens output from Scanner*/
+
+
 from scanner import Scanner, Token
 
 source = """// None of this would show

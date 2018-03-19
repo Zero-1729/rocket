@@ -2,29 +2,41 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Binary as _Binary, Unary as _Unary, Grouping as _Grouping, Literal as _Literal
+from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Unary as _Unary, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 from utils.reporter import ParseError as _ParseError
+from utils.stmt import Block as _Block, Print as _Print, Expression as _Expression, Var as _Var
 
 
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
-        self.statements = []
         self.errors = []
 
 
     def parse(self):
-        try:
-            return self.expression()
+        statements = []
+        while not (self.isAtEnd()):
+            statements.append(self.decleration())
 
-        except _ParseError:
-            return None
+        return statements
 
 
     def expression(self):
-        return self.equality()
+        return self.assignment()
+
+
+    def decleration(self):
+        try:
+            if (self.match(_TokenType.VAR)):
+                return self.varDecleration()
+
+            return self.statement()
+
+        except _ParseError:
+            self.synchronize()
+            return None
 
 
     def equality(self):
@@ -94,6 +106,9 @@ class Parser:
         if (self.match(_TokenType.NUMBER, _TokenType.STRING)):
             return _Literal(self.previous().literal)
 
+        if (self.match(_TokenType.IDENTIFIER)):
+            return _Variable(self.previous())
+
         if (self.match(_TokenType.LEFT_PAREN)):
             expr = self.expression()
             self.consume(_TokenType.RIGHT_PAREN, "Expected closing ')' after expression")
@@ -115,7 +130,7 @@ class Parser:
         # '+', '-'
         if (self.match(_TokenType.PLUS)): # _TokenType.MINUS
             self.error(self.previous(), "Left-hand operand missing.")
-            self.additon()
+            self.addition()
             return None
 
         # '/', '//', '%', '*'
@@ -125,6 +140,68 @@ class Parser:
             return None
 
         self.error(self.peek(), "Expected expression.").report()
+
+
+    def statement(self):
+        if (self.match(_TokenType.PRINT)):
+            return self.printStmt()
+
+        if (self.match(_TokenType.LEFT_BRACE)):
+            return _Block(self.block())
+
+        return self.expressionStmt()
+
+
+    def printStmt(self):
+        value = self.expression()
+
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after expression")
+        return _Print(value)
+
+
+    def varDecleration(self):
+        name = self.consume(_TokenType.IDENTIFIER, "Expected variable name")
+
+        initializer = None
+        if (self.match(_TokenType.EQUAL)):
+            initializer = self.expression()
+
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after decleration")
+        return _Var(name, initializer)
+
+
+    def expressionStmt(self):
+        value = self.expression()
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after expression")
+        return _Expression(value)
+
+
+    def assignment(self):
+        expr = self.equality()
+
+        if (self.match(_TokenType.EQUAL)):
+            equals = self.previous()
+            value = self.assignment()
+
+            if (isinstance(expr, _Variable)):
+                name = expr.name
+                return _Assign(name, value)
+
+            self.error(equals, "Invalid assignment target.") # E.g a + b = 1
+
+        return expr
+
+
+    def block(self):
+        statements = []
+
+        # Grab enclosed statements in block
+        while not self.check(_TokenType.RIGHT_BRACE) and not self.isAtEnd():
+            statements.append(self.decleration())
+
+        self.consume(_TokenType.RIGHT_BRACE, "Expected matching '}' after block")
+
+        return statements
 
 
     def peek(self):

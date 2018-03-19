@@ -1,11 +1,10 @@
-from tokens import Token
+from tokens import Token as _Token
 
 
-class Object(object):
-	pass
+class ExprVisitor:
+	def visitAssignExpr(self, expr):
+		raise NotImplementedError
 
-
-class Visitor:
 	def visitBinaryExpr(self, expr):
 		raise NotImplementedError
 
@@ -18,44 +17,64 @@ class Visitor:
 	def visitUnaryExpr(self, expr):
 		raise NotImplementedError
 
-
-class Expr:
-	def accept(visitor: Visitor):
+	def visitVariableExpr(self, expr):
 		raise NotImplementedError
 
 
-class Binary:
-	def __init__(self, left: Expr, operator: Token, right: Expr):
+class Expr:
+	def accept(visitor: ExprVisitor):
+		raise NotImplementedError
+
+
+class Assign(Expr):
+	def __init__(self, name: _Token, value: Expr):
+		self.name = name
+		self.value = value
+
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitAssignExpr(self)
+
+
+class Binary(Expr):
+	def __init__(self, left: Expr, operator: _Token, right: Expr):
 		self.left = left
 		self.operator = operator
 		self.right = right
 
-	def accept(self, Visitor: Visitor):
-		return Visitor.visitBinaryExpr(self)
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitBinaryExpr(self)
 
 
-class Grouping:
+class Grouping(Expr):
 	def __init__(self, expression: Expr):
 		self.expression = expression
 
-	def accept(self, Visitor: Visitor):
-		return Visitor.visitGroupingExpr(self)
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitGroupingExpr(self)
 
 
-class Literal:
-	def __init__(self, value: Object):
+class Literal(Expr):
+	def __init__(self, value: object):
 		self.value = value
 
-	def accept(self, Visitor: Visitor):
-		return Visitor.visitLiteralExpr(self)
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitLiteralExpr(self)
 
 
-class Unary:
-	def __init__(self, operator: Token, right: Expr):
+class Unary(Expr):
+	def __init__(self, operator: _Token, right: Expr):
 		self.operator = operator
 		self.right = right
 
-	def accept(self, Visitor: Visitor):
-		return Visitor.visitUnaryExpr(self)
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitUnaryExpr(self)
+
+
+class Variable(Expr):
+	def __init__(self, name: _Token):
+		self.name = name
+
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitVariableExpr(self)
 
 

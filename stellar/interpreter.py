@@ -2,21 +2,23 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
-from utils.expr import Expr as _Expr, Visitor as _Visitor, Binary as _Binary, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError
 from utils.tokens import Token as _Token, TokenType as _TokenType
+from utils.stmt import Stmt as _Stmt, Var as _Var, Block as _Block, StmtVisitor as _StmtVisitor, Print as _Print, Expression as _Expression
+from env import Environment as _Environment
 
 
-class Interpreter(_Visitor):
+class Interpreter(_ExprVisitor, _StmtVisitor):
     def __init__(self):
-        self.errors = []
+	    self.environment = _Environment()
+	    self.errors = []
 
-    
-    def interpret(self, expr: _Expr):
+
+    def interpret(self, statements: list):
         try:
-            value = self.evaluate(expr)
-            value = self.stringify(value)
-            print(value)
+            for stmt in statements:
+                self.execute(stmt)
 
         except _RuntimeError as error:
             self.errors.append(error)
@@ -38,7 +40,7 @@ class Interpreter(_Visitor):
             return -float(right)
 
         if (expr.operator.type == _TokenType.BANG):
-            return not (isTruthy(right))
+            return not (self.isTruthy(right))
 
         # If can't be matched return nothing
         return None
@@ -55,6 +57,11 @@ class Interpreter(_Visitor):
 
             if (isinstance(left, str) and isinstance(right, str)):
                 return left + right
+
+            # To support implicit string concactination
+            # E.g "Hailey" + 4 -> "Hailey4"
+            if ((isinstance(left, str)) or (isinstance(right, str))):
+                return str(left) + str(right)
 
             raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
 
@@ -110,8 +117,65 @@ class Interpreter(_Visitor):
         return None
 
 
-    def evaluate(self, expr: _Expr):
-        return expr.accept(self)
+    def visitExpressionStmt(self, stmt: _Expression):
+        self.evaluate(stmt.expression)
+        return None
+
+
+    def visitPrintStmt(self, stmt: _Print):
+        value = self.evaluate(stmt.expression)
+        print(self.stringify(value))
+        return None
+
+
+    def visitVarStmt(self, stmt: _Var):
+        # TODO: Add 'type' option to specify 'const' and 'var' type
+        if (stmt.initializer is not None):
+            value = self.evaluate(stmt.initializer)
+        else:
+            value = None
+
+        self.environment.define(stmt.name.lexeme, value)
+
+
+    def visitBlockStmt(self, stmt: _Block):
+        self.executeBlock(stmt.statements, _Environment(self.environment))
+        return None
+
+
+    def visitAssignExpr(self, expr: _Assign):
+        value = self.evaluate(expr.value)
+
+        self.environment.assign(expr.name, value)
+        return value
+
+
+    def visitVariableExpr(self, expr: _Variable):
+        # TDOD: Add 'type' option to disable changing 'const' variables
+        return self.environment.get(expr.name)
+
+
+    def execute(self, stmt: _Stmt):
+        stmt.accept(self)
+
+
+    def executeBlock(self, stmts: list, env: _Environment):
+        # Save global environment state
+        previous = self.environment
+
+        try:
+            self.environment = env
+
+            for stmt in stmts:
+                self.execute(stmt)
+
+        finally:
+            # Resume global environment state
+            self.environment = previous
+
+
+    def evaluate(self, stmt: _Stmt):
+        return stmt.accept(self)
 
 
     def isTruthy(self, obj: object):
@@ -146,7 +210,7 @@ class Interpreter(_Visitor):
         if ((isinstance(left, float)) and (isinstance(right, float))): return
 
         raise _RuntimeError(operator.lexeme, "Operands must be numbers.")
-        
+
 
     def stringify(self, value: object):
         if (value == None): return "nin"
