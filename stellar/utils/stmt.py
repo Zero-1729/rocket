@@ -15,6 +15,9 @@ class StmtVisitor:
 	def visitVarStmt(self, stmt):
 		raise NotImplementedError
 
+	def visitConstStmt(self, stmt):
+		raise NotImplementedError
+
 
 class Stmt:
 	def accept(visitor: StmtVisitor):
@@ -52,5 +55,14 @@ class Var(Stmt):
 
 	def accept(self, visitor: StmtVisitor):
 		return visitor.visitVarStmt(self)
+
+
+class Const(Stmt):
+	def __init__(self, name: _Token, initializer: _Expr):
+		self.name = name
+		self.initializer = initializer
+
+	def accept(self, visitor: StmtVisitor):
+		return visitor.visitConstStmt(self)
 
 

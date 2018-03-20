@@ -5,7 +5,7 @@
 from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Unary as _Unary, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 from utils.reporter import ParseError as _ParseError
-from utils.stmt import Block as _Block, Print as _Print, Expression as _Expression, Var as _Var
+from utils.stmt import Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const
 
 
 class Parser:
@@ -31,6 +31,9 @@ class Parser:
         try:
             if (self.match(_TokenType.VAR)):
                 return self.varDecleration()
+
+            elif (self.match(_TokenType.CONST)):
+                return self.constDecleration()
 
             return self.statement()
 
@@ -155,24 +158,45 @@ class Parser:
     def printStmt(self):
         value = self.expression()
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after expression")
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after expression.")
         return _Print(value)
 
 
     def varDecleration(self):
-        name = self.consume(_TokenType.IDENTIFIER, "Expected variable name")
+        name = self.consume(_TokenType.IDENTIFIER, "Expected variable name.")
 
         initializer = None
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after decleration")
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after decleration.")
         return _Var(name, initializer)
+
+    
+    def constDecleration(self):
+        name = self.consume(_TokenType.IDENTIFIER, "Expected variable name.")
+        initializer = '' # To avoid Python reference errors
+
+        if (self.match(_TokenType.EQUAL)):
+            initializer = self.expression()
+        
+        else:
+            self.consume(_TokenType.EQUAL, "Const variables require initializers.")
+
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after decleration.")
+
+        # BUG #19: 'Const' are re-assignable using 'const' decl
+        # E.g const y = 9; // Perfectly legit
+        # y = 8; // This is detected and reported 
+        # But this is allowed 'const y = 10;' 
+        # Maybe leaving bug is good??
+
+        return _Const(name, initializer)
 
 
     def expressionStmt(self):
         value = self.expression()
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after expression")
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after expression.")
         return _Expression(value)
 
 

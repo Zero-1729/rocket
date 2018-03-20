@@ -101,7 +101,8 @@ def main():
             "Block": "list statements",
             "Expression": "_Expr expression",
             "Print": "_Expr expression",
-            "Var": "_Token name, _Expr initializer"
+            "Var": "_Token name, _Expr initializer",
+            "Const": "_Token name, _Expr initializer"
         }
 
         defineAst(out, "Stmt", types_two)

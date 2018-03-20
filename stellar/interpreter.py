@@ -5,7 +5,7 @@
 from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError
 from utils.tokens import Token as _Token, TokenType as _TokenType
-from utils.stmt import Stmt as _Stmt, Var as _Var, Block as _Block, StmtVisitor as _StmtVisitor, Print as _Print, Expression as _Expression
+from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, Block as _Block, StmtVisitor as _StmtVisitor, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
 
 
@@ -133,13 +133,24 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitVarStmt(self, stmt: _Var):
-        # TODO: Add 'type' option to specify 'const' and 'var' type
         if (stmt.initializer is not None):
             value = self.evaluate(stmt.initializer)
         else:
             value = None
 
         self.environment.define(stmt.name.lexeme, value)
+
+
+    def visitConstStmt(self, stmt: _Const):
+        value = self.evaluate(stmt.initializer)
+
+        # NOTE: Fix for #19 
+        # check for variable before definition to avoid passing in 'const' redefinitions
+        if self.environment.isTaken(stmt.name):
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as 'const'.")
+
+        # Use different decleration function for consts
+        self.environment.decl(stmt.name.lexeme, value)
 
 
     def visitBlockStmt(self, stmt: _Block):
@@ -155,7 +166,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitVariableExpr(self, expr: _Variable):
-        # TDOD: Add 'type' option to disable changing 'const' variables
+        # NOTE: 'const' variables get retrieved from this call also
         return self.environment.get(expr.name)
 
 

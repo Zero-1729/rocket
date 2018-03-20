@@ -3,20 +3,33 @@ from utils.reporter import runtimeError as _RuntimeError
 
 class Environment:
     def __init__(self, enclosing=None):
-        self.values = {}
+        self.values = {} # To store re-assignable variables
+        self.statics = {} # To store all constant values
         self.enclosing = enclosing
 
+    
+    def decl(self, name: str, val: object):
+        self.statics[name] = val
 
     def define(self, name: str, val: object):
-        # TODO: Add checks for variables declared with 'const'
         # Variables declared 'var' don't get checks because they are redifined
         self.values[name] = val
+
+
+    def isTaken(self, name: _Token):
+        if name.lexeme in self.statics.keys():
+            return True;
+
+        return False
 
 
     def get(self, name: _Token):
         # Recursively check for variable in the blocks scope(s) and global scope
         if (name.lexeme in self.values):
             return self.values[name.lexeme]
+
+        if (name.lexeme in self.statics):
+            return self.statics[name.lexeme]
 
         if (self.enclosing is not None):
             return self.enclosing.get(name)
@@ -29,6 +42,9 @@ class Environment:
         if (name.lexeme in self.values.keys()): # or name.lexeme in self.values
             self.values[name.lexeme] = val
             return
+
+        if (name.lexeme in self.statics.keys()):
+            raise _RuntimeError(name, f"ConstReassignmentError: 'const' variables can't be re-assigned")
 
         elif (self.enclosing is not None):
             self.enclosing.assign(name, val)

@@ -29,7 +29,7 @@ declaration     → class_decl
 
 class_decl      → "class" IDENTIFIER ( "<-" IDENTIFIER )? "{" function* "}" ;
 func_decl       → "func" function ;
-var_decl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+var_decl        → ("var" | "const") IDENTIFIER ( "=" expression )? ";" ;
 ```
 
 ## Expressions
@@ -73,8 +73,8 @@ argumenrs       → expression ( "," expression )* ;
 
 ```
 NUMBER          → DIGIT+ ( "." DIGIT+ )? ;
-STRING          → '"' <char except '"'>* '"' ;
-INDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ;
+STRING          → ('"' <char except '"'>* '"') | ("'" <char except "'"> "'") ;
+INDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ; // I.e '8bit' not allowed
 ALPHA           → 'a' ... 'z' | 'A' ... 'Z' | '_' ;
 DIGIT           → '0' ... '9' ;
 ```
