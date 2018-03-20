@@ -9,16 +9,14 @@ class TokenType(_enum.Enum):
         RIGHT_PAREN      = 2
         LEFT_BRACE       = 3
         RIGHT_BRACE      = 4
-        COMMA            = 5
-        DOT              = 6
+        DOT              = 5
+        COMMA            = 6
         PLUS             = 7
         MINUS            = 8
         SEMICOLON        = 9
         DIV              = 10
         MULT             = 11
         MOD              = 12
-
-        # rokcet v0.7.1
         EXP              = 13
 
         # NOTE: floor division is detected only if 'RIGHT' operand is a number
@@ -76,7 +74,6 @@ class TokenType(_enum.Enum):
 Keywords = {
         "CLASS": TokenType.CLASS,
         "ELSE": TokenType.ELSE,
-        "FALSE": TokenType.FALSE,
         "FUNC": TokenType.FUNC,
         "FOR": TokenType.FOR,
         "IF": TokenType.IF,
@@ -86,7 +83,6 @@ Keywords = {
         "RETURN": TokenType.RETURN,
         "SUPER": TokenType.SUPER,
         "THIS": TokenType.THIS,
-        "TRUE": TokenType.TRUE,
         "CONST": TokenType.CONST,
         "VAR": TokenType.VAR,
         "WHILE": TokenType.WHILE

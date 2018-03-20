@@ -267,6 +267,15 @@ class Scanner:
 
         value = self.source[start - 1:self.current]
 
+        # special check for "true" and "false" to avoid passing 'tRue' as TRUE
+        if value == "true":
+            self.addToken(_TokenType.TRUE, value, None)
+            return
+
+        if value == "false":
+            self.addToken(_TokenType.FALSE, value, None)
+            return
+
         if (value.upper() in keywords):
             keyword = keywords[value.upper()]
 

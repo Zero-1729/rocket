@@ -48,7 +48,7 @@ def run_file(path):
 
 def run_prompt(prompt, headerless=False):
 
-    header = f"""Rocket 0.1.1 | Rocket Labs | [Stellar 0.2.1-b] (Ubuntu 16.04.3 LTS)] on linux\n"""
+    header = f"""Rocket 0.1.2 | Rocket Labs | [Stellar 0.2.2-b] (Ubuntu 16.04.3 LTS)] on linux\n"""
 
     if not headerless:
         print(header)
@@ -108,14 +108,18 @@ def main():
         sys.exit(1)
 
     elif len(sys.argv) == 2 and sys.argv[-1] not in sca:
-        run_file(sys.argv[1])
+        try:
+            run_file(sys.argv[1])
+
+        except FileNotFoundError:
+            print("Error: File not found")
 
     elif len(sys.argv) == 2:
         if sys.argv[-1] == '-q' or sys.argv[-1] == '--quite':
             run_prompt(prompt, True)
 
         elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
-            print("Rocket v0.1.1 [Stellar v0.2.1-b]")
+            print("Rocket v0.1.2 [Stellar v0.2.2-b]")
 
         elif sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
             print(usage())

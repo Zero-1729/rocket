@@ -195,7 +195,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def isTruthy(self, obj: object):
         if (obj == None):
-            return false
+            return False
 
         if (isinstance(obj, bool)):
             return obj # I.e if "True" return it
@@ -228,7 +228,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def stringify(self, value: object):
+        # Customize literals
         if (value == None): return "nin"
+        if (value == True): return "true"
+        if (value == False): return "false"
+
         if (isinstance(value, float)): return str(value)[0:-2]
 
         return value
