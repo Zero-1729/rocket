@@ -13,6 +13,10 @@ class Environment:
 
     def define(self, name: str, val: object):
         # Variables declared 'var' don't get checks because they are redifined
+        # FIX: #20 check if 'name' taken in 'const' scope
+        if name in self.statics.keys():
+            raise _RuntimeError(name, "already declared as 'const'")
+
         self.values[name] = val
 
 
