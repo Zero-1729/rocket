@@ -2,10 +2,10 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Unary as _Unary, Grouping as _Grouping, Literal as _Literal
+from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 from utils.reporter import ParseError as _ParseError
-from utils.stmt import Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const
+from utils.stmt import If as _If, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break
 
 
 class Parser:
@@ -13,6 +13,7 @@ class Parser:
         self.tokens = tokens
         self.current = 0
         self.errors = []
+        self.loopDepth = 0
 
 
     def parse(self):
@@ -146,6 +147,18 @@ class Parser:
 
 
     def statement(self):
+        if (self.match(_TokenType.IF)):
+            return self.ifStmt()
+        
+        if (self.match(_TokenType.WHILE)):
+            return self.whileStmt()
+
+        if (self.match(_TokenType.FOR)):
+            return self.forStmt()
+
+        if (self.match(_TokenType.BREAK)):
+            return self.breakStmt()
+
         if (self.match(_TokenType.PRINT)):
             return self.printStmt()
 
@@ -155,6 +168,125 @@ class Parser:
         return self.expressionStmt()
 
 
+
+    def OR(self):
+        expr = self.AND()
+
+        while (self.match(_TokenType.OR)):
+            operator = self.previous()
+            right = self.AND()
+
+            expr = _Logical(expr, operator, right)
+
+        return expr
+
+
+    def AND(self):
+        expr = self.equality()
+
+        while (self.match(_TokenType.AND)):
+            operator = self.previous()
+            right = self.equality()
+
+            expr = _Logical(expr, operator, right)
+
+        return expr
+
+
+    def ifStmt(self):
+        self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'if'.")
+        condition = self.expression()
+        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'if' condition.")
+
+        thenBranch = self.statement()
+
+        # Predifine 'else' and 'elif' methods
+        elifCondition = None
+        elifThenBranch = None
+        elseBranch = None
+
+        #if (self.match(_TokenType.ELIF)):
+        #    self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'elif'.")
+        #    elifCondition = self.expression()
+        #    self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'elif' condition.")
+        
+        #    elifThenBranch = self.statement()
+
+        if (self.match(_TokenType.ELSE)):
+            elseBranch = self.statement()
+
+        return _If(condition, thenBranch, elifCondition, elifThenBranch, elseBranch)
+
+
+    def whileStmt(self):
+        self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'while'")
+        condition = self.expression()
+        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'while' condition")
+
+        try:
+            self.loopDepth = self.loopDepth - 1
+            body = self.statement()
+
+            return _While(condition, body)
+        
+        finally:
+            self.loopDepth = self.loopDepth - 1
+
+
+    def forStmt(self):
+        self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'for'.")
+
+        initializer = None
+        if (self.match(_TokenType.SEMICOLON)):
+            initializer = None
+
+        elif (self.match(_TokenType.VAR)):
+            initializer = self.varDecleration()
+
+        else:
+            initializer = self.expressionStmt()
+
+        condition = None
+        if (self.check(_TokenType.SEMICOLON) == False):
+            condition = self.expression()
+
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after loop confition.")
+
+        increment = None
+        if (self.check(_TokenType.RIGHT_PAREN) == False):
+            increment = self.expression()
+
+        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'for' clause.")
+
+        try:
+            self.loopDepth = self.loopDepth + 1
+            body = self.statement()
+        
+            if (increment != None):
+                body = _Block([body, increment])
+
+            if (condition == None):
+                condition = _Literal(True)
+
+            body = _While(condition, body)
+
+            if (initializer != None):
+                body = _Block([initializer, body])
+
+            return body
+
+        finally:
+            self.loopDepth = self.loopDepth - 1
+
+
+    def breakStmt(self):
+        if self.loopDepth == 0:
+            self.error(_TokenType.BREAK, "'break' used outside loop")
+
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after 'break'")
+        return _Break()
+    
+    
     def printStmt(self):
         value = self.expression()
 
@@ -201,7 +333,8 @@ class Parser:
 
 
     def assignment(self):
-        expr = self.equality()
+        # Short circuit
+        expr = self.OR()# self.equality()
 
         if (self.match(_TokenType.EQUAL)):
             equals = self.previous()

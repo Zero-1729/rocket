@@ -52,23 +52,25 @@ class TokenType(_enum.Enum):
         AND               = 26
         CLASS             = 27
         ELSE              = 28
-        FALSE             = 29
-        FUNC              = 30
-        FOR               = 31
-        IF                = 32
-        NIN               = 33
-        OR                = 34
-        PRINT             = 35
-        RETURN            = 36
-        SUPER             = 37
-        THIS              = 38
-        TRUE              = 39
-        CONST             = 40
-        VAR               = 41
-        WHILE             = 42
+        #ELIF              = 29
+        FALSE             = 30
+        FUNC              = 31
+        FOR               = 32
+        BREAK             = 99
+        IF                = 33
+        NIN               = 34
+        OR                = 35
+        PRINT             = 36
+        RETURN            = 37
+        SUPER             = 38
+        THIS              = 39
+        TRUE              = 40
+        CONST             = 41
+        VAR               = 42
+        WHILE             = 43
 
         # EOF
-        EOF               = 43
+        EOF               = 44
 
 
 Keywords = {
@@ -76,8 +78,10 @@ Keywords = {
         "ELSE": TokenType.ELSE,
         "FUNC": TokenType.FUNC,
         "FOR": TokenType.FOR,
+        "BREAK": TokenType.BREAK,
         "IF": TokenType.IF,
         "NIN": TokenType.NIN,
+        "AND": TokenType.AND,
         "OR": TokenType.OR,
         "PRINT": TokenType.PRINT,
         "RETURN": TokenType.RETURN,

@@ -2,10 +2,10 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
-from utils.reporter import runtimeError as _RuntimeError
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException
 from utils.tokens import Token as _Token, TokenType as _TokenType
-from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, Block as _Block, StmtVisitor as _StmtVisitor, Print as _Print, Expression as _Expression
+from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Block as _Block, StmtVisitor as _StmtVisitor, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
 
 
@@ -126,6 +126,49 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         return None
 
 
+    def visitLogicalExpr(self, expr: _Logical):
+        left = self.evaluate(expr.left)
+
+        if (expr.operator.type == _TokenType.OR):
+            if (self.isTruthy(left)): return left
+        
+        else:
+            if not self.isTruthy(left): return left
+
+        return self.evaluate(expr.right)
+
+
+    def visitIfStmt(self, stmt: _If):
+         if (self.isTruthy(self.evaluate(stmt.condition))):
+             self.execute(stmt.thenBranch)
+         
+         #if (stmt.elifCondition != None):
+         #    if (self.isTruthy(self.evaluate(stmt.elifCondition))):
+         #        self.execute(stmt.elifThenBranch)
+
+         elif (stmt.elseBranch != None):
+             self.execute(stmt.elseBranch)
+
+         return None
+
+
+    def visitWhileStmt(self, stmt: _While):
+        try:
+            while (self.isTruthy(self.evaluate(stmt.condition))):
+                self.execute(stmt.body)
+
+            # TODO: Add support to cover Python's stack trace when CTRL-C is used to exit REPL
+        except _BreakException:
+            pass
+
+        return None
+
+
+    def visitBreakStmt(self, stmt: _Break):
+        # Just raises 'BreakExveption' to signal 'break'
+        raise _BreakException()
+
+
     def visitPrintStmt(self, stmt: _Print):
         value = self.evaluate(stmt.expression)
         print(self.stringify(value))
@@ -230,9 +273,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def stringify(self, value: object):
         # Customize literals
         if (value == None): return "nin"
-        if (value == True): return "true"
-        if (value == False): return "false"
 
+        # HACK: Against bug #28 'print 0;' -> false && 'print 1;' -> true
+        if (value == True and not isinstance(value, float)): return "true"
+        if (value == False and not isinstance(value, float)): return "false"
+
+        # check for ints to avoid '1' -> '1.0'
         if (isinstance(value, float)): return str(value)[0:-2]
 
         return value

@@ -1,8 +1,6 @@
 import os
 import sys
 
-from tokens import Token
-
 
 def usage():
     print("genast <out directory>")
@@ -65,14 +63,17 @@ def defineAst(out, baseName, types):
 
         for t in types:
             className = t
-            fields = format_fields(types[t])
-            field_names = getNames(fields)
+            formated_fields = format_fields(types[t])
+            fields = formated_fields if formated_fields != ': ' else None
+            field_names = getNames(fields) if fields else None
 
             f.write(f"class {className}({globalClass}):")
-            f.write(f"\n\tdef __init__(self, {fields}):")
 
-            for fn in field_names:
-                f.write(f"\n\t\tself.{fn} = {fn}")
+            if ((fields) and (field_names)):
+                f.write(f"\n\tdef __init__(self, {fields}):")
+
+                for fn in field_names:
+                    f.write(f"\n\t\tself.{fn} = {fn}")
 
             f.write(f"\n\n\tdef accept(self, visitor: {baseName}Visitor):")
             f.write(f"\n\t\treturn visitor.visit{className}{baseName}(self)")
@@ -90,6 +91,7 @@ def main():
                 "Assign": "_Token name, Expr value",
                 "Binary": "Expr left, _Token operator, Expr right",
                 "Grouping": "Expr expression",
+                "Logical": "Expr left, _Token operator, Expr right",
                 "Literal": "object value",
                 "Unary": "_Token operator, Expr right",
                 "Variable": "_Token name"
@@ -102,7 +104,10 @@ def main():
             "Expression": "_Expr expression",
             "Print": "_Expr expression",
             "Var": "_Token name, _Expr initializer",
-            "Const": "_Token name, _Expr initializer"
+            "Const": "_Token name, _Expr initializer",
+            "If": "Stmt condition, Stmt thenBranch, Stmt elifCondition, Stmt elifThenBranch, Stmt elseBranch",
+            "While": "_Expr condition, Stmt body",
+            "Break": ""
         }
 
         defineAst(out, "Stmt", types_two)
