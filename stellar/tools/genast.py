@@ -90,6 +90,7 @@ def main():
         types = {
                 "Assign": "_Token name, Expr value",
                 "Binary": "Expr left, _Token operator, Expr right",
+                "Call": "Expr callee, _Token paren, list args",
                 "Grouping": "Expr expression",
                 "Logical": "Expr left, _Token operator, Expr right",
                 "Literal": "object value",
@@ -107,7 +108,8 @@ def main():
             "Const": "_Token name, _Expr initializer",
             "If": "Stmt condition, Stmt thenBranch, Stmt elifCondition, Stmt elifThenBranch, Stmt elseBranch",
             "While": "_Expr condition, Stmt body",
-            "Break": ""
+            "Break": "",
+            "Del"  : "list names"
         }
 
         defineAst(out, "Stmt", types_two)

@@ -2,10 +2,10 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
+from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 from utils.reporter import ParseError as _ParseError
-from utils.stmt import If as _If, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break
+from utils.stmt import If as _If, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Del as _Del
 
 
 class Parser:
@@ -99,7 +99,19 @@ class Parser:
 
             return _Unary(operator, right)
 
-        return self.primary()
+        return self.call()
+
+
+    def call(self):
+        expr = self.primary()
+
+        while True:
+            if self.match(_TokenType.LEFT_PAREN):
+                expr = finishCall(expr)
+            else:
+                break
+
+        return expr
 
 
     def primary(self):
@@ -157,10 +169,11 @@ class Parser:
         self.error(self.peek(), "Expected expression.").report()
 
 
+
     def statement(self):
         if (self.match(_TokenType.IF)):
             return self.ifStmt()
-        
+
         if (self.match(_TokenType.WHILE)):
             return self.whileStmt()
 
@@ -169,6 +182,9 @@ class Parser:
 
         if (self.match(_TokenType.BREAK)):
             return self.breakStmt()
+
+        if (self.match(_TokenType.DEL)):
+            return self.delStmt()
 
         if (self.match(_TokenType.PRINT)):
             return self.printStmt()
@@ -220,7 +236,7 @@ class Parser:
         #    self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'elif'.")
         #    elifCondition = self.expression()
         #    self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'elif' condition.")
-        
+
         #    elifThenBranch = self.statement()
 
         if (self.match(_TokenType.ELSE)):
@@ -239,7 +255,7 @@ class Parser:
             body = self.statement()
 
             return _While(condition, body)
-        
+
         finally:
             self.loopDepth = self.loopDepth - 1
 
@@ -272,7 +288,7 @@ class Parser:
         try:
             self.loopDepth = self.loopDepth + 1
             body = self.statement()
-        
+
             if (increment != None):
                 body = _Block([body, increment])
 
@@ -296,8 +312,34 @@ class Parser:
 
         self.consume(_TokenType.SEMICOLON, "Expected ';' after 'break'")
         return _Break()
-    
-    
+
+
+    def delStmt(self):
+        # Find more elegant solution
+        names = []
+
+        if self.tokens[-1].type == _TokenType.DEL:
+            return _Del(names)
+
+        while not self.match(_TokenType.SEMICOLON) and not self.isAtEnd():
+            if self.peek().type == _TokenType.IDENTIFIER:
+                names.append(self.peek().lexeme)
+                self.advance()
+
+            elif self.peek().type == _TokenType.COMMA:
+                self.advance()
+
+        # little hack because 'self.current' is offset too high
+        self.devance()
+
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after names in 'del' call")
+
+        if len(names) == 0:
+            self.error(_TokenType.DEL, "'del' requires atleast one identifier")
+
+        return _Del(names)
+
+
     def printStmt(self):
         value = self.expression()
 
@@ -315,14 +357,14 @@ class Parser:
         self.consume(_TokenType.SEMICOLON, "Expected ';' after decleration.")
         return _Var(name, initializer)
 
-    
+
     def constDecleration(self):
         name = self.consume(_TokenType.IDENTIFIER, "Expected variable name.")
         initializer = '' # To avoid Python reference errors
 
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
-        
+
         else:
             self.consume(_TokenType.EQUAL, "Const variables require initializers.")
 
@@ -330,8 +372,8 @@ class Parser:
 
         # BUG #19: 'Const' are re-assignable using 'const' decl
         # E.g const y = 9; // Perfectly legit
-        # y = 8; // This is detected and reported 
-        # But this is allowed 'const y = 10;' 
+        # y = 8; // This is detected and reported
+        # But this is allowed 'const y = 10;'
         # Maybe leaving bug is good??
 
         return _Const(name, initializer)
@@ -372,6 +414,19 @@ class Parser:
         return statements
 
 
+    def finishCall(self, callee: _Call):
+        # Rocket should be able to parse unlimited args
+        args = []
+        if not self.check(_TokenType.RIGHT_PAREN):
+            while self.match(_TokenType.COMMA):
+                args.append(self.expression())
+
+        paren = self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after function arguments")
+
+        return _Call(calle, paren, args)
+
+
+
     def peek(self):
         return self.tokens[self.current]
 
@@ -389,6 +444,9 @@ class Parser:
             self.current += 1
 
         return self.previous()
+
+    def devance(self):
+        self.current -= 1
 
 
     def match(self, *types: _TokenType):

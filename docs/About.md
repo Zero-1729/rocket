@@ -14,27 +14,16 @@ The language comes with a set of default keywords ([list of keywords](https://gi
 Create `config.rckt` file in your project's **root directory**
 
 ```rckt
-// First Section
-[keywords]
-
-this => self
-keep_that => while
-bake => print
-
-EOS
-
-// Last Section
-[operators]
-
-<- => =
-
-EOF
+// My customs
+this ? self
+keep_that ? while
+bake ? print
 ```
 
-> **Note**: Whitespaces and Comments are ignored.
+> **Note**: Only single line comments `//` are allowed. Whitespaces and Comments are ignored.
 
-Where you specify the spefic part of Rocket's syntax you want to edit in a `[]`. Followed by a list of mappings of the type `new -> default`. `EOS` or `End Of Section` is the keyword written at the end of a section. Lastly An `EOF` or `End Of File` string is written at the end of the file, indicating the end of the config file.
+Where a list of mappings of the type `new ? default` is given. The question mark `?` acts as the equator linking the `new` to the `default`.
 
-The Rocket Compiler by default searches for this file and makes the necessary changes to the Compiler's *Keyword Syntax List* (KSL), and *Operator Syntax List* (OSL), and bundles your script.
+The Rocket by default searches for this file and makes the necessary changes to its *Keyword Syntax List* (KSL) and bundles your script if program execution was fired else it uses this in your `REPL` session.
 
 > Note: The reason for this addition is that I wanted to make the language flexible enough to hack the syntax without having the touch the guts of the Compiler at all. So I decided the easiest way is to provide a uniform way to do it! :sunglasses:

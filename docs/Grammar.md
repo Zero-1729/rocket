@@ -62,6 +62,7 @@ statement       → print_stmt
                 | while_stmt
                 | break_stmt
                 | return_stmt
+                | del_stmt
                 | block ;
 
 print_stmt       → "print" expression ;
@@ -69,9 +70,10 @@ expr_stmt        → expression ;
 if_stmt          → "if" "(" expression ")" statement ( "else" statement )? ;
 for_stmt         → "for" "(" ( var_decl | expr_stmt | ";" ) expression? ";" expression? ")" statement ;
 while_stmt       → "while" "(" expression ")" statement ;
-break_stmt      → "break" ";" ;
-return_stmt     → "return" expression? ";" ;
-block           → "{" declaration* "}" ;
+break_stmt       → "break" ";" ;
+return_stmt      → "return" expression? ";" ;
+del_stmt         → "del" IDENTIFIER ( ( "," IDENTIFIER )* )? ";" ;
+block            → "{" declaration* "}" ;
 ```
 
 ## Utility Rules

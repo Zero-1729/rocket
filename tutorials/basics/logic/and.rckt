@@ -1,0 +1,4 @@
+print "1 || 1 : " + (true and true); // true
+print "1 || 0 : " + (true and false); // true
+print "0 || 1 : " + (false and true); // true
+print "0 || 0 : " + (false and false); // false

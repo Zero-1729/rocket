@@ -75,6 +75,10 @@ class TokenType(_enum.Enum):
         VAR               = 42
         WHILE             = 43
 
+        Q_MARK            = 66
+
+        DEL               = 0
+
         # EOF
         EOF               = 44
 
@@ -95,9 +99,10 @@ Keywords = {
         "THIS": TokenType.THIS,
         "CONST": TokenType.CONST,
         "VAR": TokenType.VAR,
-        "WHILE": TokenType.WHILE
+        "WHILE": TokenType.WHILE,
+        "DEL": TokenType.DEL
 
-        # Rocket
+        # Rocket v0.2.0+
         # Like Python's Try Except
         # LAUNCH
         # ABORT
