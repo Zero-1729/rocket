@@ -1,0 +1,19 @@
+/* Author: Abubakar NK (Zero-1729)
+** License: MIT
+** Info: while loop todo work of 'for' loop
+*/
+
+var n = 0;
+
+while (n <= 10) {
+    print "n: " + n;
+    n = n + 1;
+}
+
+/* Expected output:
+n: 0
+n: 1
+n: 2
+...
+n: 10
+*/

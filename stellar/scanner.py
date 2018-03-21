@@ -121,18 +121,24 @@ class Scanner:
                     self.addDoubleToken(_TokenType.EQUAL_EQUAL) # "EQUAL_EQUAL"
 
             elif c == "<":
-                if not self.match("="):
-                    self.addSingleToken(_TokenType.LESS) # "LESS"
-
-                else:
+                if self.match("="):
                     self.addDoubleToken(_TokenType.LESS_EQUAL) # "LESS_EQUAL"
 
-            elif c == ">":
-                if not self.match("="):
-                    self.addSingleToken(_TokenType.GREATER) # "GREATER"
+                elif self.match("<"):
+                    self.addDoubleToken(_TokenType.LESS_LESS) # "LESS_LESS" "<<" left bitshift
 
                 else:
+                    self.addSingleToken(_TokenType.LESS) # "LESS"
+
+            elif c == ">":
+                if self.match("="):
                     self.addDoubleToken(_TokenType.GREATER_EQUAL) # "GREATER_EQUAL"
+
+                elif self.match(">"):
+                    self.addDoubleToken(_TokenType.GREATER_GREATER) # "GREATER_GREATER" ">>" right bitshift
+
+                else:
+                    self.addSingleToken(_TokenType.GREATER) # "GREATER"
 
             # literals
             elif c == "":

@@ -32,6 +32,10 @@ class TokenType(_enum.Enum):
         LESS             = 21
         LESS_EQUAL       = 22
 
+        # Bitshifter operators
+        LESS_LESS        = 200
+        GREATER_GREATER  = 201
+
         # Arithmetic increment oprands
         # rocket v0.7.1
         # "PLUS_INC": "+=",

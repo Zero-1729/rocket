@@ -1,0 +1,8 @@
+/* Author: Abubakar NK (Zero-1729)
+** License: MIT
+** Info: For loop works
+*/
+
+for (var i = 0;i < 10;i=i+1) {
+    print "i: " + i;
+}

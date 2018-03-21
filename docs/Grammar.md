@@ -25,11 +25,13 @@ program     → declaration* EOF ;
 declaration     → class_decl
                   | func_decl
                   | var_decl
+                  | const_decl
                   | statement ;
 
 class_decl      → "class" IDENTIFIER ( "<-" IDENTIFIER )? "{" function* "}" ;
 func_decl       → "func" function ;
-var_decl        → ("var" | "const") IDENTIFIER ( "=" expression )? ";" ;
+var_decl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+const_decl      → "const" IDENTIFIER "=" expression ";" ;
 ```
 
 ## Expressions
@@ -40,7 +42,14 @@ expression  → assignment ;
 assignment  → ( call "." )? IDENTIFIER "=" assignment | logic_or ;
 
 logic_or    → logic_and ( "or" logic_and )* ;
-logic_and   → equality  ( ) ;
+logic_and   → equality  ( "and" equality )* ;
+equality    → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison  → addition ( ( ">" | ">=" | "<" | "<=" ) addition)* ;
+addition    → mult ( ( "-" | "+" | "<<" | ">>" ) mult )* ;
+mult        → unary ( ( "/" | "//" | "%" | "*" | "**" ) unary )* ;
+unary       → ( "~" | "!" | "-" ) unary | call ;
+call        → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+primary     → "true" | "false" | "nin" | "this" | NUMBER | STRING | IDENTIFIER | "(" expression ")" | "super" "." IDENTIFIER ;
 ```
 
 ## Statements
@@ -51,6 +60,7 @@ statement       → print_stmt
                 | if_stmt
                 | for_stmt
                 | while_stmt
+                | break_stmt
                 | return_stmt
                 | block ;
 
@@ -59,6 +69,8 @@ expr_stmt        → expression ;
 if_stmt          → "if" "(" expression ")" statement ( "else" statement )? ;
 for_stmt         → "for" "(" ( var_decl | expr_stmt | ";" ) expression? ";" expression? ")" statement ;
 while_stmt       → "while" "(" expression ")" statement ;
+break_stmt      → "break" ";" ;
+return_stmt     → "return" expression? ";" ;
 block           → "{" declaration* "}" ;
 ```
 

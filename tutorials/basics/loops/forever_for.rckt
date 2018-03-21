@@ -1,0 +1,3 @@
+for (;;) {
+	print("Rocket Forever!");
+}

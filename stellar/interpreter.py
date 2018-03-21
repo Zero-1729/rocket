@@ -95,6 +95,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             self.checkNumberOperands(expr.operator, left, right)
             return float(left) ** float(right)
 
+        # bitshifters "<<", ">>"
+        if (expr.operator.type == _TokenType.LESS_LESS):
+            self.checkNumberOperands(expr.operator, left, right)
+            return left * (2 ** right)
+
+        if (expr.operator.type == _TokenType.GREATER_GREATER):
+            self.checkNumberOperands(expr.operator, left, right)
+            return left // (2 ** right)
+
         # Comparison operators ">", "<", ">=", "<=", "!=", "=="
         if (expr.operator.type == _TokenType.GREATER):
             self.checkNumberOperands(expr.operator, left, right)

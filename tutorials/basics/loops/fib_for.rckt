@@ -1,0 +1,16 @@
+/* Author: Abubakar NK (Zero-1729)
+** License: MIT
+** Info: First 21 Elms Fibonacci seq. Using for loop
+*/
+
+var a = 0;
+var b = 1;
+
+while (a < 10000) {
+    print a;
+
+    var tmp = a;
+
+    a = b;
+    b = tmp + b;
+}

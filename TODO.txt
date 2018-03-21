@@ -11,11 +11,9 @@ Add support for bitwise operators:-
 
 Note: watch out for negative numbers passed to operators. I.e flag runtimeError; negate BitWise Operand
 
-<< -> x << y == x * (2 ** y)
->> -> x >> y == x // (2 ** y)
 | -> or bitwise op
 & -> and bitwise op
-~ -> bitwise compliment (unary op). ~x == -x - 1
+
 
 add Support for keyword and operator customization (hack).
 -

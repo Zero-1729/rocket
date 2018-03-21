@@ -28,3 +28,8 @@ class runtimeError(RuntimeError):
     def __init__(self, token: _Token, message: str):
         super(type(message))
         self.token = token
+
+
+class BreakException(Exception):
+    pass
+

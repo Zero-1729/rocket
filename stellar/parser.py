@@ -70,7 +70,7 @@ class Parser:
     def addition(self):
         expr = self.mult()
 
-        while (self.match(_TokenType.PLUS, _TokenType.MINUS)):
+        while (self.match(_TokenType.PLUS, _TokenType.MINUS, _TokenType.LESS_LESS, _TokenType.GREATER_GREATER)):
             operator = self.previous()
 
             right = self.mult()
@@ -141,6 +141,17 @@ class Parser:
         if (self.match(_TokenType.DIV, _TokenType.FLOOR, _TokenType.MOD, _TokenType.MULT, _TokenType.EXP)):
             self.error(self.previous(), "Left-hand operand missing.")
             self.mult()
+            return None
+
+        # '<<', '>>' bitshifters
+        if (self.match(_TokenType.LESS_LESS, _TokenType.GREATER_GREATER)):
+            self.error(self.previous(), "Left-hand operand missing.")
+            self.addition()
+            return None
+
+        if (self.match(_TokenType.GREATER_GREATER)):
+            self.error(self.previous(), "Left-hand operand missing.")
+            self.addition()
             return None
 
         self.error(self.peek(), "Expected expression.").report()

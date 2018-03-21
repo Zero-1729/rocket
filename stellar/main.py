@@ -48,7 +48,7 @@ def run_file(path):
 
 def run_prompt(prompt, headerless=False):
 
-    header = f"""Rocket 0.1.2 | Rocket Labs | [Stellar 0.2.2-b] (Ubuntu 16.04.3 LTS)] on linux\n"""
+    header = f"""Rocket 0.1.6 | Rocket Labs | [Stellar 0.2.6-b] (Ubuntu 16.04.3 LTS)] on linux\n"""
 
     if not headerless:
         print(header)
@@ -119,7 +119,7 @@ def main():
             run_prompt(prompt, True)
 
         elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
-            print("Rocket v0.1.2 [Stellar v0.2.2-b]")
+            print("Rocket v0.1.6 [Stellar v0.2.6-b]")
 
         elif sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
             print(usage())
