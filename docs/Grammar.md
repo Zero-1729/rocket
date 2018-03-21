@@ -57,7 +57,7 @@ statement       → print_stmt
 print_stmt       → "print" expression ;
 expr_stmt        → expression ;
 if_stmt          → "if" "(" expression ")" statement ( "else" statement )? ;
-for_stmt         → "for" "(" ( var_decl | expr_stmt ) expression? ";" expression? ")" statement ;
+for_stmt         → "for" "(" ( var_decl | expr_stmt | ";" ) expression? ";" expression? ")" statement ;
 while_stmt       → "while" "(" expression ")" statement ;
 block           → "{" declaration* "}" ;
 ```

@@ -35,6 +35,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitUnaryExpr(self, expr: _Unary):
         right = self.evaluate(expr.right)
 
+        # Handle '~' bit shifter
+        if (expr.operator.type == _TokenType.TILDE):
+            self.checkNumberOperand(expr.operator, right)
+            return (-float(right) - 1)
+
         if (expr.operator.type == _TokenType.MINUS):
             self.checkNumberOperand(expr.operator, right)
             return -float(right)

@@ -42,6 +42,8 @@ class TokenType(_enum.Enum):
         #"FLOOR_INC": "//=",
         #"EXP_INC": "**=",
 
+        # Unary prefix
+        TILDE             = 112
 
         # literals
         IDENTIFIER        = 23

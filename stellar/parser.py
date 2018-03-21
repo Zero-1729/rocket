@@ -92,7 +92,7 @@ class Parser:
 
 
     def unary(self):
-        if (self.match(_TokenType.BANG, _TokenType.MINUS)):
+        if (self.match(_TokenType.BANG, _TokenType.MINUS, _TokenType.TILDE)):
             operator = self.previous()
 
             right = self.unary()

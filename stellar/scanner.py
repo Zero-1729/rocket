@@ -54,6 +54,10 @@ class Scanner:
                 tok_type = _TokenType.MINUS # "MINUS"
                 self.addSingleToken(tok_type)
 
+            elif c == "~":
+                tok_type = _TokenType.TILDE # "TILDE" ~
+                self.addSingleToken(tok_type)
+
             elif c == "*":
                 if self.match("*"):
                     self.addDoubleToken(_TokenType.EXP)
