@@ -5,7 +5,7 @@
 from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 from utils.reporter import ParseError as _ParseError
-from utils.stmt import If as _If, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Del as _Del
+from utils.stmt import If as _If, Func as _Func, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
 
 
 class Parser:
@@ -107,7 +107,7 @@ class Parser:
 
         while True:
             if self.match(_TokenType.LEFT_PAREN):
-                expr = finishCall(expr)
+                expr = self.finishCall(expr)
             else:
                 break
 
@@ -183,11 +183,20 @@ class Parser:
         if (self.match(_TokenType.BREAK)):
             return self.breakStmt()
 
+        if (self.match(_TokenType.RETURN)):
+            return self.returnStmt()
+
         if (self.match(_TokenType.DEL)):
             return self.delStmt()
 
         if (self.match(_TokenType.PRINT)):
             return self.printStmt()
+
+        if (self.match(_TokenType.CLASS)):
+            return self.function("class")
+
+        if (self.match(_TokenType.FUNC)):
+            return self.function("function")
 
         if (self.match(_TokenType.LEFT_BRACE)):
             return _Block(self.block())
@@ -314,6 +323,18 @@ class Parser:
         return _Break()
 
 
+    def returnStmt(self):
+        keyword = self.previous()
+        value = None
+
+        # IF stmt hasn't ended set return val to the expression
+        if not self.check(_TokenType.SEMICOLON):
+            value = self.expression()
+
+        self.consume(_TokenType.SEMICOLON, "Expected ';' after return value")
+        return _Return(keyword, value)
+
+
     def delStmt(self):
         # Find more elegant solution
         names = []
@@ -321,6 +342,7 @@ class Parser:
         if self.tokens[-1].type == _TokenType.DEL:
             return _Del(names)
 
+        # try and use 'function's loop 'n' grab technique below
         while not self.match(_TokenType.SEMICOLON) and not self.isAtEnd():
             if self.peek().type == _TokenType.IDENTIFIER:
                 names.append(self.peek().lexeme)
@@ -417,14 +439,41 @@ class Parser:
     def finishCall(self, callee: _Call):
         # Rocket should be able to parse unlimited args
         args = []
+        # Find better implementation of 'do while'
         if not self.check(_TokenType.RIGHT_PAREN):
+            args.append(self.expression())
             while self.match(_TokenType.COMMA):
                 args.append(self.expression())
 
         paren = self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after function arguments")
 
-        return _Call(calle, paren, args)
+        return _Call(callee, paren, args)
 
+
+    def function(self, kind):
+        # Fix this !!!
+        name = self.consume(_TokenType.IDENTIFIER, f"Expected '{kind}' name")
+
+        self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{kind}' name")
+        params = []
+
+        if not self.check(_TokenType.RIGHT_PAREN):
+            params.append(self.consume(_TokenType.IDENTIFIER, "Expected param name"))
+
+            while self.match(_TokenType.COMMA):
+                if len(params) >= 32:
+                    self.error(self.peek(), "Cannot have more tan 32 params")
+
+                params.append(self.consume(_TokenType.IDENTIFIER, "Expected param name"))
+
+        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after params")
+
+        # chew '{' to indecate start block
+        self.consume(_TokenType.LEFT_BRACE, "Expected '{' to indicate start of '" + kind + "' body")
+
+        body = self.block()
+
+        return _Func(name, params, body)
 
 
     def peek(self):

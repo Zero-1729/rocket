@@ -104,11 +104,13 @@ def main():
             "Block": "list statements",
             "Expression": "_Expr expression",
             "Print": "_Expr expression",
+            "Func": "_Token name, list params, list body",
             "Var": "_Token name, _Expr initializer",
             "Const": "_Token name, _Expr initializer",
             "If": "Stmt condition, Stmt thenBranch, Stmt elifCondition, Stmt elifThenBranch, Stmt elseBranch",
             "While": "_Expr condition, Stmt body",
             "Break": "",
+            "Return": "_Token keyword, _Expr value",
             "Del"  : "list names"
         }
 

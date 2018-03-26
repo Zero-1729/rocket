@@ -1,0 +1,10 @@
+func iterate(fn, s, l, offset) {
+	for (var i = s;i < l;i = i + offset) {
+		print fn(i);
+	}
+	return nin;
+}
+
+func plus(n) {return n + 1;}
+
+iterate(plus, 0, 10, 2);

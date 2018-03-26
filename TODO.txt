@@ -1,23 +1,14 @@
 Flesh out stellar
 .
-| - Add suport for functions
 | - Fix support for var binding and resolution
 | - OOP it up, support classes
 | - Get class inheritance working
 | = Get in final Tests and tweaks on parser, interpreter and scanner
 .
 
-Add support for bitwise operators:-
-
-Note: watch out for negative numbers passed to operators. I.e flag runtimeError; negate BitWise Operand
-
-| -> or bitwise op
-& -> and bitwise op
-
-
 add Support for keyword and operator customization (hack).
 -
-| - Scan file and parse it
+| - Pass custom KSL to scanner, parser and interpreter to add custom keyword reference in errors
 -
 
 Add support for post fix arithmetic ops:

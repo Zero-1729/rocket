@@ -2,17 +2,28 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
-from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
 from utils.tokens import Token as _Token, TokenType as _TokenType
-from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Block as _Block, StmtVisitor as _StmtVisitor, Print as _Print, Expression as _Expression
+from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
+from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction
+from stdlib.functions import clock, copyright, natives
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
     def __init__(self):
-	    self.environment = _Environment()
-	    self.errors = []
+        self.globals = _Environment() # Functions / classes
+        self.environment = _Environment()
+        self.errors = []
+
+        # Statically define 'native' functions
+        # 'clock'
+        self.globals.define(clock.clock().callee, clock.clock)
+        # 'copyright'
+        self.globals.define(copyright.copyright().callee, copyright.copyright)
+        # 'natives' -> names of nativr functions
+        self.globals.define(natives.natives().callee, natives.natives)
 
 
     def interpret(self, statements: list):
@@ -122,16 +133,61 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             return float(left) <= float(right)
 
         if (expr.operator.type == _TokenType.BANG_EQUAL):
-            self.checkNumberOperands(expr.operator, left, right)
+            self.checkValidOperands(expr.operator, left, right)
             return not (self.isEqual(left, right))
 
         if (expr.operator.type == _TokenType.EQUAL_EQUAL):
-            self.checkNumberOperands(expr.operator, left, right)
+            self.checkValidOperands(expr.operator, left, right)
             return self.isEqual(left, right)
 
         # TODO: Maybe add exp operator like Python's "**"
 
         # If can't be matched return None
+        return None
+
+
+    def visitCallExpr(self, expr: _Call):
+        callee = self.evaluate(expr.callee)
+
+        eval_args = []
+        for arg in expr.args:
+            # Fix passing expr and stmt to 'stdlib' functions
+            eval_args.append(self.evaluate(arg))
+
+        # Well, built-in functions in 'stdlib/' have a special 'nature' field to distinguish them from user defined funcs.
+        isNative = False
+        try:
+            if callee().nature == "native":
+                isNative = True
+        except: pass
+
+
+        if not isinstance(callee, _RocketCallable) and not isNative:
+            raise _RuntimeError(expr.paren, "Can only call functions and classes")
+
+        function = callee if not isNative else callee()
+
+        if len(eval_args) != function.arity():
+            raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+
+        return function.call(self, eval_args)
+
+
+    def visitDelStmt(self, stmt: _Del):
+        # patch env
+        glob = self.globals.values
+        var_env = self.environment.values
+
+        for name in stmt.names:
+            if name in glob.keys():
+                del glob[name]
+
+            if name in var_env.keys():
+                del var_env[name]
+
+            else:
+                raise _RuntimeError(name, f"can't undefined name '{name}'")
+
         return None
 
 
@@ -145,7 +201,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if (expr.operator.type == _TokenType.OR):
             if (self.isTruthy(left)): return left
-        
+
         else:
             if not self.isTruthy(left): return left
 
@@ -155,7 +211,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitIfStmt(self, stmt: _If):
          if (self.isTruthy(self.evaluate(stmt.condition))):
              self.execute(stmt.thenBranch)
-         
+
          #if (stmt.elifCondition != None):
          #    if (self.isTruthy(self.evaluate(stmt.elifCondition))):
          #        self.execute(stmt.elifThenBranch)
@@ -183,6 +239,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         raise _BreakException()
 
 
+    def visitReturnStmt(self, stmt: _Return):
+        value = "nin"
+
+        if stmt.value != None:
+            value = self.evaluate(stmt.value)
+
+        raise _ReturnException(value)
+
+
     def visitPrintStmt(self, stmt: _Print):
         value = self.evaluate(stmt.expression)
         print(self.stringify(value))
@@ -195,19 +260,35 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         else:
             value = None
 
-        self.environment.define(stmt.name.lexeme, value)
+        # To avoid redifining vars with the same name as functions or classes
+        if stmt.name.lexeme not in self.globals.values.keys():
+            self.environment.define(stmt.name.lexeme, value)
+
+        else:
+            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'class' or 'function'")
 
 
     def visitConstStmt(self, stmt: _Const):
         value = self.evaluate(stmt.initializer)
 
-        # NOTE: Fix for #19 
+        # NOTE: Fix for #19
         # check for variable before definition to avoid passing in 'const' redefinitions
         if self.environment.isTaken(stmt.name):
             raise _RuntimeError(stmt.name.lexeme, "Name already used as 'const'.")
 
+        # stop 'const' re-decl for 'classes' 'functions'
+        elif self.globals.isTaken(stmt.name):
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as 'class' or 'function' name.")
+
         # Use different decleration function for consts
         self.environment.decl(stmt.name.lexeme, value)
+
+
+    def visitFuncStmt(self, stmt: _Func):
+        function = _RocketFunction(stmt, self.environment)
+        self.globals.define(stmt.name.lexeme, function)
+
+        return None
 
 
     def visitBlockStmt(self, stmt: _Block):
@@ -224,7 +305,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitVariableExpr(self, expr: _Variable):
         # NOTE: 'const' variables get retrieved from this call also
-        return self.environment.get(expr.name)
+        try:
+            return self.globals.get(expr.name)
+
+        except:
+            return self.environment.get(expr.name)
 
 
     def execute(self, stmt: _Stmt):
@@ -284,6 +369,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         raise _RuntimeError(operator.lexeme, "Operands must be numbers.")
 
 
+    def checkValidOperands(self, operator: _Token, left: object, right: object):
+        if ((isinstance(left, str)) and (isinstance(right, str))): return
+
+        if ((isinstance(left, float)) and (isinstance(right, float))): return
+
+        else:
+            raise _RuntimeError(operator.lexeme, "operands must both be either 'strings' or 'numbers'.")
+
+
     def stringify(self, value: object):
         # Customize literals
         if (value == None): return "nin"
@@ -295,4 +389,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # check for ints to avoid '1' -> '1.0'
         if (isinstance(value, float)): return str(value)[0:-2]
 
-        return value
+        # Greedy hack: force 'built-in' funcs to pretty print
+        try:
+            return value()
+
+        except:
+            return value

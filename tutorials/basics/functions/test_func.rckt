@@ -1,0 +1,5 @@
+func sayHi(first, last) {
+	print "Hello, " + first + " " + last + "! ";
+}
+
+sayHi("Bob", "Pike");

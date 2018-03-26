@@ -1,0 +1,3 @@
+self ? this
+bake ? print
+fn ? func // only mathematicians will know

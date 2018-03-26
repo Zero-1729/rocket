@@ -1,0 +1,11 @@
+var f = 1;
+var h = 2;
+var t = 3;
+
+print f + t + h;
+
+del f,t,h;
+
+print "After deletion";
+
+print f + t + h;
