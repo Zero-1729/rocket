@@ -15,6 +15,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def __init__(self):
         self.globals = _Environment() # Functions / classes
         self.environment = _Environment()
+        self.locals = {}
         self.errors = []
 
         # Statically define 'native' functions
@@ -88,14 +89,23 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if (expr.operator.type == _TokenType.DIV):
             self.checkNumberOperands(expr.operator, left, right)
+            if right == float(0):
+                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
+
             return float(left) / float(right)
 
         if (expr.operator.type == _TokenType.MOD):
             self.checkNumberOperands(expr.operator, left, right)
+            if right == float(0):
+                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
+
             return float(left) % float(right)
 
         if (expr.operator.type == _TokenType.FLOOR):
             self.checkNumberOperands(expr.operator, left, right)
+            if right == float(0):
+                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
+
             return float(left) // float(right)
 
         if (expr.operator.type == _TokenType.MULT):
@@ -299,6 +309,14 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitAssignExpr(self, expr: _Assign):
         value = self.evaluate(expr.value)
 
+        #dist = self.locals[expr]
+
+        #if (dist != None):
+        #    self.environment.assignAt(dist, expr.name, value)
+
+        #else:
+        #    self.globals.assign(expr.name, value)
+
         self.environment.assign(expr.name, value)
         return value
 
@@ -310,6 +328,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         except:
             return self.environment.get(expr.name)
+
+        #return self.lookUpVariable(expr.name, expr)
 
 
     def execute(self, stmt: _Stmt):
@@ -333,6 +353,20 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def evaluate(self, stmt: _Stmt):
         return stmt.accept(self)
+
+
+    def resolve(self, expr: _Expr, depth: int):
+        self.locals[expr] = depth
+
+
+    def lookUpVariable(self, name: _Token, expr: _Expr):
+        dist = self.locals[expr]
+
+        if (dist != None):
+            return self.environment.getAt(dist, name.lexeme)
+
+        else:
+            return self.globals.get(name)
 
 
     def isTruthy(self, obj: object):

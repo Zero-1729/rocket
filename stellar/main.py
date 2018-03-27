@@ -7,6 +7,7 @@ import os
 import readline
 
 from utils.tokens import Keywords
+from utils.resolver import Resolver
 
 from scanner import Scanner
 from parser import Parser
@@ -36,8 +37,15 @@ def load_config(filename):
         f.close()
 
     tks = Dante(source).scan()
-    custom_KSL = Virgil(tks).parse()
-    return custom_KSL
+    keywords, pksl = Virgil(tks).parse()
+    return [keywords, pksl]
+
+
+def fillKSL():
+    # Passing an empty fake 'config.rckt' will return th default KSL
+    tks = Dante("").scan()
+    keywords, pksl = Virgil(tks).parse()
+    return [keywords, pksl]
 
 
 def get_env():
@@ -46,6 +54,18 @@ def get_env():
 
     if prompt:
         return prompt
+
+
+# Globally define KSL
+KSL = None
+# Search for config file
+if find_config():
+    KSL = load_config('config.rckt')
+    print("Loaded 'config'")
+
+else:
+    print("No 'config.rckt' found. Launching with default 'KSL'")
+    KSL = fillKSL()
 
 
 def usage():
@@ -72,7 +92,6 @@ def run_file(path):
 
 
 def run_prompt(prompt, headerless=False):
-
     header = f"""Rocket 0.1.7-a | Rocket Labs | [Stellar 0.2.7-a] (Ubuntu 16.04.3 LTS)] on linux\n"""
 
     if not headerless:
@@ -104,10 +123,13 @@ def run_prompt(prompt, headerless=False):
 
 
 def run(source, mode=None):
-    scanner = Scanner(source)
+    # To avoid running resolver on statements
+    hadError = False
+
+    scanner = Scanner(source, KSL[0])
     tokens = scanner.scan()
 
-    parser = Parser(tokens)
+    parser = Parser(tokens, KSL[1])
     statements = parser.parse()
 
     errors = scanner.errors + parser.errors
@@ -115,7 +137,13 @@ def run(source, mode=None):
         print(error)
 
     if errors:
+        hadError = True
         return errors
+
+    #resolver = Resolver(interpreter)
+    #resolver.resolveStmts(statements)
+
+    if hadError: return
 
     # create interpreter each time 'run' is called
     # Avoids mixing error reports in REPL
@@ -127,23 +155,12 @@ def run(source, mode=None):
     if mode == "REPL":
         # If running REPL session clear err logs for interpreter
         # To avoid reporting old errors
-        interpreter.errors = []
+        interpreter.errors, runtime_errs, errors = [], [], []
 
     return errors, runtime_errs
 
 
 def main():
-    KSL = Keywords # default to Rocket 'KSL'
-
-    # Search for config file
-    if find_config():
-        KSL = load_config('config.rckt')
-        print("Loaded 'config'")
-
-    else:
-        print("No 'config.rckt' found. Launching with default 'KSL'")
-
-
     sca = ['-q', '--quite', '-v', '--version', '-h', '--help', '-c']
     prompt = get_env() if get_env() != None else "><> "
 

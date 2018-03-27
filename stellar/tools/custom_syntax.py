@@ -35,7 +35,7 @@ class Scanner:
                 self.indentifier()
 
             else:
-                print(f"[line {self.line}]: Unregocnized symbol '{c}'")
+                print(f"[line {self.line} in config]: Unregocnized symbol '{c}'")
                 sys.exit(9) # yep don't run program just exit if there is error in 'config.rckt'
 
         self.addToken(_TokenType.EOF, "", None)
@@ -116,6 +116,7 @@ class Parser:
         self.customs = []
         self.defaults = []
         self.keywords = {}
+        self.partial_ksl = {}
 
 
     def parse(self):
@@ -132,13 +133,34 @@ class Parser:
                 self.customs.append(tok.lexeme)
 
         # How we parse the tokens in binary form allow for them to be of the same height
-        for cust in self.customs:
-            self.defaults.reverse() # Because of poping
+        for i in range(len(self.defaults)):
+            self.keywords[self.customs[i].upper()] = self.defaults[i].type
+            self.partial_ksl[self.defaults[i].type.value] = self.customs[i].upper()
 
-            default_name = self.defaults.pop()
-            self.keywords[cust] = default_name.type
+        # fill in remaining item unassignd items in KSL
+        self.fillKSL()
 
-        return self.keywords
+        #print("KEYWORDS\n")
+        #for item in self.keywords:
+        #    print(f"{item}: {self.keywords[item]}")
+
+        #print("\n\nPKSL\n")
+        #for item in self.partial_ksl:
+        #    print(f"{item}: {self.partial_ksl[item]}")
+
+
+        #print('\ntesting validity of keywords')
+        #count = 0
+        #for key in self.keywords:
+        #    if self.keywords[key] in list(_Keywords.values()):
+        #        print(key)
+        #        count += 1
+
+        #print('valid count: ', count)
+
+        # 'self.keywords' is actually for scanner
+        # while 'self.partail_ksl' is for the parser to help resolve the names
+        return self.keywords, self.partial_ksl
 
 
     def advance(self):
@@ -156,3 +178,25 @@ class Parser:
 
         else:
             return False
+
+
+    def fillKSL(self):
+        self.fillKeywords()
+        self.fillPKSL()
+
+
+    def fillKeywords(self):
+        tmp = _Keywords
+        trash = []
+        for name in tmp:
+            if tmp[name] in self.keywords.values():
+                trash.append(name)
+
+            else:
+                self.keywords[name] = tmp[name]
+
+
+    def fillPKSL(self):
+        for keyword in _Keywords.values():
+            if keyword.value not in self.partial_ksl:
+                self.partial_ksl[keyword.value] = keyword.name

@@ -9,8 +9,9 @@ from utils.stmt import If as _If, Func as _Func, Block as _Block, Print as _Prin
 
 
 class Parser:
-    def __init__(self, tokens):
+    def __init__(self, tokens, ksl):
         self.tokens = tokens
+        self.ksl = ksl
         self.current = 0
         self.errors = []
         self.loopDepth = 0
@@ -230,9 +231,10 @@ class Parser:
 
 
     def ifStmt(self):
-        self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'if'.")
+        if_lexeme = self.ksl[_TokenType.IF.value].lower()
+        self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{if_lexeme}'.")
         condition = self.expression()
-        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'if' condition.")
+        self.consume(_TokenType.RIGHT_PAREN, f"Expected ')' after '{if_lexeme}' condition.")
 
         thenBranch = self.statement()
 
@@ -255,9 +257,10 @@ class Parser:
 
 
     def whileStmt(self):
-        self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'while'")
+        while_lexeme = self.ksl[_TokenType.WHILE.value].lower()
+        self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{while_lexeme}'")
         condition = self.expression()
-        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'while' condition")
+        self.consume(_TokenType.RIGHT_PAREN, f"Expected ')' after '{while_lexeme}' condition")
 
         try:
             self.loopDepth = self.loopDepth - 1
@@ -270,7 +273,8 @@ class Parser:
 
 
     def forStmt(self):
-        self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'for'.")
+        for_lexeme = self.ksl[_TokenType.FOR.value].lower()
+        self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{for_lexeme}'.")
 
         initializer = None
         if (self.match(_TokenType.SEMICOLON)):
@@ -292,7 +296,7 @@ class Parser:
         if (self.check(_TokenType.RIGHT_PAREN) == False):
             increment = self.expression()
 
-        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'for' clause.")
+        self.consume(_TokenType.RIGHT_PAREN, f"Expected ')' after '{for_lexeme}' clause.")
 
         try:
             self.loopDepth = self.loopDepth + 1
@@ -316,14 +320,16 @@ class Parser:
 
 
     def breakStmt(self):
+        break_lexeme = self.ksl[_TokenType.BREAK.value].lower()
         if self.loopDepth == 0:
-            self.error(_TokenType.BREAK, "'break' used outside loop")
+            self.error(_TokenType.BREAK, f"'{break_lexeme}' used outside loop")
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after 'break'")
+        self.consume(_TokenType.SEMICOLON, f"Expected ';' after '{break_lexeme}'")
         return _Break()
 
 
     def returnStmt(self):
+        return_lexeme = self.ksl[_TokenType.RETURN.value].lower()
         keyword = self.previous()
         value = None
 
@@ -331,11 +337,12 @@ class Parser:
         if not self.check(_TokenType.SEMICOLON):
             value = self.expression()
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after return value")
+        self.consume(_TokenType.SEMICOLON, f"Expected ';' after {return_lexeme} value")
         return _Return(keyword, value)
 
 
     def delStmt(self):
+        del_lexeme = self.ksl[_TokenType.DEL.value].lower()
         # Find more elegant solution
         names = []
 
@@ -354,43 +361,46 @@ class Parser:
         # little hack because 'self.current' is offset too high
         self.devance()
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after names in 'del' call")
+        self.consume(_TokenType.SEMICOLON, f"Expected ';' after names in '{del_lexeme}' call")
 
         if len(names) == 0:
-            self.error(_TokenType.DEL, "'del' requires atleast one identifier")
+            self.error(_TokenType.DEL, f"'{del_lexeme}' requires atleast one identifier")
 
         return _Del(names)
 
 
     def printStmt(self):
+        print_lexeme = self.ksl[_TokenType.PRINT.value].lower()
         value = self.expression()
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after expression.")
+        self.consume(_TokenType.SEMICOLON, f"'{print_lexeme}' expected ';' after expression.")
         return _Print(value)
 
 
     def varDecleration(self):
-        name = self.consume(_TokenType.IDENTIFIER, "Expected variable name.")
+        var_lexeme = self.ksl[_TokenType.VAR.value].lower()
+        name = self.consume(_TokenType.IDENTIFIER, f"'{var_lexeme}' expected variable name.")
 
         initializer = None
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after decleration.")
+        self.consume(_TokenType.SEMICOLON, f"'{var_lexeme}' expected ';' after decleration.")
         return _Var(name, initializer)
 
 
     def constDecleration(self):
-        name = self.consume(_TokenType.IDENTIFIER, "Expected variable name.")
+        const_lexeme = self.ksl[_TokenType.CONST.value].lower()
+        name = self.consume(_TokenType.IDENTIFIER, f"'{const_lexeme}' expected variable name.")
         initializer = '' # To avoid Python reference errors
 
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
 
         else:
-            self.consume(_TokenType.EQUAL, "Const variables require initializers.")
+            self.consume(_TokenType.EQUAL, f"'{const_lexeme}' variables require initializers.")
 
-        self.consume(_TokenType.SEMICOLON, "Expected ';' after decleration.")
+        self.consume(_TokenType.SEMICOLON, f"'{const_lexeme}' expected ';' after decleration.")
 
         # BUG #19: 'Const' are re-assignable using 'const' decl
         # E.g const y = 9; // Perfectly legit
@@ -451,25 +461,26 @@ class Parser:
 
 
     def function(self, kind):
+        func_lexeme = self.ksl[_TokenType.FUNC.value].lower()
         # Fix this !!!
-        name = self.consume(_TokenType.IDENTIFIER, f"Expected '{kind}' name")
+        name = self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected '{kind}' name")
 
-        self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{kind}' name")
+        self.consume(_TokenType.LEFT_PAREN, f"'{func_lexeme}' expected '(' after '{kind}' name")
         params = []
 
         if not self.check(_TokenType.RIGHT_PAREN):
-            params.append(self.consume(_TokenType.IDENTIFIER, "Expected param name"))
+            params.append(self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected param name"))
 
             while self.match(_TokenType.COMMA):
                 if len(params) >= 32:
-                    self.error(self.peek(), "Cannot have more tan 32 params")
+                    self.error(self.peek(), f"'{func_lexeme}' cannot have more tan 32 params")
 
-                params.append(self.consume(_TokenType.IDENTIFIER, "Expected param name"))
+                params.append(self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected param name"))
 
-        self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after params")
+        self.consume(_TokenType.RIGHT_PAREN, f"'{func_lexeme}' expected ')' after params")
 
         # chew '{' to indecate start block
-        self.consume(_TokenType.LEFT_BRACE, "Expected '{' to indicate start of '" + kind + "' body")
+        self.consume(_TokenType.LEFT_BRACE, f"'{func_lexeme}'" + " expected '{' to indicate start of '" + kind + "' body")
 
         body = self.block()
 
@@ -511,7 +522,9 @@ class Parser:
         if self.isAtEnd():
             return False
 
-        return self.peek().type == type
+        # Right, so the ksl hack is easier when the _TokenType values are compared and not the object themselves
+        # Should still be consostent since the fake 'Enum's are uniquely identified with numbers
+        return self.peek().type.value == type.value
 
 
     def consume(self, toke_type, err):

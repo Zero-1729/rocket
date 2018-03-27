@@ -5,7 +5,8 @@ from utils.reporter import ScanError as _ScanError
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 
 class Scanner:
-    def __init__(self, source):
+    def __init__(self, source, ksl):
+        self.ksl = ksl
         self.source = source
         self.tokens = []
         self.current = 0
@@ -286,8 +287,8 @@ class Scanner:
             self.addToken(_TokenType.FALSE, value, None)
             return
 
-        if (value.upper() in keywords):
-            keyword = keywords[value.upper()]
+        if (value.upper() in self.ksl):
+            keyword = self.ksl[value.upper()]
 
             self.addToken(keyword, value, None)
 
