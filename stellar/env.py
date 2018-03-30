@@ -40,6 +40,22 @@ class Environment:
 
         raise _RuntimeError(name, f"ReferenceError: Undefined variable '{name.lexeme}'")
 
+        def getAt(self, dist: int, name: str):
+            return self.ancestor(dist).values.get(name)
+
+
+        def assignAt(self, dist: int, name: _Token, value: object):
+            self.ancestor(dist).values[name.lexeme] = value
+
+
+        def ancestor(dist: int):
+            env = self
+
+            for i in range(dist):
+                env = env.enclosing
+
+            return env
+
 
     def assign(self, name: _Token, val: object):
         # recursively check for variable in scope(s) before assigning

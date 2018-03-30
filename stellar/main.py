@@ -68,6 +68,10 @@ else:
     KSL = fillKSL()
 
 
+# So that global env is static throughout execution. Especially in REPL
+# resolver = Resolver(interpreter, KSL[1])
+
+
 def usage():
 
     info = """usage: stellar [ <option> | <file> ]
@@ -140,16 +144,20 @@ def run(source, mode=None):
         hadError = True
         return errors
 
-    #resolver = Resolver(interpreter)
-    #resolver.resolveStmts(statements)
+    resolver = Resolver(interpreter, KSL[1])
+    resolver.resolveStmts(statements)
+    resolution_errs = resolver.errors
 
     if hadError: return
 
     # create interpreter each time 'run' is called
     # Avoids mixing error reports in REPL
-    interpreter.interpret(statements)
+    try:
+        interpreter.interpret(statements)
+    except Exception:
+        pass
 
-    runtime_errs = interpreter.errors
+    runtime_errs = interpreter.errors + resolution_errs
     for err in runtime_errs: print(err, file=sys.stderr)
 
     if mode == "REPL":

@@ -37,3 +37,17 @@ class BreakException(Exception):
 class ReturnException(Exception):
     def __init__(self, value):
         self.value = value
+
+
+class ResolutionError(Exception):
+    def __init__(self, token: _TokenType, message: str):
+        self.token = token
+        self.message = message
+
+    def report(self):
+        if self.token.type == _TokenType.EOF:
+            return f"[line {self.toke.line}]: Error at end: {self.message}"
+
+        else:
+            place = self.token.lexeme
+            return f"[line {self.token.line}]: Error at '{place}':  {self.message}"

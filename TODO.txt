@@ -1,15 +1,9 @@
 Flesh out stellar
 .
-| - Fix support for var binding and resolution
 | - OOP it up, support classes
 | - Get class inheritance working
-| = Get in final Tests and tweaks on parser, interpreter and scanner
+| - Get in final Tests and tweaks on parser, interpreter and scanner
 .
-
-add Support for keyword and operator customization (hack).
--
-| - Pass custom KSL to scanner, parser and interpreter to add custom keyword reference in errors
--
 
 Add support for post fix arithmetic ops:
 
