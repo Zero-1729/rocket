@@ -8,7 +8,7 @@ from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
 from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction
-from stdlib.functions import clock, copyright, natives
+from stdlib.functions import locals, clock, copyright, natives
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -19,6 +19,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.errors = []
 
         # Statically define 'native' functions
+        # 'locals' return all globally defined 'vars' and 'consts'
+        self.globals.define(locals.locals().callee, locals.locals)
         # 'clock'
         self.globals.define(clock.clock().callee, clock.clock)
         # 'copyright'
