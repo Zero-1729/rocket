@@ -17,6 +17,19 @@ class FunctionType(_enum.Enum):
     FUNCTION = 1
 
 
+@_enum.unique
+class VariableState(_enum.Enum):
+    DECLARED = 1001
+    DEFINED = 1011
+    READ = 1111
+
+
+class Variable:
+    def __init__(self, name, state):
+        self.name = name
+        self.state = state
+
+
 class Stack(list):
     def __init__(self):
         # For REPL sakes a pre-defined scope should be used for global vars
@@ -145,18 +158,20 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitVariableExpr(self, expr: _Variable):
-        if (self.scopes.isEmpty()) and (self.scopes.peek()[expr.name.lexeme] == False):
+        if (self.scopes.isEmpty()) and (self.scopes.peek()[expr.name.lexeme] == False) and (self.scopes.peek()[expr.name.lexeme].state == VariableState.DECLARED):
             err = _ResolutionError(expr.name, "Cannot read local variable in its own initializer. I.e 'Can't var a = a;'")
             self.errors.append(err)
 
-        self.resolveLocal(expr, expr.name)
+        # Every call obviously suggests a read
+        self.resolveLocal(expr, expr.name, True)
 
         return None
 
 
     def visitAssignExpr(self, expr: _Assign):
         self.resolveExpr(expr.value)
-        self.resolveLocal(expr, expr.name)
+        # Not read yet
+        self.resolveLocal(expr, expr.name, False)
 
         return None
 
@@ -208,7 +223,13 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
     def endScope(self):
         #print("Scope at end: ", self.scopes.peek())
-        self.scopes.pop()
+        scope = self.scopes.pop()
+
+        # walk variables in scope and check unused ones to report
+        for entry in scope:
+            if (scope[entry].state == VariableState.DEFINED):
+                err = _ResolutionError(entry, f"Local variable '{entry}' is declared but unused.")
+                self.errors.append(err)
 
 
     # Similar to evaluate
@@ -230,11 +251,15 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         expr.accept(self)
 
 
-    def resolveLocal(self, expr: _Expr, name: _Token):
-        for i in range(len(self.scopes), 0, -1):
-            if (name.lexeme in self.scopes[i]):
-                self.interpreter.resolve(expr, (len(self.scopes) - 1 - i))
-                return
+    def resolveLocal(self, expr: _Expr, name: _Token, isRead: bool):
+        #print(f"inside resolveLocal with params expr: '{expr}', Name: '{name}', IsRead: '{isRead}'")
+        for i in range(len(self.scopes.stack), 0, -1):
+            if (name.lexeme in self.scopes.stack[i - 1]):
+                self.interpreter.resolve(expr, (len(self.scopes.stack) - 1 - i))
+
+                if (isRead):
+                    self.scopes.stack[i - 1][name.lexeme].state = VariableState.READ
+                    return
 
         # Pretend its global if its not found
 
@@ -260,6 +285,8 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
     def declare(self, name: _Token):
         #print("State of scopes in decl: ", self.scopes)
+        if (self.scopes.isEmpty()): return
+
         scope = self.scopes.peek()
 
         try:
@@ -271,7 +298,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
             pass
 
         # Mark shadow var as not ready yet
-        scope[name.lexeme] = False
+        scope[name.lexeme] = Variable(name, VariableState.DECLARED)
         #print("State of scopes in decl end: ", self.scopes)
 
 
@@ -279,4 +306,4 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         if (self.scopes.isEmpty()): return
 
         # Mark var as live and kicking.
-        self.scopes.peek()[name.lexeme] = True
+        self.scopes.peek()[name.lexeme].state = VariableState.DEFINED
