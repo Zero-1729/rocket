@@ -1,0 +1,21 @@
+class Cake {
+	taste() {
+		print "This '" + this.flavour + "' is awesome";
+	}
+}
+
+var cake = Cake();
+
+cake.flavour = "Belgian Choco";
+
+cake.taste();
+
+{
+	class Bot {
+		type() {
+			return this;
+		}
+	}
+
+	print Bot().type();
+}

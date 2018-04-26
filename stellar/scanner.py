@@ -71,17 +71,21 @@ class Scanner:
                 tok_type = _TokenType.MOD # "MOD"
                 self.addSingleToken(tok_type)
 
+            # Yes, we use Pytjon styled single comments
+            elif c == "#":
+                while ((self.peek() != "\n") and not (self.isAtEnd())):
+                    self.advance()
+
             # Double character tokens
             # check for div and comment
-            # NOTE: single line comment begin with "//"
+            # NOTE: single line comment can also begin with "///"
             elif c == "/":
                 if self.match("/"):
-
                     if (self.futureNumberPeek()):
                         self.addDoubleToken(_TokenType.FLOOR) # "FLOOR"
                         # AddSingleToken can't do the job so we might aswell
 
-                    else:
+                    if (self.peek() == '/'):
                         while ((self.peek() != "\n") and not (self.isAtEnd())):
                             self.advance()
 

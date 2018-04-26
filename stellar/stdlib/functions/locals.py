@@ -1,8 +1,8 @@
 from rocketClass import RocketCallable as _RocketCallable
 
-class locals(_RocketCallable):
+class Locals(_RocketCallable):
     def __init__(self):
-        self.callee = "locals"
+        self.callee = "Locals"
         self.nature = "native"
 
     def arity(self):
@@ -14,7 +14,7 @@ class locals(_RocketCallable):
         global_env_const_locals = [loc for loc in obj.environment.statics.keys()]
 
         # Just in case the user decides that they want to use the output from 'locals'
-        if global_env_var_locals and global_env_const_locals:
+        if global_env_var_locals or global_env_const_locals:
             return "Vars: " + ', '.join(global_env_var_locals) + "\nConstants: " + ', '.join(global_env_const_locals)
 
         else:
@@ -22,7 +22,7 @@ class locals(_RocketCallable):
 
 
     def __repr__(self):
-        return "<built-in fn locals>"
+        return "<built-in fn 'Locals'>"
 
     def __str__(self):
-        return "<built-in fn locals>"
+        return "<built-in fn 'Locals'>"

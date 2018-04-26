@@ -1,8 +1,8 @@
 from rocketClass import RocketCallable as _RocketCallable
 
-class natives(_RocketCallable):
+class Natives(_RocketCallable):
     def __init__(self):
-        self.callee = "natives"
+        self.callee = "Natives"
         self.nature = "native"
 
     def arity(self):
@@ -12,7 +12,7 @@ class natives(_RocketCallable):
         return ', '.join(list(obj.globals.values.keys()))
 
     def __repr__(self):
-        return "<built-in fn natives>"
+        return "<built-in fn 'Natives'>"
 
     def __str__(self):
-        return "<built-in fn natives>"
+        return "<built-in fn 'Natives'>"

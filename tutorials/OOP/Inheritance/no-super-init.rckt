@@ -1,0 +1,12 @@
+class Mammal {}
+
+
+class Human < Mammal {
+	init(name) {
+		this.name = name;
+	}
+}
+
+
+print Human("ank");
+print Human("ank").name;

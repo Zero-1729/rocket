@@ -2,10 +2,10 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
+from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 from utils.reporter import ParseError as _ParseError
-from utils.stmt import If as _If, Func as _Func, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
+from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
 
 
 class Parser:
@@ -109,6 +109,11 @@ class Parser:
         while True:
             if self.match(_TokenType.LEFT_PAREN):
                 expr = self.finishCall(expr)
+
+            elif (self.match(_TokenType.DOT)):
+                name = self.consume(_TokenType.IDENTIFIER, "Expected property name after '.'.")
+                expr = _Get(expr, name)
+
             else:
                 break
 
@@ -123,6 +128,19 @@ class Parser:
         if (self.match(_TokenType.NUMBER, _TokenType.STRING)):
             return _Literal(self.previous().literal)
 
+        if (self.match(_TokenType.THIS)):
+            return _This(self.previous())
+
+        if (self.match(_TokenType.SUPER)):
+            super_lexeme = self.ksl[_TokenType.SUPER.value]
+
+            keyword = self.previous()
+            self.consume(_TokenType.DOT, "Expected '.' after '{super_lexeme}'")
+
+            method = self.consume(_TokenType.IDENTIFIER, "Expected superclass method name.")
+
+            return _Super(keyword, method)
+
         if (self.match(_TokenType.IDENTIFIER)):
             return _Variable(self.previous())
 
@@ -130,6 +148,14 @@ class Parser:
             expr = self.expression()
             self.consume(_TokenType.RIGHT_PAREN, "Expected closing ')' after expression")
             return _Grouping(expr)
+
+
+        if (self.match(_TokenType.RIGHT_PAREN)):
+            self.error(self.previous(), "Expected matching '(' before closing ')'.")
+
+
+        if (self.match(_TokenType.RIGHT_BRACE)):
+            self.error(self.previous(), "Expected matching '{' before closing '}'.")
 
         # Error productions
         # for '!=', '=='
@@ -175,6 +201,14 @@ class Parser:
         if (self.match(_TokenType.IF)):
             return self.ifStmt()
 
+        # To sow bug #555
+        # Bug #555: `if (true) {print 0; else` causes forever loop here.
+        if (self.match(_TokenType.ELSE)):
+            if_lexeme = self.ksl[_TokenType.IF.value].lower()
+            else_lexeme = self.ksl[_TokenType.ELSE.value].lower()
+
+            self.error(self.peek(), f"Can't use '{else_lexeme}' without beginning '{if_lexeme}'.")
+
         if (self.match(_TokenType.WHILE)):
             return self.whileStmt()
 
@@ -194,7 +228,7 @@ class Parser:
             return self.printStmt()
 
         if (self.match(_TokenType.CLASS)):
-            return self.function("class")
+            return self.classDecleration()
 
         if (self.match(_TokenType.FUNC)):
             return self.function("function")
@@ -205,14 +239,12 @@ class Parser:
         return self.expressionStmt()
 
 
-
     def OR(self):
         expr = self.AND()
 
         while (self.match(_TokenType.OR)):
             operator = self.previous()
             right = self.AND()
-
             expr = _Logical(expr, operator, right)
 
         return expr
@@ -238,22 +270,13 @@ class Parser:
 
         thenBranch = self.statement()
 
-        # Predifine 'else' and 'elif' methods
-        elifCondition = None
-        elifThenBranch = None
+        # Predifine 'else' methods
         elseBranch = None
-
-        #if (self.match(_TokenType.ELIF)):
-        #    self.consume(_TokenType.LEFT_PAREN, "Expected '(' after 'elif'.")
-        #    elifCondition = self.expression()
-        #    self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after 'elif' condition.")
-
-        #    elifThenBranch = self.statement()
 
         if (self.match(_TokenType.ELSE)):
             elseBranch = self.statement()
 
-        return _If(condition, thenBranch, elifCondition, elifThenBranch, elseBranch)
+        return _If(condition, thenBranch, elseBranch)
 
 
     def whileStmt(self):
@@ -343,29 +366,30 @@ class Parser:
 
     def delStmt(self):
         del_lexeme = self.ksl[_TokenType.DEL.value].lower()
-        # Find more elegant solution
+
         names = []
 
-        if self.tokens[-1].type == _TokenType.DEL:
+        if not self.check(_TokenType.SEMICOLON) and not self.isAtEnd():
+
+            name = self.consume(_TokenType.IDENTIFIER, f"'{del_lexeme}' expected identifier name")
+            names.append(name.lexeme)
+
+            while self.match(_TokenType.COMMA):
+                # Fully patch this 'del p, ' edge case hack
+                if self.peek().type != _TokenType.EOF:
+                    name = self.consume(_TokenType.IDENTIFIER, f"'{del_lexeme}' expected identifier name")
+                    names.append(name.lexeme)
+
+                else:
+                    self.error(del_lexeme, "Detected incomplete statememt.")
+
+        self.consume(_TokenType.SEMICOLON, f"'{del_lexeme}' expected ';' after names")
+
+        if self.tokens[-1].type != _TokenType.DEL:
             return _Del(names)
-
-        # try and use 'function's loop 'n' grab technique below
-        while not self.match(_TokenType.SEMICOLON) and not self.isAtEnd():
-            if self.peek().type == _TokenType.IDENTIFIER:
-                names.append(self.peek().lexeme)
-                self.advance()
-
-            elif self.peek().type == _TokenType.COMMA:
-                self.advance()
-
-        # little hack because 'self.current' is offset too high
-        self.devance()
-
-        self.consume(_TokenType.SEMICOLON, f"Expected ';' after names in '{del_lexeme}' call")
 
         if len(names) == 0:
             self.error(_TokenType.DEL, f"'{del_lexeme}' requires atleast one identifier")
-
         return _Del(names)
 
 
@@ -379,9 +403,21 @@ class Parser:
 
     def varDecleration(self):
         var_lexeme = self.ksl[_TokenType.VAR.value].lower()
-        name = self.consume(_TokenType.IDENTIFIER, f"'{var_lexeme}' expected variable name.")
-
         initializer = None
+        name = None
+
+        # perform little peep to destroy bug; [FIXED] var t(0, 9) = 8; or just var t(0, 9);
+        # Uncle bug is now: var t(0, or var t(0,) or t(0, 0) or var t(0, 0);, etc.
+        # Fix: we only consume name of var only whence the next token is not SEMICOLON
+        # same fix is applied to patch 'const' below
+
+        if (self.peekNext().type != _TokenType.LEFT_PAREN):
+            name = self.consume(_TokenType.IDENTIFIER, f"'{var_lexeme}' expected variable name.")
+
+        else:
+            self.error(self.peek(), f"'{var_lexeme}' can't declare class instance.")
+
+
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
 
@@ -391,8 +427,16 @@ class Parser:
 
     def constDecleration(self):
         const_lexeme = self.ksl[_TokenType.CONST.value].lower()
-        name = self.consume(_TokenType.IDENTIFIER, f"'{const_lexeme}' expected variable name.")
+
+        name = None
         initializer = '' # To avoid Python reference errors
+
+
+        if (self.peekNext().type != _TokenType.LEFT_PAREN):
+            name = self.consume(_TokenType.IDENTIFIER, f"'{const_lexeme}' expected variable name.")
+
+        else:
+            self.error(self.peek(), f"'{const_lexeme}' can't declare class instance.")
 
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
@@ -411,6 +455,27 @@ class Parser:
         return _Const(name, initializer)
 
 
+    def classDecleration(self):
+        class_lexeme = self.ksl[_TokenType.CLASS.value].lower()
+        name = self.consume(_TokenType.IDENTIFIER, f"Expected '{class_lexeme}' name.")
+
+        superclass = None
+        if (self.match(_TokenType.LESS)):
+            self.consume(_TokenType.IDENTIFIER, "Expected superclass name after '<'.")
+            superclass = _Variable(self.previous())
+
+        self.consume(_TokenType.LEFT_BRACE, "Expected '{' before " + class_lexeme + " body.")
+
+        methods = []
+
+        while (not self.check(_TokenType.RIGHT_BRACE)) and (not self.isAtEnd()):
+            methods.append(self.function("method"))
+
+        self.consume(_TokenType.RIGHT_BRACE, "Expected closing '}' after " + class_lexeme + " body.")
+
+        return _Class(name, superclass, methods)
+
+
     def expressionStmt(self):
         value = self.expression()
         self.consume(_TokenType.SEMICOLON, "Expected ';' after expression.")
@@ -419,7 +484,7 @@ class Parser:
 
     def assignment(self):
         # Short circuit
-        expr = self.OR()# self.equality()
+        expr = self.OR()
 
         if (self.match(_TokenType.EQUAL)):
             equals = self.previous()
@@ -428,6 +493,9 @@ class Parser:
             if (isinstance(expr, _Variable)):
                 name = expr.name
                 return _Assign(name, value)
+
+            if (isinstance(expr, _Get)):
+                return _Set(expr.object, expr.name, value)
 
             self.error(equals, "Invalid assignment target.") # E.g a + b = 1
 
@@ -483,12 +551,19 @@ class Parser:
         self.consume(_TokenType.LEFT_BRACE, f"'{func_lexeme}'" + " expected '{' to indicate start of '" + kind + "' body")
 
         body = self.block()
-
+        
         return _Func(name, params, body)
 
 
     def peek(self):
         return self.tokens[self.current]
+
+
+    def peekNext(self):
+        if not self.isAtEnd():
+            return self.tokens[self.current + 1]
+
+        return "\0"
 
 
     def previous(self):
@@ -505,11 +580,9 @@ class Parser:
 
         return self.previous()
 
-    def devance(self):
-        self.current -= 1
-
 
     def match(self, *types: _TokenType):
+        #print(list(types))
         for type in types:
             if self.check(type):
                 self.advance()

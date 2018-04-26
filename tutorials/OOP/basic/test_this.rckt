@@ -1,0 +1,15 @@
+class Bot {
+	getName() {
+		return this.name;
+	}
+
+	who() {
+		return this + " is called " + this.name;
+	}
+}
+
+var bot = Bot();
+bot.name = 'R2D2';
+
+print bot.getName();
+print bot.who();

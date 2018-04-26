@@ -1,0 +1,20 @@
+class Box {
+	init(color, pos) {
+		this.color = color;
+		this.pos = pos;
+	}
+}
+
+class Cord {
+	init(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
+print Cord(1, 7).x;
+
+var pos = Cord(1, 0);
+var box = Box("Yellow", pos);
+
+print "The " + box.color + " box is at pos " + box.pos.x;

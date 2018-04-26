@@ -2,31 +2,35 @@
 # LICENSE: MIT
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
 from utils.tokens import Token as _Token, TokenType as _TokenType
-from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
+from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
-from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction
-from stdlib.functions import locals, clock, copyright, natives
+from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction, RocketClass as _RocketClass, RocketInstance as _RocketInstance
+from stdlib.functions import locals, clock, copyright, natives, input, random
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
     def __init__(self):
         self.globals = _Environment() # Functions / classes
-        self.environment = _Environment()
+        self.environment = self.globals
         self.locals = {}
         self.errors = []
 
         # Statically define 'native' functions
+        # random n between '0-1' {insecure}
+        self.globals.define(random.Random().callee, random.Random)
+        # grab user input
+        self.globals.define(input.Input().callee, input.Input)
         # 'locals' return all globally defined 'vars' and 'consts'
-        self.globals.define(locals.locals().callee, locals.locals)
+        self.globals.define(locals.Locals().callee, locals.Locals)
         # 'clock'
-        self.globals.define(clock.clock().callee, clock.clock)
+        self.globals.define(clock.Clock().callee, clock.Clock)
         # 'copyright'
         self.globals.define(copyright.copyright().callee, copyright.copyright)
         # 'natives' -> names of nativr functions
-        self.globals.define(natives.natives().callee, natives.natives)
+        self.globals.define(natives.Natives().callee, natives.Natives)
 
 
     def interpret(self, statements: list):
@@ -80,6 +84,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # To support implicit string concactination
             # E.g "Hailey" + 4 -> "Hailey4"
             if ((isinstance(left, str)) or (isinstance(right, str))):
+                # Concatenation of 'nin' is prohibited!
+                if left == None or right == None:
+                    raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
+
                 return str(left) + str(right)
 
             raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
@@ -149,6 +157,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             return not (self.isEqual(left, right))
 
         if (expr.operator.type == _TokenType.EQUAL_EQUAL):
+            if left == None or right == None:
+                return self.isEqual(left, right)
+
+            if isinstance(left, bool) or isinstance(right, bool):
+                return self.isEqual(left, right)
+
             self.checkValidOperands(expr.operator, left, right)
             return self.isEqual(left, right)
 
@@ -173,16 +187,58 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 isNative = True
         except: pass
 
+        # Specially inject check for 'rocketClass'
+        isNotCallable = not isinstance(callee, _RocketCallable)
+        isNotClass = not isinstance(callee, _RocketClass)
 
-        if not isinstance(callee, _RocketCallable) and not isNative:
+        if isNotCallable and isNotClass and not isNative:
             raise _RuntimeError(expr.paren, "Can only call functions and classes")
 
         function = callee if not isNative else callee()
-
+        
         if len(eval_args) != function.arity():
             raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
 
         return function.call(self, eval_args)
+
+
+    def visitGetExpr(self, expr: _Get):
+        object = self.evaluate(expr.object)
+
+        if isinstance(object, _RocketInstance):
+            return object.get(expr.name)
+
+        raise _RuntimeError(expr.name, "Only instances have properties.")
+
+
+    def visitSetExpr(self, expr: _Set):
+        object = self.evaluate(expr.object)
+
+        if not isinstance(object, _RocketInstance):
+            raise _RuntimeError(expr.name, "Only instances have fields.")
+
+        value = self.evaluate(expr.value)
+        object.set(expr.name, value)
+
+        return value
+
+
+    def visitThisExpr(self, expr: _This):
+        return self.lookUpVariable(expr.keyword, expr)
+
+
+    def visitSuperExpr(self, expr: _Super):
+        dist = self.locals.get(expr)
+        superclass = self.environment.getAt(dist, "super")
+
+        obj = self.environment.getAt(dist - 1, "this")
+
+        method = superclass.findmethod(obj, expr.method.lexeme)
+
+        if (method == None):
+            raise _RuntimeError(expr.method, f"Undefined property '{expr.method.lexeme}'.")
+
+        return method
 
 
     def visitDelStmt(self, stmt: _Del):
@@ -210,12 +266,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitLogicalExpr(self, expr: _Logical):
         left = self.evaluate(expr.left)
-
-        if (expr.operator.type == _TokenType.OR):
-            if (self.isTruthy(left)): return left
+        # Fix for bug #33
+        # Bug #33: Check was not evaluating properly. 'OR' slides into 'else' even if matched as 'or'.
+        if (expr.operator.type.value == _TokenType.OR.value):
+            if self.isTruthy(left):
+                return left
 
         else:
-            if not self.isTruthy(left): return left
+            if not self.isTruthy(left):
+                return left
 
         return self.evaluate(expr.right)
 
@@ -277,7 +336,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             self.environment.define(stmt.name.lexeme, value)
 
         else:
-            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'class' or 'function'")
+            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'variable' or 'class' or 'function'")
 
 
     def visitConstStmt(self, stmt: _Const):
@@ -297,8 +356,36 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitFuncStmt(self, stmt: _Func):
-        function = _RocketFunction(stmt, self.environment)
+        function = _RocketFunction(stmt, self.environment, False)
         self.globals.define(stmt.name.lexeme, function)
+
+        return None
+
+
+    def visitClassStmt(self, stmt: _Class):
+        self.environment.define(stmt.name.lexeme, None)
+
+        superclass = None
+        if (stmt.superclass != None):
+            superclass = self.evaluate(stmt.superclass)
+            if not isinstance(superclass, _RocketClass):
+                raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.")
+
+        env = _Environment(self.environment)
+        env.define("super", superclass)
+
+        methods = {}
+
+        for method in stmt.methods:
+            function = _RocketFunction(method, self.environment, method.name.lexeme.__eq__("init"))
+            methods[method.name.lexeme] = function
+
+        class_ = _RocketClass(stmt.name.lexeme, superclass, methods)
+
+        if (superclass != None):
+            self.environment = env.enclosing
+
+        self.environment.assign(stmt.name, class_)
 
         return None
 
@@ -362,7 +449,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def lookUpVariable(self, name: _Token, expr: _Expr):
-        dist = self.locals[expr]
+        dist = self.locals[expr] if self.locals.get(expr) else None
+
+        # remeber that our expr friend is is always hinding at the very first 'env' enclosing; at dist = 0
+        # So we might have to do an aditional check to see if the current expr bieng querried is 'this' inorder to artificially make 'dist = 0'
+        expr_type = type(expr)
+        isFoldedThis = expr.keyword.lexeme == "this" if expr_type == _This else False
+
+        # Check and artificially inject '0' as dist to fetch out 'this' in enclosing env
+        # if a nested 'this' is not in the 'expr' then leave dist untouched
+        dist = 0 if isFoldedThis else dist
 
         if (dist != None):
             return self.environment.getAt(dist, name.lexeme)
@@ -375,10 +471,14 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (obj == None):
             return False
 
+        if (int(obj) == 0): return False
+
+        if (int(obj) == 1): return True
+
         if (isinstance(obj, bool)):
             return obj # I.e if "True" return it
 
-        # If its neight false or "bool" type then it is truthy
+        # If its neither false nor "bool" type then it is truthy
         return True
 
 
@@ -423,7 +523,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (value == False and not isinstance(value, float)): return "false"
 
         # check for ints to avoid '1' -> '1.0'
-        if (isinstance(value, float)): return str(value)[0:-2]
+        # Perform chop if last value after '.' is '0' only
+        if str(value).split('.')[-1] == '0': return str(value)[0:-2]
 
         # Greedy hack: force 'built-in' funcs to pretty print
         try:

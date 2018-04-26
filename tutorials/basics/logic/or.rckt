@@ -1,4 +1,4 @@
-print "1 || 1 : " + (true or true); // true
-print "1 || 0 : " + (true or false); // true
-print "0 || 1 : " + (false or true); // true
-print "0 || 0 : " + (false or false); // false
+print "1 || 1 : " + (1 or 1); // "1"
+print "1 || 0 : " + (1 or 0); // "1"
+print "0 || 1 : " + (0 or 1); // "1"
+print "0 || 0 : " + (0 or 0); // "0"

@@ -1,0 +1,12 @@
+class Box {}
+
+
+func move(paces, direction) {
+	print "moved box '" + paces + "' spaces to the " + direction + ".";
+}
+
+
+var a_box = Box();
+a_box.move = move;
+
+a_box.move(2, "left");

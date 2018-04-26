@@ -1,0 +1,10 @@
+class Up {
+	init(name) {
+		this.name = name;
+	}
+}
+
+
+class M < Up {}
+
+print M("ank").name;

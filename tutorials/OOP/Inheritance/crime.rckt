@@ -1,0 +1,12 @@
+class Object {
+	init() {
+		this.x = 0;
+		this.y = 9;
+	}
+}
+
+class Box < Object {}
+
+print Box;
+print Box();
+print Box().x;

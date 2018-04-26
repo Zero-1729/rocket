@@ -1,0 +1,15 @@
+class Object {
+	init(type) {
+		this.type = type;
+	}
+}
+
+class Box < Object {
+	init(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
+
+print Box("Box", 0, 2).type;

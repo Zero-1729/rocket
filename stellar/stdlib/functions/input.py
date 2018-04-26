@@ -1,20 +1,18 @@
-import time as _time
-
 from rocketClass import RocketCallable as _RocketCallable
 
-class Clock(_RocketCallable):
+class Input(_RocketCallable):
     def __init__(self):
-        self.callee = "Clock"
+        self.callee = "Input"
         self.nature = "native"
 
     def arity(self):
-        return 0
+        return 1
 
     def call(self, obj: object, args: list):
-        return _time.clock()
+        return input(args[0])
 
     def __repr__(self):
-        return "<built-in fn 'Clock'>"
+        return "<built-in fn 'Input'>"
 
     def __str__(self):
-        return "<built-in fn 'Clock'>"
+        return "<built-in fn 'Input'>"

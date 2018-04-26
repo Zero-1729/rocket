@@ -3,8 +3,8 @@ from tokens import Token as _Token, TokenType as _TokenType
 from expr import ExprVisitor as _ExprVisitor
 from stmt import StmtVisitor as _StmtVisitor
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
-from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class,  Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
 
 from reporter import  ResolutionError as _ResolutionError
 
@@ -15,6 +15,8 @@ import enum as _enum
 class FunctionType(_enum.Enum):
     NONE = 0
     FUNCTION = 1
+    METHOD = 2
+    INIT = 3
 
 
 @_enum.unique
@@ -22,6 +24,12 @@ class VariableState(_enum.Enum):
     DECLARED = 1001
     DEFINED = 1011
     READ = 1111
+
+
+@_enum.unique
+class ClassType(_enum.Enum):
+    NONE = 44
+    CLASS = 45
 
 
 class Variable:
@@ -70,6 +78,7 @@ class Stack(list):
 class Resolver(_ExprVisitor, _StmtVisitor):
     def __init__(self, interpreter: object, ksl: dict):
         self.currentFunction = FunctionType.NONE
+        self.currentClass = ClassType.NONE
         self.interpreter = interpreter
         self.scopes = Stack()
         self.ksl = ksl
@@ -103,6 +112,45 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         return None
 
 
+    def visitClassStmt(self, stmt: _Class):
+        self.declare(stmt.name)
+        self.define(stmt.name)
+
+        enclosingClass = self.currentClass
+        self.currentClass = ClassType.CLASS
+
+        # resolve super class if any
+        if (stmt.superclass != None): self.resolveExpr(stmt.superclass)
+
+        self.beginScope()
+
+        # fake tokens
+        this_tok = _Token(_TokenType.THIS, "this", None, 0)
+
+        self.scopes.peek()[this_tok.lexeme] = Variable(this_tok, VariableState.DECLARED)
+
+        super_tok = _Token(_TokenType.SUPER, "super", None, 0)
+
+        self.scopes.peek()[super_tok.lexeme] = Variable(super_tok, VariableState.DECLARED)
+
+        for method in stmt.methods:
+            decleration = FunctionType.METHOD
+
+            if (method.name.lexeme.__eq__("init")):
+                decleration = FunctionType.INIT
+
+            self.resolveFunc(method, decleration)
+
+        self.endScope()
+
+        #if (stmt.superclass != None):
+        #    self.endScope()
+
+        self.currentClass = enclosingClass
+
+        return None
+
+
     def visitFuncStmt(self, stmt: _Func):
         self.declare(stmt.name)
         self.define(stmt.name)
@@ -112,8 +160,8 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         return None
 
 
-    def visitExpressionStmt(self, expression: _Expression):
-        # To avoid expression ping pong
+    def visitExpressionStmt(self, stmt: _Expression):
+        self.resolveStmt(stmt.expression)
         return None
 
 
@@ -152,6 +200,10 @@ class Resolver(_ExprVisitor, _StmtVisitor):
             self.errors.append(err)
 
         if (stmt.value != None):
+            if (self.currentFunction == FunctionType.INIT):
+                err = _ResolutionError(stmt.keyword, "Cannot return a value from an initializer")
+                self.errors.append(err)
+
             self.resolveStmt(stmt.value)
 
         return None
@@ -193,9 +245,38 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         return None
 
 
+    def visitGetExpr(self, expr: _Get):
+        self.resolveExpr(expr.object)
+        return None
+
+
+    def visitSetExpr(self, expr: _Set):
+        self.resolveExpr(expr.value)
+        self.resolveExpr(expr.value)
+
+        return None
+
+
+    def visitThisExpr(self, expr: _This):
+        this_lexeme = self.ksl[_TokenType.THIS.value].lower()
+
+        if (self.currentClass == ClassType.NONE):
+            err = _ResolutionError(expr.keyword, f"Cannot use '{this_lexeme}' outside of class")
+            self.errors.append(err)
+
+            return None
+
+        self.resolveLocal(expr, expr.keyword, True)
+        return None
+
+
+    def visitSuperExpr(self, expr: _Super):
+        self.resolveLocal(expr, expr.keyword, True)
+        return None
+
+
     def visitGroupingExpr(self, expr: _Grouping):
         self.resolveExpr(expr.expression)
-
         return None
 
 
@@ -205,7 +286,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
     def visitLogicalExpr(self, expr: _Logical):
         self.resolveExpr(expr.left)
-        self.resolveEXpr(expr.right)
+        self.resolveExpr(expr.right)
 
         return None
 
@@ -227,7 +308,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         # walk variables in scope and check unused ones to report
         for entry in scope:
-            if (scope[entry].state == VariableState.DEFINED):
+            if (scope[entry].state == VariableState.DEFINED) and not self.currentFunction == FunctionType.FUNCTION:
                 err = _ResolutionError(entry, f"Local variable '{entry}' is declared but unused.")
                 self.errors.append(err)
 

@@ -1,0 +1,21 @@
+class HouseVisitor {
+	visitHouse(house) {
+		print "Recieved house: '" + house.name + "'";
+	}
+}
+
+
+class House {
+	init() {
+		this.name = "Rocket Launch Station";
+	}
+
+	accept(visitor) {
+		return visitor.visitHouse(this);
+	}
+}
+
+
+var v = HouseVisitor();
+var h = House();
+h.accept(v);

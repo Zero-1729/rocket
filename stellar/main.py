@@ -6,7 +6,6 @@ import sys
 import os
 import readline
 
-from utils.tokens import Keywords
 from utils.resolver import Resolver
 
 from scanner import Scanner
@@ -16,13 +15,14 @@ from interpreter import Interpreter
 # to scan for 'config.rckt' file
 from tools.custom_syntax import Scanner as Dante, Parser as Virgil
 
+# For REPL Auto completion
+from tools.autocompleter import AutoComp
 
 # So that global env is static throughout execution. Especially in REPL
 interpreter = Interpreter()
 
-
-def find_config():
-    if os.path.exists('config.rckt'):
+def find_config(path='.'):
+    if os.path.exists(os.path.join(path, 'config.rckt')):
         return True
 
     return False
@@ -56,20 +56,43 @@ def get_env():
         return prompt
 
 
-# Globally define KSL
-KSL = None
-# Search for config file
-if find_config():
-    KSL = load_config('config.rckt')
-    print("Loaded 'config'")
-
-else:
-    print("No 'config.rckt' found. Launching with default 'KSL'")
+def assemble_ksl():
     KSL = fillKSL()
 
+    # Search for config file
+    if find_config():
+        KSL = load_config('config.rckt')
+        print("<> Loaded 'config' <>")
 
-# So that global env is static throughout execution. Especially in REPL
-# resolver = Resolver(interpreter, KSL[1])
+    return KSL
+
+
+def locate_and_assemble():
+    KSL = fillKSL()
+
+    path = f'{os.path.sep}'.join(sys.argv[1].split(os.path.sep)[0:-1])
+
+    if find_config(path):
+        KSL = load_config(os.path.join(path, 'config.rckt'))
+        print("<> Loaded 'config' <>")
+
+    return KSL
+
+
+def assemble_acmp(KSL):
+    # Create auto completer
+    starters = [key.lower() for key in KSL[0]]
+    autoCmp = AutoComp(starters)
+
+    return autoCmp
+
+
+def UpdateAuto(autoCmp):
+    autoCmp.updateEnv(interpreter.environment)
+    autoCmp.updateEnv(interpreter.globals)
+    autoCmp.update(interpreter.locals)
+
+    readline.set_completer(autoCmp.completer)
 
 
 def usage():
@@ -90,16 +113,23 @@ def usage():
     return info
 
 
-def run_file(path):
+def run_file(path, KSL):
     with open(path, encoding='utf-8') as f:
-        run(f.read())
+        run(f.read(), KSL)
 
 
 def run_prompt(prompt, headerless=False):
-    header = f"""Rocket 0.1.7-a | Rocket Labs | [Stellar 0.2.7-a] (Ubuntu 16.04.3 LTS)] on linux\n"""
+    KSL = assemble_ksl()
+    autoCmp = assemble_acmp(KSL)
+
+    header = f"""Rocket 0.1.8-p | Rocket Labs | [Stellar 0.2.7-b] (Ubuntu 16.04.3 LTS)] on linux\n"""
 
     if not headerless:
         print(header)
+
+
+    readline.set_completer(autoCmp.completer)
+    readline.parse_and_bind("tab: complete")
 
     # Load repl history file
     try:
@@ -109,9 +139,9 @@ def run_prompt(prompt, headerless=False):
         # Just leave it till user finishes session to create the file
         pass
 
-    while True:
+    readline.set_auto_history('enabled')
 
-        readline.set_auto_history('enabled')
+    while True:
 
         chunk = input(prompt)
 
@@ -123,10 +153,17 @@ def run_prompt(prompt, headerless=False):
             pass
 
         else:
-            run(chunk, "REPL") # replace with actual shell interpreter (REPL)
+            # Allow user to SIGINT (^C) a running chunk of code and still be in the REPL
+            try:
+                run(chunk, KSL, "REPL") # replace with actual shell interpreter (REPL)
+
+            except KeyboardInterrupt:
+                pass
+
+        UpdateAuto(autoCmp)
 
 
-def run(source, mode=None):
+def run(source, KSL, mode=None):
     # To avoid running resolver on statements
     hadError = False
 
@@ -177,18 +214,21 @@ def main():
 
     if len(sys.argv) == 2 and (sys.argv[1] not in sca):
         try:
-            run_file(sys.argv[1])
+            KSL = locate_and_assemble()
+
+            run_file(sys.argv[1], KSL)
             sys.exit(0) # Run file and exit
 
         except FileNotFoundError:
             print("Error: File not found")
+            exit(1)
 
     elif len(sys.argv) == 2:
         if sys.argv[-1] == '-q' or sys.argv[1] == '--quite':
             run_prompt(prompt, True)
 
         elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
-            print("Rocket v0.1.7-a [Stellar v0.2.7-a]")
+            print("Rocket v0.1.8-p [Stellar v0.2.7-b]")
 
         elif sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
             print(usage())
@@ -199,7 +239,8 @@ def main():
 
     elif len(sys.argv) == 3:
         if sys.argv[1] == '-c':
-            run(sys.argv[2])
+            KSL = assemble_ksl()
+            run(sys.argv[2], KSL)
 
     else:
         print(usage())

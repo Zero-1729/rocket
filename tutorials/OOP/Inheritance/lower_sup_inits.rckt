@@ -1,0 +1,16 @@
+class Base {
+	init() {
+		this.name = "herman";
+	}
+}
+
+class Up < Base {
+	init() {
+		this.x = 3;
+		this.y = 2;
+	}
+}
+
+
+print Up().x + Up().y;
+print Up().name;

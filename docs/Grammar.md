@@ -4,7 +4,7 @@
 
 > **Notation notes**
 
-*Capaitalization indicates terminals that are single lexemes of a vary type*
+*Capaitalization indicates terminals that are single lexemes of varying types*
 
 + `→`       :- operand for production declaration. `production` (left) & `ddefinition` (RIGHT)
 + `...`     :- signifies a range
@@ -28,7 +28,7 @@ declaration     → class_decl
                   | const_decl
                   | statement ;
 
-class_decl      → "class" IDENTIFIER ( "<-" IDENTIFIER )? "{" function* "}" ;
+class_decl      → "class" IDENTIFIER ("<" IDENTIFIER)? "{" function* "}" ;
 func_decl       → "func" function ;
 var_decl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 const_decl      → "const" IDENTIFIER "=" expression ";" ;
@@ -79,7 +79,7 @@ block            → "{" declaration* "}" ;
 ## Utility Rules
 ```
 function        → IDENTIFIER "(" parameters? ")" block ;
-paremeters      → IDENTIFIER ( ", IDENTIFIER" )* ;
+paremeters      → IDENTIFIER ( "," IDENTIFIER )* ;
 argumenrs       → expression ( "," expression )* ;
 ```
 

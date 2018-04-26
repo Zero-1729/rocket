@@ -1,0 +1,10 @@
+class Box {
+	init() {
+		this.x = 0;
+		this.y = 0;
+	}
+}
+
+
+var b = Box().init();
+print b.x;

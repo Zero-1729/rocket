@@ -1,0 +1,6 @@
+class Person {}
+
+var alice = Person();
+alice.name = "Felica"; /// Bet you didn't see that coming.
+
+print alice.name; /// Outputs: "Felica"

@@ -1,0 +1,9 @@
+class Ogre {
+	eat(name) {
+		print "I am eating " + name;
+	}
+}
+
+
+var shrek = Ogre();
+shrek.eat("Fiona");

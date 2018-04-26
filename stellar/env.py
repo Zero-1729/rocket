@@ -40,21 +40,27 @@ class Environment:
 
         raise _RuntimeError(name, f"ReferenceError: Undefined variable '{name.lexeme}'")
 
-        def getAt(self, dist: int, name: str):
-            return self.ancestor(dist).values.get(name)
+    def getAt(self, dist: int, name: str):
+        return self.ancestor(dist).values.get(name)
 
 
-        def assignAt(self, dist: int, name: _Token, value: object):
-            self.ancestor(dist).values[name.lexeme] = value
+    def assignAt(self, dist: int, name: _Token, value: object):
+        self.ancestor(dist).values[name.lexeme] = value
 
 
-        def ancestor(dist: int):
-            env = self
+    def ancestor(self, dist: int):
+        env = self
 
+        # Hack for 'this'
+        # Because 'this' is positioned at '0' due to it being artificially injected in the env
+        if dist == 0:
+            env = env.enclosing
+
+        else:
             for i in range(dist):
                 env = env.enclosing
 
-            return env
+        return env
 
 
     def assign(self, name: _Token, val: object):

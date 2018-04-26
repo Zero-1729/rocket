@@ -1,0 +1,8 @@
+class Bear {
+    Growl() {
+        return "Grrrr...";
+    }
+}
+
+
+print Bear; /// prints "<class Bear>"

@@ -1,3 +1,4 @@
+
 import sys
 
 from tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
@@ -131,6 +132,11 @@ class Parser:
 
             elif tok.type not in list(_Keywords.values()):
                 self.customs.append(tok.lexeme)
+
+        isEqualHeight = len(self.defaults) == len(self.customs)
+        if not isEqualHeight:
+            print(f"[ConfigHeightError]: Number of Defaults & Customs not equal. Number of Keywords must equal number of Customs.")
+            sys.exit(10)
 
         # How we parse the tokens in binary form allow for them to be of the same height
         for i in range(len(self.defaults)):

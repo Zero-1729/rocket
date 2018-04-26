@@ -1,0 +1,11 @@
+class Bot {
+	init(name, gen) {
+		this.name = name;
+		this.gen = gen;
+	}
+}
+
+var dorathy = Bot("Dorathy", 5);
+
+# Let 'Dorathy' introduce herself
+print "I'am " + dorathy.name + ". A " + dorathy.gen + "'th gen bot.";

@@ -1,0 +1,13 @@
+class TokenType {
+	init() {
+		this.ID = 0;
+		this.KEYWORD = 1;
+		this.OPERATOR = 2;
+	}
+}
+
+
+var tt = TokenType();
+
+print tt.KEYWORD;
+print tt.OPERATOR;
