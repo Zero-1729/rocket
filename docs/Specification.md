@@ -22,31 +22,31 @@ Language's Specification info.
 
 ### 0.0 Hello World Example
 
-> **Note**: Although the `print` might be changed to a function later on! :wink: <br>
+> **Note**: Although a `print` function would br added later on! :wink: <br>
 
 *Because we believe language syntax should be clean as simple.*
 
 ```rocket
-// Print is a built-in command
+/// Print is a built-in command
 print "Hello, World!";
 ```
 
-> Note that in Rocket single line comments begin with `//` and multi-line comments are contained in `/**/` just like in C.  
+> Note that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.  
 
 ---
 
 ### 1.0 Dynamic Typing :abc:
 
-Kelb is Dynamically typed. Which means variables can store values of any type, and a single value of different types at different times. For Example:-
+Rocket is Dynamically typed. Which means variables can store values of any type, and a single value of different types at different times. For Example:-
 
 ```Rocket
-// Initial value of type int
+/// Initial value of type int
 var number = 2;
 
-// Later value of type string
+/// Later value of type string
 number = "2";
 
-// List containing values of various Types
+/// List containing values of various Types
 var stuff = ["string", 87, 2334.72, ["empty"], {"message": "hi"}];
 ```
 
@@ -58,7 +58,7 @@ Deciding whether the language should be statically typed like `C/C++`,`Java`,etc
 + Allows for the Programmer to focus on the Design/Structure and not so much the implementation.
 + Fewer Obscure errors.   
 
-As a final note, Rocket's C compiler (`Luna`) allocates memory in accordance with the length of a value. Where a number like `1024` is considereded as a `16bit` value. This atleast tries to make up for any unneccesary and inefficient memory allocation.
+As a final note, Rocket's C compiler (`RLuna`) allocates memory in accordance with the length of a value. Where a number like `1024` is considereded as a `16bit` value. This atleast tries to make up for any unneccesary and inefficient memory allocation.
 
 ---
 
@@ -93,8 +93,8 @@ Instilled in Rocket's brain is four fundamental particles - I mean *data types*:
 At the heart and soul of every computer is *logic* which is represented as **on** or **off**, **1** or **0**, **True** or **False** and is therefore the foundation for programming. Rocket features two boolean values:-
 
 ```Rocket
-True; // Not False (aka true)
-False; // Not *not* false (aka false)
+True; /// Not False (aka true)
+False; /// Not *not* false (aka false)
 ```
 
 By default all literals are set to true unless explicitly specified by setting it to **False** or **nin**. Meaning everything except for **False** and **nin** are  *truthy* like in **Ruby**.
@@ -104,10 +104,10 @@ By default all literals are set to true unless explicitly specified by setting i
 Rocket uses the `Number` type for values that can be classified as an **int**, **float**, **scientific** (including `i` or `j`), **hex**, **octal** etc. **Luna** dynamically assignes values that are of the `Number` type their equivalent or close enough to type in the **C** Language. For example:-
 
 ```Rocket
-var num = 1024; // Stored by Rocket as Number type
+var num = 1024; /// Stored by Rocket as Number type
 ```  
 
-But for example **Luna** does
+But for example **RLuna** does
 
 ```c
 long num;
@@ -120,8 +120,8 @@ Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text 
 
 ```Rocket
 "Stringy me";
-""; // Empty string
-"1024"; // String, not Number
+""; /// Empty string
+"1024"; /// String, not Number
 ```
 
 #### nin
@@ -146,10 +146,10 @@ The following are the kinds of expressions that Rocket understands.
 
 ```Rocket
 2 + 2;
-add + me; // same meaning as expression above
+add + me; /// same meaning as expression above
 1024 * 6;
 9826 / 22.3;
-33 // 3; // Yes even though comments begin with '//' Rocket can tell the difference between the floor operator and a comment
+33 // 3; /// Yes even we reserved '//' for floor division instead of comments. hence why single line comments begin with '///' in Rocket
 12 % 2;
 
 -333; // Also considered an expression. I.e Negate '333'
@@ -169,9 +169,9 @@ lessThan <= orEqual;
 Rocket supports type to type comparisons and also comparisons of different types to each other. E.g:-
 
 ```Rocket
-1 == 2; // Evaluates to False
-"Boy" != "Man"; // Evaluates to True
-314 == "pi"; // Evaluates to False
+1 == 2; /// Evaluates to False
+"Boy" != "Man"; /// Evaluates to True
+314 == "pi"; /// Evaluates to False
 ```
 
 > Note: Values of different types are never equal by default. Rocket doesn't Support Javascript's coersion.
@@ -181,15 +181,15 @@ Rocket supports type to type comparisons and also comparisons of different types
 In Rocket *prefixing*  the not operator (`!`) to literal returns the opposite of the literal. E.g:-
 
 ```Rocket
-!True; // Returns False
-!False; // Returns True
+!True; /// Returns False
+!False; /// Returns True
 ```
 
 Likewise *prefixing* `and` invokes the and operator while `or` invvokes the or operator, logic gate style. The and operator returns True if both literals are True and False otherwise. And the or operator returns True if  either literals if True and False Otherwise.E.g:-
 
 ```Rocket
-true and true; // Returns True
-false or true; // Returns True
+true and true; /// Returns True
+false or true; /// Returns True
 ```
 
 ##### Operation Precedence
@@ -197,7 +197,7 @@ false or true; // Returns True
 Rockets operators have the same precendence and assosiativity as observed in Python or C. However, Rocket does allow you to override the default precendence by using braces `()` to group calculations.E.g:-
 
 ```Rocket
-var num = low + high / 2; // Result: low + (high / 2)
+var num = low + high / 2; /// Result: low + (high / 2)
 ```
 
 ---
@@ -207,7 +207,7 @@ var num = low + high / 2; // Result: low + (high / 2)
 Statements are just Expressions that produce an effect not neccesseraliy a value. This effect could be modifying a literal's state, reading input, producing output, etc. A good example is our hello world program, because the program is just a statement.
 
 ```Rocket
- // This Statement displays output: 'Hello, world!'
+ /// This Statement displays output: 'Hello, world!'
 
 print "Hello, world!";
 ```
@@ -235,7 +235,7 @@ func inc() {
 
 inc();
 
-print n // Results in an Error because 'n' is only defined in the inc function's block    
+print n /// Results in an Error because 'n' is only defined in the inc function's block    
 ```
 
 ---
@@ -256,17 +256,17 @@ In Rocket declering a variable without manual assigning it a value automatically
 ```Rocket
 var favouriteDrink = "Coke";
 
-// After you change your mind
+/// After you change your mind
 favouriteDrink = "Pepsi"
 ```
 
 Some variable names are considered **illegal** if they begin with number literals, like:-
 
 ```Rocket
-// Wrong
-var 8788L = "woohoo"; // considered an 'illegal' decleration
+/// Wrong
+var 8788L = "woohoo"; /// considered an 'illegal' decleration
 
-// Right
+/// Right
 var validVar = "Uhuhh";
 ```
 
@@ -322,7 +322,7 @@ when the programmer decides that she wants to reuse a block of code later her pr
 
 ```Rocket
 func name(args) {
-    // code
+    /// code
 }
 ```
 
@@ -339,7 +339,7 @@ func digit() {
     return 2;
 }
 
-var num = digit(); // num has the value 2
+var num = digit(); /// num has the value 2
 
 func addList(a, b) {
     return a + b;
@@ -349,7 +349,7 @@ func id(a) {
     return a;
 }
 
-print id(addList)([1,2,3], [4,5,6]); // Prints [1,2,3,4,5,6]
+print id(addList)([1,2,3], [4,5,6]); /// Prints [1,2,3,4,5,6]
 
 """
 Nested functions are also possible
@@ -364,7 +364,7 @@ func outer() {
     return inner();
 }
 
-outer(); // Returns "I'am buried"
+outer(); /// Returns "I'am buried"
 
 
 """
@@ -383,7 +383,7 @@ fun returnFunction() {
 
 var fn = returnFunction();
 
-fn(); // Returns "outside"
+fn(); /// Returns "outside"
 ```
 
 ---
@@ -396,15 +396,15 @@ Rocket features Object-Oriented-Programming (**OOP**). Which allows the programm
 class Object {
 
     init(props) {
-        // Default properties
+        /// Default properties
     }
 
     attr() {
-        // code
+        /// code
     }
 
     attr2(args) {
-        // more code
+        /// more code
     }
 }
 ```
@@ -426,7 +426,7 @@ class Person {
 
 var alice = Person("Alice");
 
-alice.talk(); // Returns "Hi, I am Alice"
+alice.talk(); /// Returns "Hi, I am Alice"
 ```
 
 > Notice that Methods of a class are accessed the same they are accesed in other languages like **Python**.
@@ -458,7 +458,7 @@ class SportsCar {
         this.model = model;
     }
 
-    // More methods
+    /// More methods
 
 }
 
@@ -472,10 +472,10 @@ electricCar.topSpeed(250);
 Rocket takes after **Python**'s class inheritance, where newly defined classes can inherit properties of other objects. E.g:-
 
 ```Rocket
-class Earth <= Planet {
+class Earth < Planet {
 
     revolve() {
-        print "I just R-evolved"; // Anyone? Catch that?
+        print "I just R-evolved"; /// Anyone? Catch that?
   }
 }
 ```
@@ -492,7 +492,7 @@ class Computer {
 }
 
 
-class Laptop <=  Computer {
+class Laptop <  Computer {
 
     turnOn() {
         print "I am awake";
@@ -509,7 +509,7 @@ var macBook = Laptop("Kali");
 Rocket provides a way to overide `init` method of a super class with use of the `super` keyword. Like:-
 
 ```Rocket
-class Laptop <= Computer {
+class Laptop < Computer {
 
     init(os, arch) {
         super.init(os);

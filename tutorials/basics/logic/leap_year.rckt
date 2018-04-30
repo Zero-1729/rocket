@@ -1,7 +1,11 @@
-func check_leap_year(y) {
+func is_leap_year(y) {
 	if (y % 4 == 0 and (y % 100 != 0 or y % 400 == 0)) {
 		return true;
 	} else { return false; }
 }
 
-print check_leap_year(2012);
+if (is_leap_year(2012)) {
+	print "2012 was a leap year";
+} else {
+	print "2012 was not a leap year";
+}

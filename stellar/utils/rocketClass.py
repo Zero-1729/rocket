@@ -20,6 +20,7 @@ class RocketClass(RocketCallable):
         self.name = name
         self.superclass = superclass
         self.methods = methods
+        self.merged = False
 
 
     def locateMethod(self, instance: object, name: str):
@@ -58,6 +59,8 @@ class RocketClass(RocketCallable):
 
         sub.decleration.body += tmp.decleration.body
 
+        self.superclass.bp_arity = True
+
         return sub
 
 
@@ -84,11 +87,8 @@ class RocketClass(RocketCallable):
                 # I.e init(type) (sup) init(x, y) (sub) --> init(type, x, y) not init(x, y, type)
                 init.decleration.params = [p for p in super_init.decleration.params if p not in init.decleration.params] + init.decleration.params
                 init = self.merge_inits(sub_init, super_init, len(super_init.decleration.body) < len(sub_init.decleration.body))
+                self.merged = True
 
-        # properly 'bypass' sup's arity by setting the 'bp_flag' to 'True' since all sub/sup decls are the same height after merge
-
-        if super_init != None:
-            self.superclass.bp_arity = True
 
         if init != None:
             binded_init = init.bind(instance)
@@ -112,9 +112,12 @@ class RocketClass(RocketCallable):
         if sup_init:
             # has both then combine arities
             if sub_init:
-                init_arity = self.methods.get("init").arity() + self.superclass.methods.get("init").arity()
+                init_arity = self.methods['init'].arity()
+                # Only increment when sub's 'merged' flag bot set. I.e sub and sup 'inits' haven't merged. To avoid overflow of sub's arity
+                if not self.merged:
+                    init_arity += self.superclass.methods['init'].arity()
 
-            elif sup_init:
+            if not sub_init:
                 init_arity = self.superclass.methods.get("init").arity()
 
         # Only branch if sub has one 'init', i.e its own
@@ -174,7 +177,6 @@ class RocketFunction(RocketCallable):
         super(RocketCallable)
         self.closure = closure
         self.decleration = decleration
-        self.bp_arity = False
         self.isInit = isInit
 
 
@@ -187,13 +189,7 @@ class RocketFunction(RocketCallable):
 
 
     def arity(self):
-        # return functions default arity if 'bp_arity' is not set
-        if not self.bp_arity:
-            return len(self.decleration.params)
-
-        # else return '0' to avoid having strange calls
-        if self.bp_arity:
-            return 0
+        return len(self.decleration.params)
 
 
     def call(self, interpreter: object, args: list):

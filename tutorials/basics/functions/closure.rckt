@@ -8,5 +8,5 @@ func makePoint(x, y) {
   return closure;
 }
 
-print makePoint(2, 3)("x"); // -> 2
-print makePoint(2, 5)("y"); // -> 5
+print makePoint(2, 3)("x"); /// -> 2
+print makePoint(2, 5)("y"); /// -> 5

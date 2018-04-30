@@ -26,8 +26,8 @@ class ParseError(Exception):
 
 class runtimeError(RuntimeError):
     def __init__(self, token: _Token, message: str):
-        super(type(message))
         self.token = token
+        self.message = message
 
 
 class BreakException(Exception):

@@ -1,18 +1,18 @@
 Flesh out stellar
 .
-| - Add 'super'
 | - Make scanner Tokenize "int" literals and "floats" seperately as "num"
 | - Get in final Tests and tweaks on parser, interpreter and scanner
 .
 
 Add support for post fix arithmetic ops:
 
-n++; // The same as 'n = n + 1;'
-n-- ; // The same as 'n = n - 1;'
+n++; /// The same as 'n = n + 1;'
+n-- ; /// The same as 'n = n - 1;'
 
 Find hack for module "import":-
 
 - Scan file provided after "import" then merge the envs of the interpreters. To allow all funcs, vars, classes to be available in the current file or REPL session. like C's #include <{libname}.h>
 
-- Specially scan for all classes defined in the file. Providoing some need packaging for large projects.
-Resolve 'this' is set to 0. not rocketInstance
+- Specially scan for all classes defined in the file. Providing some neat packaging for large projects.
+
+- Create an importer class that parses rocket files to fill current global scope with all its defs ('funcs', 'classes', 'vars', 'consts', etc)

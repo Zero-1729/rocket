@@ -228,15 +228,18 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitSuperExpr(self, expr: _Super):
-        dist = self.locals.get(expr)
+        # 'super' is defined '2' hops in
+        dist = self.locals.get(expr) + 2
         superclass = self.environment.getAt(dist, "super")
-
+        
+        # And 'this' is alwats one nearer than 'super'
         obj = self.environment.getAt(dist - 1, "this")
 
-        method = superclass.findmethod(obj, expr.method.lexeme)
+        method = superclass.locateMethod(obj, expr.method.lexeme)
 
         if (method == None):
-            raise _RuntimeError(expr.method, f"Undefined property '{expr.method.lexeme}'.")
+            # Call works but 'msg' not printing
+            raise RuntimeError(expr.keyword, "Cannot find undefined method '{expr.method.lexeme}' in superclass")
 
         return method
 
@@ -370,9 +373,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             superclass = self.evaluate(stmt.superclass)
             if not isinstance(superclass, _RocketClass):
                 raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.")
-
-        env = _Environment(self.environment)
-        env.define("super", superclass)
+ 
+        self.environment = _Environment(self.environment)
+        self.environment.define("super", superclass)
 
         methods = {}
 
@@ -383,9 +386,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         class_ = _RocketClass(stmt.name.lexeme, superclass, methods)
 
         if (superclass != None):
-            self.environment = env.enclosing
-
+            self.environment = self.environment.enclosing
+        
         self.environment.assign(stmt.name, class_)
+
 
         return None
 
@@ -397,16 +401,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitAssignExpr(self, expr: _Assign):
         value = self.evaluate(expr.value)
-
-        #dist = self.locals[expr]
-
-        #if (dist != None):
-        #    self.environment.assignAt(dist, expr.name, value)
-
-        #else:
-        #    self.globals.assign(expr.name, value)
-
         self.environment.assign(expr.name, value)
+        
         return value
 
 

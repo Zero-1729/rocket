@@ -135,7 +135,7 @@ class Parser:
             super_lexeme = self.ksl[_TokenType.SUPER.value]
 
             keyword = self.previous()
-            self.consume(_TokenType.DOT, "Expected '.' after '{super_lexeme}'")
+            self.consume(_TokenType.DOT, f"Expected '.' after '{super_lexeme}'")
 
             method = self.consume(_TokenType.IDENTIFIER, "Expected superclass method name.")
 

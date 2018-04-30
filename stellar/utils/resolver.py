@@ -30,7 +30,7 @@ class VariableState(_enum.Enum):
 class ClassType(_enum.Enum):
     NONE = 44
     CLASS = 45
-
+    SUB = 46
 
 class Variable:
     def __init__(self, name, state):
@@ -117,13 +117,13 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         self.define(stmt.name)
 
         enclosingClass = self.currentClass
-        self.currentClass = ClassType.CLASS
+        self.currentClass = ClassType.SUB
 
         # resolve super class if any
         if (stmt.superclass != None): self.resolveExpr(stmt.superclass)
 
         self.beginScope()
-
+        
         # fake tokens
         this_tok = _Token(_TokenType.THIS, "this", None, 0)
 
@@ -142,9 +142,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
             self.resolveFunc(method, decleration)
 
         self.endScope()
-
-        #if (stmt.superclass != None):
-        #    self.endScope()
 
         self.currentClass = enclosingClass
 
@@ -271,6 +268,16 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitSuperExpr(self, expr: _Super):
+        super_lexeme = self.ksl[_TokenType.SUPER.value].lower()
+
+        if self.currentClass == ClassType.NONE:
+            err = _ResolutionError(expr.keyword, f"Cannoy use '{super_lexeme}' outside of a class.")
+            self.errors.append(err)
+
+        if self.currentClass != ClassType.SUB:
+            err = _ResolutionError(expr.keyword, f"Cannot use '{super_lexeme}' in class without a superclass")
+            self.errors.append(err)
+
         self.resolveLocal(expr, expr.keyword, True)
         return None
 

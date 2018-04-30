@@ -1,0 +1,15 @@
+class Droid {
+	init(name) {
+		this.name = name;
+	}
+}
+
+
+class DV4 < Droid {
+	talk() {
+		return "I am " + this.name;
+	}
+}
+
+
+print DV4('Alice').talk();

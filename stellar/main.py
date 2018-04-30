@@ -220,7 +220,7 @@ def main():
             sys.exit(0) # Run file and exit
 
         except FileNotFoundError:
-            print("Error: File not found")
+            print(f"Error: file '{sys.argv[1]}' not found")
             exit(1)
 
     elif len(sys.argv) == 2:
@@ -229,9 +229,11 @@ def main():
 
         elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
             print("Rocket v0.1.8-p [Stellar v0.2.7-b]")
+            sys.exit(0)
 
         elif sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
             print(usage())
+            sys.exit(0)
 
 
     if len(sys.argv) == 2 and sys.argv[1] == '-c':
