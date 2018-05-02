@@ -13,8 +13,8 @@ from stdlib.functions import locals, clock, copyright, natives, input, random
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
     def __init__(self):
-        self.globals = _Environment() # Functions / classes
-        self.environment = self.globals
+        self.globals = _Environment() # For the native functions
+        self.environment = _Environment() # Functions / classes
         self.locals = {}
         self.errors = []
 
@@ -195,7 +195,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             raise _RuntimeError(expr.paren, "Can only call functions and classes")
 
         function = callee if not isNative else callee()
-        
+
         if len(eval_args) != function.arity():
             raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
 
@@ -231,7 +231,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # 'super' is defined '2' hops in
         dist = self.locals.get(expr) + 2
         superclass = self.environment.getAt(dist, "super")
-        
+
         # And 'this' is alwats one nearer than 'super'
         obj = self.environment.getAt(dist - 1, "this")
 
@@ -373,7 +373,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             superclass = self.evaluate(stmt.superclass)
             if not isinstance(superclass, _RocketClass):
                 raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.")
- 
+
         self.environment = _Environment(self.environment)
         self.environment.define("super", superclass)
 
@@ -387,7 +387,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if (superclass != None):
             self.environment = self.environment.enclosing
-        
+
         self.environment.assign(stmt.name, class_)
 
 
@@ -402,7 +402,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitAssignExpr(self, expr: _Assign):
         value = self.evaluate(expr.value)
         self.environment.assign(expr.name, value)
-        
+
         return value
 
 

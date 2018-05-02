@@ -291,13 +291,17 @@ class Scanner:
             self.addToken(_TokenType.FALSE, value, None)
             return
 
-        if (value.upper() in self.ksl):
-            keyword = self.ksl[value.upper()]
+        # We only want "print" to be matched as the print statement and not "Print" or "PRINT"
+        if value == "print":
+            self.addToken(_TokenType.PRINT, value, None)
+            return
 
+        # But "Print", "PRINT", etc still get slipped in here so we also check for that
+        if (value.upper() != "PRINT") and (value.upper() in self.ksl):
+            keyword = self.ksl[value.upper()]
             self.addToken(keyword, value, None)
 
         else:
-
             self.addToken(_TokenType.IDENTIFIER, value, None)
 
 

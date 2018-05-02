@@ -201,7 +201,7 @@ class Parser:
         if (self.match(_TokenType.IF)):
             return self.ifStmt()
 
-        # To sow bug #555
+        # To sew bug #555
         # Bug #555: `if (true) {print 0; else` causes forever loop here.
         if (self.match(_TokenType.ELSE)):
             if_lexeme = self.ksl[_TokenType.IF.value].lower()
@@ -372,11 +372,19 @@ class Parser:
         if not self.check(_TokenType.SEMICOLON) and not self.isAtEnd():
 
             name = self.consume(_TokenType.IDENTIFIER, f"'{del_lexeme}' expected identifier name")
-            names.append(name.lexeme)
+
+            # Name sometimes skipped when comma is after del keyword
+            # So we check for that here
+            if name == None:
+                self.error(del_lexeme, f"'{del_lexeme}' detected trailing comma before any names")
+
+            else:
+                names.append(name.lexeme)
+
 
             while self.match(_TokenType.COMMA):
-                # Fully patch this 'del p, ' edge case hack
-                if self.peek().type != _TokenType.EOF:
+                # Fully patch this 'del p, ' edge case
+                if self.peek().type != _TokenType.EOF and self.peek().type != _TokenType.SEMICOLON:
                     name = self.consume(_TokenType.IDENTIFIER, f"'{del_lexeme}' expected identifier name")
                     names.append(name.lexeme)
 
@@ -390,6 +398,7 @@ class Parser:
 
         if len(names) == 0:
             self.error(_TokenType.DEL, f"'{del_lexeme}' requires atleast one identifier")
+
         return _Del(names)
 
 
@@ -478,7 +487,11 @@ class Parser:
 
     def expressionStmt(self):
         value = self.expression()
+
+        # '<keyword> <expr> ;,' causes loop. So we check for any trailing commas after ';'
         self.consume(_TokenType.SEMICOLON, "Expected ';' after expression.")
+        self.consume(_TokenType.COMMA, "Expected ';' after expression.")
+
         return _Expression(value)
 
 
@@ -551,7 +564,7 @@ class Parser:
         self.consume(_TokenType.LEFT_BRACE, f"'{func_lexeme}'" + " expected '{' to indicate start of '" + kind + "' body")
 
         body = self.block()
-        
+
         return _Func(name, params, body)
 
 
@@ -582,7 +595,6 @@ class Parser:
 
 
     def match(self, *types: _TokenType):
-        #print(list(types))
         for type in types:
             if self.check(type):
                 self.advance()
@@ -595,7 +607,7 @@ class Parser:
         if self.isAtEnd():
             return False
 
-        # Right, so the ksl hack is easier when the _TokenType values are compared and not the object themselves
+        # Right, so the KSL hack is easier when the _TokenType's 'values' are compared and not the object themselves
         # Should still be consostent since the fake 'Enum's are uniquely identified with numbers
         return self.peek().type.value == type.value
 
