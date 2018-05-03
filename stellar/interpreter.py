@@ -75,7 +75,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         # string concatination and arithmetic operator '+'
         if (expr.operator.type == _TokenType.PLUS):
-            if (isinstance(left, float) and isinstance(right, float)):
+            if self.is_number(left) and self.is_number(right):
                 return left + right
 
             if (isinstance(left, str) and isinstance(right, str)):
@@ -95,36 +95,36 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
             self.checkNumberOperands(expr.operator, left, right)
-            return float(left) - float(right)
+            return left - right
 
         if (expr.operator.type == _TokenType.DIV):
             self.checkNumberOperands(expr.operator, left, right)
-            if right == float(0):
+            if right == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
-            return float(left) / float(right)
+            return left / right
 
         if (expr.operator.type == _TokenType.MOD):
             self.checkNumberOperands(expr.operator, left, right)
-            if right == float(0):
+            if right == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
-            return float(left) % float(right)
+            return left % right
 
         if (expr.operator.type == _TokenType.FLOOR):
             self.checkNumberOperands(expr.operator, left, right)
-            if right == float(0):
+            if right == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
-            return float(left) // float(right)
+            return left // right
 
         if (expr.operator.type == _TokenType.MULT):
             self.checkNumberOperands(expr.operator, left, right)
-            return float(left) * float(right)
+            return left * right
 
         if (expr.operator.type == _TokenType.EXP):
             self.checkNumberOperands(expr.operator, left, right)
-            return float(left) ** float(right)
+            return left ** right
 
         # bitshifters "<<", ">>"
         if (expr.operator.type == _TokenType.LESS_LESS):
@@ -138,19 +138,19 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # Comparison operators ">", "<", ">=", "<=", "!=", "=="
         if (expr.operator.type == _TokenType.GREATER):
             self.checkNumberOperands(expr.operator, left, right)
-            return float(left) > float(right)
+            return left > right
 
         if (expr.operator.type == _TokenType.LESS):
             self.checkNumberOperands(expr.operator, left, right)
-            return float(left) < float(right)
+            return left < right
 
         if (expr.operator.type == _TokenType.GREATER_EQUAL):
             self.checkNumberOperands(expr.operator, left, right)
-            return float(left) >= float(right)
+            return left >= right
 
         if (expr.operator.type == _TokenType.LESS_EQUAL):
             self.checkNumberOperands(expr.operator, left, right)
-            return float(left) <= float(right)
+            return left <= right
 
         if (expr.operator.type == _TokenType.BANG_EQUAL):
             self.checkValidOperands(expr.operator, left, right)
@@ -165,8 +165,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             self.checkValidOperands(expr.operator, left, right)
             return self.isEqual(left, right)
-
-        # TODO: Maybe add exp operator like Python's "**"
 
         # If can't be matched return None
         return None
@@ -489,14 +487,22 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         return left_obj == right_obj
 
 
+    def is_number(self, obj: object):
+        if type(obj) == int or type(obj) == float:
+            return True
+
+        else:
+            return False
+
+
     def checkNumberOperand(self, opetator: _Token, right: object):
-        if (isinstance(right, float)): return
+        if self.is_number(right): return
 
         raise _RuntimeError(operator.lexeme, "Operand must be number.")
 
 
     def checkNumberOperands(self, operator: _Token, left: object, right: object):
-        if ((isinstance(left, float)) and (isinstance(right, float))): return
+        if self.is_number(left) and self.is_number(right): return
 
         raise _RuntimeError(operator.lexeme, "Operands must be numbers.")
 
@@ -504,7 +510,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def checkValidOperands(self, operator: _Token, left: object, right: object):
         if ((isinstance(left, str)) and (isinstance(right, str))): return
 
-        if ((isinstance(left, float)) and (isinstance(right, float))): return
+        if self.is_number(left) and self.is_number(right): return
 
         else:
             raise _RuntimeError(operator.lexeme, "operands must both be either 'strings' or 'numbers'.")
@@ -515,12 +521,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (value == None): return "nin"
 
         # HACK: Against bug #28 'print 0;' -> false && 'print 1;' -> true
-        if (value == True and not isinstance(value, float)): return "true"
-        if (value == False and not isinstance(value, float)): return "false"
-
-        # check for ints to avoid '1' -> '1.0'
-        # Perform chop if last value after '.' is '0' only
-        if str(value).split('.')[-1] == '0': return str(value)[0:-2]
+        if (value == True and not self.is_number(value)): return "true"
+        if (value == False and not self.is_number(value)): return "false"
 
         # Greedy hack: force 'built-in' funcs to pretty print
         try:

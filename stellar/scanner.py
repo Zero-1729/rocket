@@ -250,6 +250,7 @@ class Scanner:
 
     def number(self):
         start = self.current
+        value = float()
 
         while (self.isDigit(self.peek())):
             self.advance()
@@ -263,15 +264,21 @@ class Scanner:
             while (self.isDigit(self.peek())):
                 self.advance()
 
+            # When we are done chewing through the float we grab its value from the source
+            value = float(self.source[start - 1:self.current])
+
         elif ((self.peek() == '.') and not (self.isDigit(self.peekNext()))):
             err = _ScanError(self.line, "Expected number after '.'. Did you mean float or int?").report()
             self.errors.append(err)
             return
 
-        value = self.source[start - 1:self.current]
+        else:
+            # if not point found we know we have an 'int'
+            value = int(self.source[start - 1:self.current])
+
         text = self.source[start - 1:self.current]
 
-        self.addToken(_TokenType.NUMBER, text, float(value))
+        self.addToken(_TokenType.NUMBER, text, value)
 
     def identifier(self):
         start = self.current

@@ -1,6 +1,5 @@
 Flesh out stellar
 .
-| - Make scanner Tokenize "int" literals and "floats" seperately as "num"
 | - Get in final Tests and tweaks on parser, interpreter and scanner
 .
 
