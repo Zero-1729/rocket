@@ -8,7 +8,7 @@ from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
 from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction, RocketClass as _RocketClass, RocketInstance as _RocketInstance
-from stdlib.functions import locals, clock, copyright, natives, input, random
+from stdlib.functions import locals, clock, copyright, natives, input, random, type
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -23,6 +23,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(random.Random().callee, random.Random)
         # grab user input
         self.globals.define(input.Input().callee, input.Input)
+        # return value type
+        self.globals.define(type.Type().callee, type.Type)
         # 'locals' return all globally defined 'vars' and 'consts'
         self.globals.define(locals.Locals().callee, locals.Locals)
         # 'clock'
@@ -488,7 +490,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def is_number(self, obj: object):
-        if type(obj) == int or type(obj) == float:
+        if isinstance(obj, int) or isinstance(obj, float):
             return True
 
         else:
@@ -513,6 +515,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if self.is_number(left) and self.is_number(right): return
 
         else:
+            # Is comparing strings and numbers really important?
+            # Maybe if you are trying to see if a number id transformed to an 'str'.
+            # But wouldn't you just check the type with 'Type' native func?!
             raise _RuntimeError(operator.lexeme, "operands must both be either 'strings' or 'numbers'.")
 
 

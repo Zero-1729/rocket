@@ -13,6 +13,9 @@ class Random(_RocketCallable):
     def call(self, obj: object, args: list):
         return _random.random()
 
+    def type(self):
+        return self.__repr__()
+
     def __repr__(self):
         return "<built-in fn 'Random'>"
 

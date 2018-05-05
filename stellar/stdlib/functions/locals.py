@@ -20,6 +20,8 @@ class Locals(_RocketCallable):
         else:
             return None
 
+    def type(self):
+        return self.__repr__()
 
     def __repr__(self):
         return "<built-in fn 'Locals'>"

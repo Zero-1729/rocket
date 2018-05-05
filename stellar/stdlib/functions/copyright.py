@@ -18,6 +18,9 @@ class copyright(_RocketCallable):
 
         return info
 
+    def type(self):
+        return self.__repr__()
+
     def __repr__(self):
         return "<built-in fn 'copyright'>"
 

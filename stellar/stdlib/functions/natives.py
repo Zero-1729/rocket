@@ -11,6 +11,9 @@ class Natives(_RocketCallable):
     def call(self, obj: object, args: list):
         return ', '.join(list(obj.globals.values.keys()))
 
+    def type(self):
+        return self.__repr__()
+
     def __repr__(self):
         return "<built-in fn 'Natives'>"
 

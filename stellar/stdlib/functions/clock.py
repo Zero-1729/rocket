@@ -13,6 +13,9 @@ class Clock(_RocketCallable):
     def call(self, obj: object, args: list):
         return _time.clock()
 
+    def type(self):
+        return self.__repr__()
+
     def __repr__(self):
         return "<built-in fn 'Clock'>"
 

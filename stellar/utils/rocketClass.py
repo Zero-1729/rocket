@@ -124,8 +124,12 @@ class RocketClass(RocketCallable):
         if sub_init and not sup_init:
             init_arity = self.methods.get("init").arity()
 
-        
+
         return init_arity
+
+
+    def type(self):
+        return self.__repr__()
 
 
     def __str__(self):
@@ -153,14 +157,18 @@ class RocketInstance:
             # 'iniy' should just return an instance when called instead of 'nin'
             if method.isInit:
                 return method.bind(self)
-            
+
             return method
-        
+
         raise _RuntimeError(name, f"Undefined property '{name.lexeme}.")
 
 
     def set(self, name: _Token, value: object):
         self.fields[name.lexeme] = value
+
+
+    def type(self):
+        return self.__repr__()
 
 
     def __str__(self):
@@ -209,6 +217,11 @@ class RocketFunction(RocketCallable):
             return self.closure.getAt(0, "this")
 
         return "nin"
+
+
+    def type(self):
+        return self.__repr__()
+
 
     def __str__(self):
         return f"<fn '{self.decleration.name.lexeme}'>"

@@ -4,6 +4,7 @@
 
 import sys
 import os
+import codecs
 import readline
 
 from utils.resolver import Resolver
@@ -143,7 +144,8 @@ def run_prompt(prompt, headerless=False):
 
     while True:
 
-        chunk = input(prompt)
+        encoded_chunk = codecs.escape_decode(bytes(input(prompt), "utf-8"))[0]
+        chunk = encoded_chunk.decode('utf-8')
 
         if chunk == "exit":
             readline.write_history_file('.rocket_repl_history')
