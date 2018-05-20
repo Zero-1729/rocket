@@ -1,17 +1,16 @@
 # Author: Abubakar NK (Zero-1729)
-# LICENSE: MIT
+# LICENSE: RLOL
 # Rocket Lang (Stellar) Parser (C) 2018
 
 from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
-from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
+from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.reporter import ParseError as _ParseError
 from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
 
-
 class Parser:
-    def __init__(self, tokens, ksl):
+    def __init__(self, tokens, vw_Dict):
         self.tokens = tokens
-        self.ksl = ksl
+        self.vw_Dict = vw_Dict
         self.current = 0
         self.errors = []
         self.loopDepth = 0
@@ -132,7 +131,7 @@ class Parser:
             return _This(self.previous())
 
         if (self.match(_TokenType.SUPER)):
-            super_lexeme = self.ksl[_TokenType.SUPER.value]
+            super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
 
             keyword = self.previous()
             self.consume(_TokenType.DOT, f"Expected '.' after '{super_lexeme}'")
@@ -193,8 +192,10 @@ class Parser:
             self.addition()
             return None
 
-        self.error(self.peek(), "Expected expression.").report()
-
+        # The mother of all bugs!!
+        # The source of all our problems
+        # This is what was causing problems
+        raise self.error(self.peek(), "Expected expression.")
 
 
     def statement(self):
@@ -204,8 +205,8 @@ class Parser:
         # To sew bug #555
         # Bug #555: `if (true) {print 0; else` causes forever loop here.
         if (self.match(_TokenType.ELSE)):
-            if_lexeme = self.ksl[_TokenType.IF.value].lower()
-            else_lexeme = self.ksl[_TokenType.ELSE.value].lower()
+            if_lexeme = self.vw_Dict[_TokenType.IF.value].lower()
+            else_lexeme = self.vw_Dict[_TokenType.ELSE.value].lower()
 
             self.error(self.peek(), f"Can't use '{else_lexeme}' without beginning '{if_lexeme}'.")
 
@@ -263,7 +264,7 @@ class Parser:
 
 
     def ifStmt(self):
-        if_lexeme = self.ksl[_TokenType.IF.value].lower()
+        if_lexeme = self.vw_Dict[_TokenType.IF.value].lower()
         self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{if_lexeme}'.")
         condition = self.expression()
         self.consume(_TokenType.RIGHT_PAREN, f"Expected ')' after '{if_lexeme}' condition.")
@@ -280,7 +281,7 @@ class Parser:
 
 
     def whileStmt(self):
-        while_lexeme = self.ksl[_TokenType.WHILE.value].lower()
+        while_lexeme = self.vw_Dict[_TokenType.WHILE.value].lower()
         self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{while_lexeme}'")
         condition = self.expression()
         self.consume(_TokenType.RIGHT_PAREN, f"Expected ')' after '{while_lexeme}' condition")
@@ -296,7 +297,7 @@ class Parser:
 
 
     def forStmt(self):
-        for_lexeme = self.ksl[_TokenType.FOR.value].lower()
+        for_lexeme = self.vw_Dict[_TokenType.FOR.value].lower()
         self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{for_lexeme}'.")
 
         initializer = None
@@ -343,7 +344,7 @@ class Parser:
 
 
     def breakStmt(self):
-        break_lexeme = self.ksl[_TokenType.BREAK.value].lower()
+        break_lexeme = self.vw_Dict[_TokenType.BREAK.value].lower()
         if self.loopDepth == 0:
             self.error(_TokenType.BREAK, f"'{break_lexeme}' used outside loop")
 
@@ -352,7 +353,7 @@ class Parser:
 
 
     def returnStmt(self):
-        return_lexeme = self.ksl[_TokenType.RETURN.value].lower()
+        return_lexeme = self.vw_Dict[_TokenType.RETURN.value].lower()
         keyword = self.previous()
         value = None
 
@@ -365,7 +366,7 @@ class Parser:
 
 
     def delStmt(self):
-        del_lexeme = self.ksl[_TokenType.DEL.value].lower()
+        del_lexeme = self.vw_Dict[_TokenType.DEL.value].lower()
 
         names = []
 
@@ -403,7 +404,7 @@ class Parser:
 
 
     def printStmt(self):
-        print_lexeme = self.ksl[_TokenType.PRINT.value].lower()
+        print_lexeme = self.vw_Dict[_TokenType.PRINT.value].lower()
         value = self.expression()
 
         self.consume(_TokenType.SEMICOLON, f"'{print_lexeme}' expected ';' after expression.")
@@ -411,7 +412,7 @@ class Parser:
 
 
     def varDecleration(self):
-        var_lexeme = self.ksl[_TokenType.VAR.value].lower()
+        var_lexeme = self.vw_Dict[_TokenType.VAR.value].lower()
         initializer = None
         name = None
 
@@ -435,7 +436,7 @@ class Parser:
 
 
     def constDecleration(self):
-        const_lexeme = self.ksl[_TokenType.CONST.value].lower()
+        const_lexeme = self.vw_Dict[_TokenType.CONST.value].lower()
 
         name = None
         initializer = '' # To avoid Python reference errors
@@ -465,7 +466,7 @@ class Parser:
 
 
     def classDecleration(self):
-        class_lexeme = self.ksl[_TokenType.CLASS.value].lower()
+        class_lexeme = self.vw_Dict[_TokenType.CLASS.value].lower()
         name = self.consume(_TokenType.IDENTIFIER, f"Expected '{class_lexeme}' name.")
 
         superclass = None
@@ -488,9 +489,7 @@ class Parser:
     def expressionStmt(self):
         value = self.expression()
 
-        # '<keyword> <expr> ;,' causes loop. So we check for any trailing commas after ';'
         self.consume(_TokenType.SEMICOLON, "Expected ';' after expression.")
-        self.consume(_TokenType.COMMA, "Expected ';' after expression.")
 
         return _Expression(value)
 
@@ -542,7 +541,7 @@ class Parser:
 
 
     def function(self, kind):
-        func_lexeme = self.ksl[_TokenType.FUNC.value].lower()
+        func_lexeme = self.vw_Dict[_TokenType.FUNC.value].lower()
         # Fix this !!!
         name = self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected '{kind}' name")
 

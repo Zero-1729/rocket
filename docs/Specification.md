@@ -244,14 +244,18 @@ print n /// Results in an Error because 'n' is only defined in the inc function'
 
 > Note: Rocket encourages use of camel case for variable names
 
-variables in Rocket require the keyword `var` before they are declered. Like:-
+variables in Rocket require the keyword `var` or `const` before they are declared. Like:-
 
 ```Rocket
 var num = 8;
-var empty_variable;
+const NODE = "127.0.0.1:7545"; /// 'const' variables require an initializer
 ```
 
-In Rocket declering a variable without manual assigning it a value automatically makes it `nin`. Once variables are declered they can be referenced by their name. In cases were a variable's value needs to change the following happens:-
+In Rocket declaring a variable with `var` without explicitly assigning it a value automatically makes it default to `nin`. Once variables are declared they can be referenced by their name. Variables declared with `const` are immutable and require an initializer. Otherwise the following error message is printed; `Error at ';':  'const' variables require initializers`.These variables are cannot be re-defined once initialized. Their purpose is to provide static immutable pieces of data to use.
+
+In cases were a variable's value needs to change the following happens:-
+
+> **Note**: This only affects varoables declared with the `var` keyword. `const` variables cannot be re-defined.
 
 ```Rocket
 var favouriteDrink = "Coke";
@@ -261,6 +265,8 @@ favouriteDrink = "Pepsi"
 ```
 
 Some variable names are considered **illegal** if they begin with number literals, like:-
+
+> **Note**: This affects both `const` and `var` variables.
 
 ```Rocket
 /// Wrong
@@ -276,7 +282,7 @@ var validVar = "Uhuhh";
 
 Control flow referefs to the manner inwhich code is executed. Whether a certain block is evaluated only if a certain condition is met. THe keywords used for such are:-
 
-+ if, elif, else
++ if, else
 + while
 + and for
 
@@ -285,8 +291,6 @@ In the case of an `if` it takes the following form:-
 ```Rocket
 if (condition) {
     print "It was true";
-} elif (ciondition2) {
-    print "Its hard to tell"
 } else {
     print "It was false";
 }
@@ -300,7 +304,7 @@ var n = 1;
 // Loops through 100 digits and prints each one
 while (n < 100) {
     print n
-    a += 1;
+    n = n + 1;
 }
 ```
 
@@ -349,12 +353,11 @@ func id(a) {
     return a;
 }
 
-print id(addList)([1,2,3], [4,5,6]); /// Prints [1,2,3,4,5,6]
+print id(addList([1,2,3], [4,5,6])); /// Returns [1,2,3,4,5,6]
 
-"""
-Nested functions are also possible
+/* Nested functions are also possible
 Resulting in the creation of local variables
-"""
+*/
 
 func outer() {
     func inner() {
@@ -364,14 +367,12 @@ func outer() {
     return inner();
 }
 
-outer(); /// Returns "I'am buried"
+outer(); /// Outputs "I'am buried"
 
 
-"""
-Lisp like fun is permitted
-"""
+/// nested functions are permitted
 
-fun returnFunction() {
+func returnFunction() {
   var outside = "outside";
 
   fun inner() {
@@ -383,7 +384,7 @@ fun returnFunction() {
 
 var fn = returnFunction();
 
-fn(); /// Returns "outside"
+fn(); /// Outputs "outside"
 ```
 
 ---
@@ -394,7 +395,6 @@ Rocket features Object-Oriented-Programming (**OOP**). Which allows the programm
 
 ```Rocket
 class Object {
-
     init(props) {
         /// Default properties
     }
@@ -411,7 +411,7 @@ class Object {
 
 > Notice that methods are declared like functions but without the `func` keyword.
 
-The body of a class contains its methods. They look like function declarations but without the `func` keyword. When the class declaration is executed, it creates a class object and stores it in a variable named after the class. Just like functions, classes are first class in Rocket. Classes can be assigned to variables:-
+The body of a class contains its methods. They look like function declarations but without the `func` keyword. When the class declaration is executed, it creates a class object and stores it in a variable named after the class. Just like functions, classes are first class in Rocket:-
 
 ```Rocket
 class Person {
@@ -426,7 +426,7 @@ class Person {
 
 var alice = Person("Alice");
 
-alice.talk(); /// Returns "Hi, I am Alice"
+alice.talk(); /// Outputs "Hi, I am Alice"
 ```
 
 > Notice that Methods of a class are accessed the same they are accesed in other languages like **Python**.
@@ -437,11 +437,9 @@ New methods or properties can be added to a class on the fly like so:-
 
 ```Rocket
 class Drink {
-
     init(name) {
         this.name = name;
     }
-
 }
 
 var coke = Drink("Coke");
@@ -469,35 +467,30 @@ electricCar.topSpeed(250);
 
 #### Inheritance
 
-Rocket takes after **Python**'s class inheritance, where newly defined classes can inherit properties of other objects. E.g:-
+Rocket supports (full) class inheritance, where newly defined classes can *inherit* properties of other objects. E.g:-
 
 ```Rocket
 class Earth < Planet {
-
     revolve() {
         print "I just R-evolved"; /// Anyone? Catch that?
   }
 }
 ```
 
-Your probably wondering why Planet is not just enclosed in the bracket like `Earth(Planet)`. I wanted **Ruby** to have a piece of the production and also because it looks cooler. Right? Anyway the point of `<=` is to show that Earth is a subclass of Planet.
+Your probably wondering why Planet is not just enclosed in the brace like `Earth(Planet)`. I wanted **Ruby** to have a piece of the production and also because it looks cooler. The point of `<` is to show that Earth is a subclass of Planet.
 
 ```Rocket
 class Computer {
-
     init(os) {
         this.os = os;
     }
-
 }
 
 
 class Laptop <  Computer {
-
     turnOn() {
         print "I am awake";
     }
-
 }
 
 
@@ -510,7 +503,6 @@ Rocket provides a way to overide `init` method of a super class with use of the 
 
 ```Rocket
 class Laptop < Computer {
-
     init(os, arch) {
         super.init(os);
         this.arch = arch;
@@ -548,7 +540,7 @@ Rocket comes shipped with a standard library which includes the following packag
 
 As the language continues to mature more packages would be added. Probably demanding that a centralized package repo store to be set up. Just think **Python**'s pypi.
 
-> **Food For Thought**: How would a `decentralised` (like hosted on **IPFS**) package repo store do compared to a `centralized` one?
+> **Food For Thought**: How would a `decentralised` *distributed* (like hosted on **IPFS**) package repo host do compared to a `centralized` one like a CDN?
 
 ---
 

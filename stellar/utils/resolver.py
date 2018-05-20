@@ -352,10 +352,10 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         # Pretend its global if its not found
 
 
-    def resolveFunc(self, func: _Func, type: FunctionType):
+    def resolveFunc(self, func: _Func, functype: FunctionType):
         #print("in func resolve")
         enclosingFunction = self.currentFunction
-        self.currentFunction = type
+        self.currentFunction = functype
 
         # Declare and define each param to avoid param redefinition in func body
         self.beginScope()
@@ -365,7 +365,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
             self.define(param)
 
         self.resolveStmts(func.body)
-
         self.endScope()
 
         self.currentFunction = enclosingFunction

@@ -1,5 +1,5 @@
 # Author: Abubakar NK (Zero-1729)
-# LICENSE: MIT
+# LICENSE: RLOL
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
 from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
@@ -8,7 +8,7 @@ from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
 from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction, RocketClass as _RocketClass, RocketInstance as _RocketInstance
-from stdlib.functions import locals, clock, copyright, natives, input, random, type
+from native.functions import locals, clock, copyright, natives, input, random, output
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -21,10 +21,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # Statically define 'native' functions
         # random n between '0-1' {insecure}
         self.globals.define(random.Random().callee, random.Random)
+        # print (escaped) output. i.e print("hello\tmr.Jim") -> "Hello	mr.Jim"
+        self.globals.define(output.Print().callee, output.Print)
         # grab user input
         self.globals.define(input.Input().callee, input.Input)
-        # return value type
-        self.globals.define(type.Type().callee, type.Type)
         # 'locals' return all globally defined 'vars' and 'consts'
         self.globals.define(locals.Locals().callee, locals.Locals)
         # 'clock'
@@ -58,11 +58,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # Handle '~' bit shifter
         if (expr.operator.type == _TokenType.TILDE):
             self.checkNumberOperand(expr.operator, right)
-            return (-float(right) - 1)
+            return -right - 1
 
         if (expr.operator.type == _TokenType.MINUS):
             self.checkNumberOperand(expr.operator, right)
-            return -float(right)
+            return -right
 
         if (expr.operator.type == _TokenType.BANG):
             return not (self.isTruthy(right))
@@ -248,6 +248,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # patch env
         glob = self.globals.values
         var_env = self.environment.values
+        const_env = self.environment.statics
 
         for name in stmt.names:
             if name in glob.keys():
@@ -255,6 +256,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             if name in var_env.keys():
                 del var_env[name]
+
+            if name in const_env.keys():
+                del const_env[name]
 
             else:
                 raise _RuntimeError(name, f"can't undefined name '{name}'")
@@ -324,7 +328,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitPrintStmt(self, stmt: _Print):
         value = self.evaluate(stmt.expression)
-        print(self.stringify(value))
+        val, color = self.stringify(value)
+
+        if color:
+            print(f"{color}{val}\033[0m")
+        else:
+            print(val)
+
         return None
 
 
@@ -390,7 +400,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         self.environment.assign(stmt.name, class_)
 
-
         return None
 
 
@@ -412,7 +421,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             return self.globals.get(expr.name)
 
         except:
-            return self.environment.get(expr.name)
+            # We try to see if its in either 'envs'
+            # if not we raise the exception for our interpreter to catch
+            try:
+                return self.environment.get(expr.name)
+
+            except _RuntimeError as err:
+                raise err
 
         #return self.lookUpVariable(expr.name, expr)
 
@@ -447,10 +462,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def lookUpVariable(self, name: _Token, expr: _Expr):
         dist = self.locals[expr] if self.locals.get(expr) else None
 
-        # remeber that our expr friend is is always hinding at the very first 'env' enclosing; at dist = 0
+        # remeber that our expr friend is always hidden at the very first 'env' enclosing; at dist = 0
         # So we might have to do an aditional check to see if the current expr bieng querried is 'this' inorder to artificially make 'dist = 0'
-        expr_type = type(expr)
-        isFoldedThis = expr.keyword.lexeme == "this" if expr_type == _This else False
+        expr_type = expr.parent()
+        isFoldedThis = expr.keyword.lexeme == "this" if expr_type == "Expr" else False
 
         # Check and artificially inject '0' as dist to fetch out 'this' in enclosing env
         # if a nested 'this' is not in the 'expr' then leave dist untouched
@@ -466,10 +481,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def isTruthy(self, obj: object):
         if (obj == None):
             return False
-
-        if (int(obj) == 0): return False
-
-        if (int(obj) == 1): return True
 
         if (isinstance(obj, bool)):
             return obj # I.e if "True" return it
@@ -497,7 +508,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             return False
 
 
-    def checkNumberOperand(self, opetator: _Token, right: object):
+    def checkNumberOperand(self, operator: _Token, right: object):
         if self.is_number(right): return
 
         raise _RuntimeError(operator.lexeme, "Operand must be number.")
@@ -523,15 +534,21 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def stringify(self, value: object):
         # Customize literals
-        if (value == None): return "nin"
+        if (value == None) or value == "nin": return "nin", "\033[1m"
 
         # HACK: Against bug #28 'print 0;' -> false && 'print 1;' -> true
-        if (value == True and not self.is_number(value)): return "true"
-        if (value == False and not self.is_number(value)): return "false"
+        if (value == True and type(value) == bool): return "true", "\033[1m"
+        if (value == False and type(value) == bool): return "false", "\033[1m"
 
-        # Greedy hack: force 'built-in' funcs to pretty print
-        try:
-            return value()
+        if isinstance(value, str):
+            return value, "\033[32m"
 
-        except:
-            return value
+        elif isinstance(value, int) or isinstance(value, float):
+            return value, "\033[36m"
+
+        else:
+            try:
+                return value(), None
+
+            except:
+                return value, None

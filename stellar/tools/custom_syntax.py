@@ -1,3 +1,6 @@
+# Author: Abubakar NK (Zero-1729)
+# LICENSE: RLOL
+# Rocket Lang (Stellar) KSL creator (C) 2018
 
 import sys
 
@@ -22,8 +25,16 @@ class Scanner:
 
             if c == "/":
                 if self.match("/"):
-                    while self.peek() != "\n" and not self.isAtEnd():
-                        self.advance()
+                    if self.match("/"):
+                        while self.peek() != "\n" and not self.isAtEnd(): self.advance()
+
+                    else:
+                        while self.peek() != "\n" and not self.isAtEnd():
+                            self.advance()
+                continue
+
+            if c == "#":
+                while self.peek() != "\n" and not self.isAtEnd(): self.advance()
                 continue
 
             if c == "\n":
@@ -36,7 +47,7 @@ class Scanner:
                 self.indentifier()
 
             else:
-                print(f"[line {self.line} in config]: Unregocnized symbol '{c}'")
+                print(f"\033[91m[ScanError on line {self.line} in config]:\033[0m Unregocnized symbol '{c}'")
                 sys.exit(9) # yep don't run program just exit if there is error in 'config.rckt'
 
         self.addToken(_TokenType.EOF, "", None)
@@ -51,11 +62,13 @@ class Scanner:
 
         value = self.source[start - 1:self.current]
 
-        if value.upper() in _Keywords:
-            keyword = _Keywords[value.upper()]
+        if value in _Keywords:
+            # print(f"{value} is a keyword")
+            keyword = _Keywords[value]
             self.addToken(keyword, value, None)
 
         else:
+            # print(f"{value} not a keyword")
             self.addToken(_TokenType.IDENTIFIER, value, None)
 
 
@@ -117,7 +130,7 @@ class Parser:
         self.customs = []
         self.defaults = []
         self.keywords = {}
-        self.partial_ksl = {}
+        self.vw_Dict = {}
 
 
     def parse(self):
@@ -135,38 +148,18 @@ class Parser:
 
         isEqualHeight = len(self.defaults) == len(self.customs)
         if not isEqualHeight:
-            print(f"[ConfigHeightError]: Number of Defaults & Customs not equal. Number of Keywords must equal number of Customs.")
-            sys.exit(10)
+            print(f"\033[93m[ParseError in config]:\033[0m Number of Defaults & Customs not equal.\n\033[1m[Note]:\033[0m Number of Keywords must equal number of Customs.")
+            sys.exit(1)
 
         # How we parse the tokens in binary form allow for them to be of the same height
         for i in range(len(self.defaults)):
-            self.keywords[self.customs[i].upper()] = self.defaults[i].type
-            self.partial_ksl[self.defaults[i].type.value] = self.customs[i].upper()
+            self.keywords[self.customs[i]] = self.defaults[i].type
+            self.vw_Dict[self.defaults[i].type.value] = self.customs[i]
 
         # fill in remaining item unassignd items in KSL
         self.fillKSL()
 
-        #print("KEYWORDS\n")
-        #for item in self.keywords:
-        #    print(f"{item}: {self.keywords[item]}")
-
-        #print("\n\nPKSL\n")
-        #for item in self.partial_ksl:
-        #    print(f"{item}: {self.partial_ksl[item]}")
-
-
-        #print('\ntesting validity of keywords')
-        #count = 0
-        #for key in self.keywords:
-        #    if self.keywords[key] in list(_Keywords.values()):
-        #        print(key)
-        #        count += 1
-
-        #print('valid count: ', count)
-
-        # 'self.keywords' is actually for scanner
-        # while 'self.partail_ksl' is for the parser to help resolve the names
-        return self.keywords, self.partial_ksl
+        return self.keywords, self.vw_Dict
 
 
     def advance(self):
@@ -201,8 +194,10 @@ class Parser:
             else:
                 self.keywords[name] = tmp[name]
 
+        del trash
+
 
     def fillPKSL(self):
         for keyword in _Keywords.values():
-            if keyword.value not in self.partial_ksl:
-                self.partial_ksl[keyword.value] = keyword.name
+            if keyword.value not in self.vw_Dict:
+                self.vw_Dict[keyword.value] = keyword.name.lower()

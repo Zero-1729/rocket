@@ -1,0 +1,30 @@
+class A {
+	method() {
+		print "class A";
+	}
+}
+
+
+class B < A {
+	method() {
+		print "Inside 'B'";
+		super.method();
+	}
+}
+
+
+class C < B {
+	init() {
+		this.name = 'C';
+	}
+
+	method() {
+		print "Inside 'C'";
+		super.metod();
+	}
+}
+
+
+B().method();
+C().method();
+print "Last class: " + C().name;

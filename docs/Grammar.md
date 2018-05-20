@@ -86,9 +86,10 @@ argumenrs       → expression ( "," expression )* ;
 ## Lexical Grammar
 
 ```
-NUMBER          → DIGIT+ ( "." DIGIT+ )? ;
 STRING          → ('"' <char except '"'>* '"') | ("'" <char except "'"> "'") ;
 INDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ; // I.e '8bit' not allowed
 ALPHA           → 'a' ... 'z' | 'A' ... 'Z' | '_' ;
-DIGIT           → '0' ... '9' ;
+NUMBER          → INT | FLOAT ;
+FLOAT           → (INT)+ "." (INT)+ ;
+INT             → ('0' ... '9')+ ;
 ```

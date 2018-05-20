@@ -1,6 +1,6 @@
 # ![](logo/logo-full-with-text.png)
 
-# The Syntax Hackable Language
+# The Syntax* Hackable Language
 
 ---
 
@@ -88,8 +88,8 @@ usage: rocket [ <option> | <file> ]
     -h     : print this help message and exit (also --help)
     -q     : don't print version and copyright messages on interactive startup
     -v     : print the Rocket version number and exit (also --version)
-	
-    file   : program read from script file 
+
+    file   : program read from script file
 
     RCKTPROMPT: Rocket Lang prompt environment variable. Default "><> ".
 ```
@@ -100,7 +100,7 @@ If you have made up your mind you can follow the instructions below for your pla
 
 ### Download
 
-Get the appropriate install file(s) from [Here](https://github.com/RocketLabs/Rocket/releases)
+Get the appropriate install file(s) from [Here](https://github.com/rocket.labs/Rocket/releases)
 
 ### Source :scroll:
 
@@ -108,7 +108,7 @@ Get the appropriate install file(s) from [Here](https://github.com/RocketLabs/Ro
 
 ```sh
 # clone the repo
-$ git clone https://github.com/RocketLabs/Rocket/
+$ git clone https://github.com/rocket.labs/Rocket/
 
 # Navigate into the repo and install for your platform
 $ cd Rocket/ && make
@@ -127,7 +127,7 @@ $ make install
 
 ```sh
 # clone the repo and Navigate into repo
-$ git clone https://github.com/RocketLabs/Rocket/ && cd Rocket/
+$ git clone https://github.com/rocket.labs/Rocket/ && cd Rocket/
 ```
 
 > Just hack on it as you wish!
@@ -159,4 +159,4 @@ Rocket's creation was made possible by the insights provided by Robert Nystrom i
 ---
 
 > Copyright &copy; Abubakar NK (@Zero-1729) :neckbeard:<br>
-[**Rocket Labs**]() MIT &copy; 2018 - 2019
+[**Rocket Labs**](https://github.com/rocket.labs) RLOL &copy; 2018 - 2019

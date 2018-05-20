@@ -1,4 +1,3 @@
-from tokens import Token as __Token, TokenType as __TokenType
 from expr import Expr as Expr, Visitor as __Visitor, Binary as Binary, Grouping, Literal, Unary
 
 

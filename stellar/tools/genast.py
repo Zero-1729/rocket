@@ -57,7 +57,9 @@ def defineAst(out, baseName, types):
 
         f.write(f"class {className}:")
         f.write(f"\n\tdef accept(visitor: {baseName}Visitor):")
-        f.write(f"\n\t\traise NotImplementedError\n\n\n")
+        f.write(f"\n\t\traise NotImplementedError\n")
+        f.write("\n\tdef parent(self):")
+        f.write(f"\n\t\treturn '{baseName}'\n\n\n")
 
         globalClass = className
 

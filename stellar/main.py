@@ -1,10 +1,10 @@
 # Author: Abubakar NK (Zero-1729)
-# License: GNU GPL V2
+# LICENSE: RLOL
+# Rocket Lang (Stellar) (C) 2018
 #!/usr/bin/python
 
 import sys
 import os
-import codecs
 import readline
 
 from utils.resolver import Resolver
@@ -38,15 +38,16 @@ def load_config(filename):
         f.close()
 
     tks = Dante(source).scan()
-    keywords, pksl = Virgil(tks).parse()
-    return [keywords, pksl]
+    keywords, vk_Dict = Virgil(tks).parse()
+    return [keywords, vk_Dict]
 
 
 def fillKSL():
     # Passing an empty fake 'config.rckt' will return th default KSL
     tks = Dante("").scan()
-    keywords, pksl = Virgil(tks).parse()
-    return [keywords, pksl]
+    keywords, vk_Dict = Virgil(tks).parse()
+
+    return [keywords, vk_Dict]
 
 
 def get_env():
@@ -63,7 +64,7 @@ def assemble_ksl():
     # Search for config file
     if find_config():
         KSL = load_config('config.rckt')
-        print("<> Loaded 'config' <>")
+        print("\033[1m<> Loaded 'config' <>\033[0m")
 
     return KSL
 
@@ -75,7 +76,7 @@ def locate_and_assemble():
 
     if find_config(path):
         KSL = load_config(os.path.join(path, 'config.rckt'))
-        print("<> Loaded 'config' <>")
+        print("\033[1m<> Loaded 'config' <>\033[0m")
 
     return KSL
 
@@ -144,8 +145,7 @@ def run_prompt(prompt, headerless=False):
 
     while True:
 
-        encoded_chunk = codecs.escape_decode(bytes(input(prompt), "utf-8"))[0]
-        chunk = encoded_chunk.decode('utf-8')
+        chunk = input(prompt)
 
         if chunk == "exit":
             readline.write_history_file('.rocket_repl_history')
@@ -177,11 +177,13 @@ def run(source, KSL, mode=None):
 
     errors = scanner.errors + parser.errors
     for error in errors:
-        print(error)
+        print(error, file=sys.stderr)
 
     if errors:
         hadError = True
-        return errors
+
+        # We don't bother resolving already 'error'ful code
+        return
 
     resolver = Resolver(interpreter, KSL[1])
     resolver.resolveStmts(statements)
@@ -193,7 +195,7 @@ def run(source, KSL, mode=None):
     # Avoids mixing error reports in REPL
     try:
         interpreter.interpret(statements)
-    except Exception:
+    except:
         pass
 
     runtime_errs = interpreter.errors + resolution_errs
@@ -204,15 +206,25 @@ def run(source, KSL, mode=None):
         # To avoid reporting old errors
         interpreter.errors, runtime_errs, errors = [], [], []
 
-    return errors, runtime_errs
-
 
 def main():
     sca = ['-q', '--quite', '-v', '--version', '-h', '--help', '-c']
     prompt = get_env() if get_env() != None else "><> "
 
     if len(sys.argv) == 1:
-        run_prompt(prompt)
+        try:
+            run_prompt(prompt)
+
+        except EOFError:
+            # to avoid mangled return shell text
+            print()
+            sys.exit(0)
+
+        except KeyboardInterrupt:
+            # same reason as discussed above
+            print()
+            sys.exit(0)
+
 
     if len(sys.argv) == 2 and (sys.argv[1] not in sca):
         try:

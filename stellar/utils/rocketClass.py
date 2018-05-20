@@ -1,5 +1,4 @@
 from env import Environment as _Environment
-from reporter import ReturnException as _ReturnException
 from utils.reporter import runtimeError as _RuntimeError
 from tokens import Token as _Token
 
@@ -88,7 +87,6 @@ class RocketClass(RocketCallable):
                 init.decleration.params = [p for p in super_init.decleration.params if p not in init.decleration.params] + init.decleration.params
                 init = self.merge_inits(sub_init, super_init, len(super_init.decleration.body) < len(sub_init.decleration.body))
                 self.merged = True
-
 
         if init != None:
             binded_init = init.bind(instance)
@@ -211,7 +209,13 @@ class RocketFunction(RocketCallable):
 
         # Hack to avoid "ReturnException" from prematurely quiting prog
         except Exception as ret:
-            return ret.value
+            if ret.returnable():
+                return ret.value
+
+            # If 'ret' is not 'returnable'
+            # its most probably a sub-class of 'Exception' (an Error)
+            else:
+                return ret
 
         if (self.isInit):
             return self.closure.getAt(0, "this")

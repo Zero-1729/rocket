@@ -1,4 +1,10 @@
-print "1 || 1 : " + (1 and 1); /// "1"
-print "1 || 0 : " + (1 and 0); /// "0"
-print "0 || 1 : " + (0 and 1); /// "0"
-print "0 || 0 : " + (0 and 0); /// "0"
+func logicAnd(left, right) {
+	if (left == 0 or right == 0) {
+		return 0;
+	} else {return 1;}
+}
+
+print "1 || 1 : " + logicAnd(1, 1); /// "1"
+print "1 || 0 : " + logicAnd(1, 0); /// "0"
+print "0 || 1 : " + logicAnd(0, 1); /// "0"
+print "0 || 0 : " + logicAnd(0, 0); /// "0"

@@ -1,13 +1,10 @@
-/* Author: Abubakar NK
-** License: MIT
-** Purpose: Appropriate parsed output from Parser */
-
+# Author: Abubakar NK
+# License: MIT
+# Purpose: Appropriate parsed output from Parser
 
 from utils.tokens import TokenType
 from scanner import Scanner
 from parser import Parser
-from tools.printer import dump_tokens
-
 
 source = """
 var name = "ank";

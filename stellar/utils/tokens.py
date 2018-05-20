@@ -84,23 +84,25 @@ class TokenType(_enum.Enum):
 
 
 Keywords = {
-        "CLASS": TokenType.CLASS,
-        "ELSE": TokenType.ELSE,
-        "FUNC": TokenType.FUNC,
-        "FOR": TokenType.FOR,
-        "BREAK": TokenType.BREAK,
-        "IF": TokenType.IF,
-        "NIN": TokenType.NIN,
-        "AND": TokenType.AND,
-        "OR": TokenType.OR,
-        "PRINT": TokenType.PRINT,
-        "RETURN": TokenType.RETURN,
-        "SUPER": TokenType.SUPER,
-        "THIS": TokenType.THIS,
-        "CONST": TokenType.CONST,
-        "VAR": TokenType.VAR,
-        "WHILE": TokenType.WHILE,
-        "DEL": TokenType.DEL
+        "class": TokenType.CLASS,
+        "else": TokenType.ELSE,
+        "func": TokenType.FUNC,
+        "for": TokenType.FOR,
+        "break": TokenType.BREAK,
+        "if": TokenType.IF,
+        "nin": TokenType.NIN,
+        "and": TokenType.AND,
+        "or": TokenType.OR,
+        "print": TokenType.PRINT,
+        "return": TokenType.RETURN,
+        "super": TokenType.SUPER,
+        "this": TokenType.THIS,
+        "const": TokenType.CONST,
+        "var": TokenType.VAR,
+        "while": TokenType.WHILE,
+        "del": TokenType.DEL,
+        "true": TokenType.TRUE,
+        "false": TokenType.FALSE
 
         # Rocket v0.2.0+
         # Like Python's Try Except

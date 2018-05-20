@@ -1,12 +1,13 @@
 # Author: Abubakar NK (Zero-1729)
-# License: GNU GPL V2
+# LICENSE: RLOL
+# Rocket Lang (Stellar) Scanner (C) 2018
 
 from utils.reporter import ScanError as _ScanError
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 
 class Scanner:
-    def __init__(self, source, ksl):
-        self.ksl = ksl
+    def __init__(self, source, wk_Dict):
+        self.wk_Dict = wk_Dict
         self.source = source
         self.tokens = []
         self.current = 0
@@ -282,30 +283,15 @@ class Scanner:
 
     def identifier(self):
         start = self.current
-        keywords = _Keywords
+        wk_Dict = self.wk_Dict
 
         while (self.isAlphaNum(self.peek())):
             self.advance()
 
         value = self.source[start - 1:self.current]
 
-        # special check for "true" and "false" to avoid passing 'tRue' as TRUE
-        if value == "true":
-            self.addToken(_TokenType.TRUE, value, None)
-            return
-
-        if value == "false":
-            self.addToken(_TokenType.FALSE, value, None)
-            return
-
-        # We only want "print" to be matched as the print statement and not "Print" or "PRINT"
-        if value == "print":
-            self.addToken(_TokenType.PRINT, value, None)
-            return
-
-        # But "Print", "PRINT", etc still get slipped in here so we also check for that
-        if (value.upper() != "PRINT") and (value.upper() in self.ksl):
-            keyword = self.ksl[value.upper()]
+        if value in wk_Dict:
+            keyword = wk_Dict[value]
             self.addToken(keyword, value, None)
 
         else:

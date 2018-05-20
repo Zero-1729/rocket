@@ -17,7 +17,7 @@ class Environment:
         # FIX: #20 check if 'name' taken in 'const' scope
         if name in self.statics.keys():
             raise _RuntimeError(name, "already declared as 'const'")
- 
+
         self.values[name] = val
 
 
@@ -36,10 +36,14 @@ class Environment:
         if (name.lexeme in self.statics):
             return self.statics[name.lexeme]
 
-        if (self.enclosing is not None):
+        if (self.enclosing != None):
             return self.enclosing.get(name)
 
+        # Remember we are out sourcing this
+        # I.e 'interpreter' might not catch our exceptions
+        # So we raise them instead and catch it back in the 'expr' call
         raise _RuntimeError(name, f"ReferenceError: Undefined variable '{name.lexeme}'")
+
 
     def getAt(self, dist: int, name: str):
         return self.ancestor(dist).values.get(name)
@@ -71,7 +75,7 @@ class Environment:
             return
 
         if (name.lexeme in self.statics.keys()):
-            raise _RuntimeError(name, f"ConstReassignmentError: 'const' variables can't be re-assigned")
+            raise _RuntimeError(name, f"AssignmentError: 'const' variables can't be re-assigned")
 
         elif (self.enclosing is not None):
             self.enclosing.assign(name, val)
