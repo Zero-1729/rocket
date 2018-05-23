@@ -1,0 +1,14 @@
+class A {
+	init() {
+		this.name = "name";
+	}
+}
+
+class B < A {
+	getParent() {
+		return super.init();
+	}
+}
+
+# The following is the same as 'print A().name;'
+print B().getParent().name; /// |> "name"

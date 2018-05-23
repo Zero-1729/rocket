@@ -241,6 +241,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Call works but 'msg' not printing
             raise RuntimeError(expr.keyword, "Cannot find undefined method '{expr.method.lexeme}' in superclass")
 
+        # If we called the 'init' method of our superclass we just return an instance of the superclass
+        if method.__str__() == "<fn 'init'>":
+            return superclass
+
         return method
 
 

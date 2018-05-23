@@ -1,3 +1,5 @@
+import copy
+
 from env import Environment as _Environment
 from utils.reporter import runtimeError as _RuntimeError
 from tokens import Token as _Token
@@ -34,12 +36,12 @@ class RocketClass(RocketCallable):
 
     def merge_inits(self, sub, sup, short_sup_init=False):
         # store copy, to be manipulated and used
-        tmp = sup
+        tmp = copy.deepcopy(sup)
 
         # So, we loop through sub checking the names declared in the inits
         # if we find a name that appears in both the sub-class 'init' and the super-clas 'init' we just shadow the super-class with the sub-class decl.
         # At the end unmatched decls are simply added to the sub's decls. Forming a fully merged (inherited and shadow ready) list of decls on the sub-class's 'init' method
-        # TODO: In the future, use this loop to 'loop-n-merge' all the super-classes of a subclass
+        # TODO: In the future, use this loop to 'loop-n-merge' all the super-classes of a subclass. That0is if we want to add support for multi-class inheritance.
 
         # We loop through using this sub's decls body IF and ONLY if sup decls body is longer than sub's ELSE we use sup's decls body len
         # 'lim' is the number we use to loop with
@@ -49,10 +51,16 @@ class RocketClass(RocketCallable):
         if short_sup_init: lim = len(sup.decleration.body)
 
         for i in range(lim):
-            subdec = sub.decleration.body[i].expression.name.lexeme
-            supdecs = [i.expression.name.lexeme for i in tmp.decleration.body]
+            try:
+                subdec = sub.decleration.body[i].expression.name.lexeme
+                supdecs = [i.expression.name.lexeme for i in tmp.decleration.body]
 
-            if subdec in supdecs:
+                if subdec in supdecs:
+                    index = tmp.decleration.body[i]
+                    tmp.decleration.body.remove(index)
+
+            except AttributeError:
+                # In case we hit a decleration that isn't an expression in the body. We just remove it from the sub's body.
                 index = tmp.decleration.body[i]
                 tmp.decleration.body.remove(index)
 
@@ -84,7 +92,7 @@ class RocketClass(RocketCallable):
                 # Lets merge the params also
                 # But make sure the order is still matched
                 # I.e init(type) (sup) init(x, y) (sub) --> init(type, x, y) not init(x, y, type)
-                init.decleration.params = [p for p in super_init.decleration.params if p not in init.decleration.params] + init.decleration.params
+                init.decleration.params = [p for p in super_init.decleration.params if p.lexeme not in [y.lexeme for y in init.decleration.params]] + init.decleration.params
                 init = self.merge_inits(sub_init, super_init, len(super_init.decleration.body) < len(sub_init.decleration.body))
                 self.merged = True
 
@@ -104,7 +112,7 @@ class RocketClass(RocketCallable):
         sup = True if self.superclass != None else False
 
         # Yeah, I know. Hack much?!
-        # But consider if we inherit an empty class, trying to make a get wouldn't work do we make sure it exists first
+        # But consider if we inherit an empty class, trying to make a get wouldn't work. So we make sure it exists first
         sup_init = True if sup and self.superclass.methods.get('init') else False
 
         if sup_init:
@@ -113,7 +121,8 @@ class RocketClass(RocketCallable):
                 init_arity = self.methods['init'].arity()
                 # Only increment when sub's 'merged' flag bot set. I.e sub and sup 'inits' haven't merged. To avoid overflow of sub's arity
                 if not self.merged:
-                    init_arity += self.superclass.methods['init'].arity()
+                    confs = [l.lexeme for l in self.superclass.methods['init'].decleration.params if l.lexeme in [p.lexeme for p in self.methods['init'].decleration.params]]
+                    init_arity += self.superclass.methods['init'].arity(confs)
 
             if not sub_init:
                 init_arity = self.superclass.methods.get("init").arity()
@@ -152,7 +161,7 @@ class RocketInstance:
         method = self._class.locateMethod(self, name.lexeme)
 
         if method != None:
-            # 'iniy' should just return an instance when called instead of 'nin'
+            # 'init' should just return an instance when called instead of 'nin'
             if method.isInit:
                 return method.bind(self)
 
@@ -194,8 +203,12 @@ class RocketFunction(RocketCallable):
         return bounded
 
 
-    def arity(self):
-        return len(self.decleration.params)
+    def arity(self, confs=[]):
+        # Suppose our classes have conflicting names in their init 'params'. We would have to detect these conflicts and reduce the arity for our subclass accordingly
+        if not confs:
+            return len(self.decleration.params)
+        else:
+            return len(self.decleration.params) - len(confs)
 
 
     def call(self, interpreter: object, args: list):

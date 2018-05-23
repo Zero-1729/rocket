@@ -1,6 +1,6 @@
 Flesh out stellar
 .
-| - Add support for customizing 'print', 'this' and 'super' keyword. Spill some KSL sugar. 
+| - Add support for customizing 'this' and 'super' keyword. Spill some KSL sugar. 
 | - Get in final Tests and tweaks on parser, interpreter and scanner
 .
 

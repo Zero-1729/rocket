@@ -4,9 +4,9 @@
 
 > **Notation notes**
 
-*Capaitalization indicates terminals that are single lexemes of varying types*
+*Capitalization indicates terminals that are single lexemes of varying types*
 
-+ `→`       :- operand for production declaration. `production` (left) & `ddefinition` (RIGHT)
++ `→`       :- operand for production declaration. `production` (left) & `definition` (RIGHT)
 + `...`     :- signifies a range
 + `|`       :- separator indicating optionality. In place as `OR`
 + `(` `)`   :- used to group items
@@ -79,15 +79,15 @@ block            → "{" declaration* "}" ;
 ## Utility Rules
 ```
 function        → IDENTIFIER "(" parameters? ")" block ;
-paremeters      → IDENTIFIER ( "," IDENTIFIER )* ;
-argumenrs       → expression ( "," expression )* ;
+parameters      → IDENTIFIER ( "," IDENTIFIER )* ;
+arguments       → expression ( "," expression )* ;
 ```
 
 ## Lexical Grammar
 
 ```
 STRING          → ('"' <char except '"'>* '"') | ("'" <char except "'"> "'") ;
-INDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ; // I.e '8bit' not allowed
+IDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ; // I.e '8bit' not allowed
 ALPHA           → 'a' ... 'z' | 'A' ... 'Z' | '_' ;
 NUMBER          → INT | FLOAT ;
 FLOAT           → (INT)+ "." (INT)+ ;

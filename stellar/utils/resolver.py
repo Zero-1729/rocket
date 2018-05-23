@@ -3,10 +3,10 @@ from tokens import Token as _Token, TokenType as _TokenType
 from expr import ExprVisitor as _ExprVisitor
 from stmt import StmtVisitor as _StmtVisitor
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
-from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class,  Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Func as _Func, Class as _Class,  Block as _Block, Return as _Return, Del as _Del, Print as _Print, Expression as _Expression
 
-from reporter import  ResolutionError as _ResolutionError
+from utils.reporter import  ResolutionError as _ResolutionError
 
 import enum as _enum
 
@@ -42,6 +42,7 @@ class Stack(list):
     def __init__(self):
         # For REPL sakes a pre-defined scope should be used for global vars
         self.stack = [{}]
+        self.lines = [{}]
 
 
     def push(self, item):
@@ -55,15 +56,27 @@ class Stack(list):
             del self.stack[-1]
             return last
 
+    def popLine(self):
+        if not self.isEmptyLines():
+            last = self.lines[-1]
+            del self.lines[-1]
+            return last
+
 
     def peek(self):
         if not self.isEmpty(): return self.stack[-1]
 
+    def peekLine(self):
+        if not self.isEmptyLines(): return self.lines[-1]
+
 
     def isEmpty(self):
-        if len(self.stack) == 0:
-            return True
+        if len(self.stack) == 0: return True
+        return False
 
+
+    def isEmptyLines(self):
+        if len(self.lines) == 0: return True
         return False
 
 
@@ -123,7 +136,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         if (stmt.superclass != None): self.resolveExpr(stmt.superclass)
 
         self.beginScope()
-        
+
         # fake tokens
         this_tok = _Token(_TokenType.THIS, "this", None, 0)
 
@@ -193,7 +206,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
     def visitReturnStmt(self, stmt: _Return):
         return_lexeme = self.ksl[_TokenType.RETURN.value].lower()
         if self.currentFunction == FunctionType.NONE:
-            err = _ResolutionError(stmt.keyword, f"Cannot return from top-level code.").report()
+            err = _ResolutionError(return_lexeme, f"Cannot return from top-level code.").report()
             self.errors.append(err)
 
         if (stmt.value != None):
@@ -312,11 +325,13 @@ class Resolver(_ExprVisitor, _StmtVisitor):
     def endScope(self):
         #print("Scope at end: ", self.scopes.peek())
         scope = self.scopes.pop()
+        lines = self.scopes.popLine()
 
         # walk variables in scope and check unused ones to report
         for entry in scope:
             if (scope[entry].state == VariableState.DEFINED) and not self.currentFunction == FunctionType.FUNCTION:
-                err = _ResolutionError(entry, f"Local variable '{entry}' is declared but unused.")
+                line = lines[entry]
+                err = _ResolutionError(line, f"Local variable '{entry}' is declared but unused.")
                 self.errors.append(err)
 
 
@@ -394,3 +409,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         # Mark var as live and kicking.
         self.scopes.peek()[name.lexeme].state = VariableState.DEFINED
+
+        # TODO: Find better solution for noting lines
+        try: self.scopes.peekLine()[name.lexeme] = name.line
+        except TypeError: pass

@@ -1,4 +1,4 @@
-# ![](logo/logo-full-with-text.png)
+# ![](logo/logo-full-with-text-large.png)
 
 # The Syntax* Hackable Language
 
@@ -21,11 +21,11 @@ Rocket is a High level Dynamically-typed, Object-Oriented Programming Language t
 
 ## Rocket's Compiler & Interpreter
 
-> The Rocket Repo comes with Rocket's C Compiler (**Luna**) aswell as the Python Interpreter (**Stellar**).
+> The Rocket Repo comes with Rocket's C VM (**Luna**) aswell as the Python Interpreter (**Stellar**).
 
 #### Which am I running?
 
-Just type in `rocket -v` or `rocket --version`. You would see the Rocket version aswell as the name of the interpreter and its assocuated version. E.g:-
+Just type in `rocket -v` or `rocket --version`. You would see the Rocket version aswell as the name of the interpreter and its associated version. E.g:-
 
 ```
 $ rocket -v
@@ -38,7 +38,7 @@ From the output above, we can see that we are running `stellar` v0.2.7-b.
 
 It depends on your needs!
 
-##### Luna :full_moon:
+##### RLuna :full_moon:
 
 If you want to compile Rocket programs and run them faster get **RLuna**. Usually advised for any software project that relies on speed, efficiency and accuracy. This is a perfect fit for any programs that require or perform scientific or intense Computation. Running the `rocket` command without specifying a file path produces info about **RLuna**'s usage:-
 ```
@@ -59,7 +59,7 @@ The commands are:
 
 ##### Stellar :dizzy:
 
-This is recommended for Begginers and Users who prefer to use the interactive shell or run their code without compiling. Like CPython's Python Interpreter. **Stellar** can be run as an interactive shell by invoking the `rocket` command which would start the interactive shell:-
+This is recommended for Beginners and Users who prefer to use the interactive shell or run their code without compiling. Like the Python Interpreter. **Stellar** can be run as an interactive shell by invoking the `rocket` command which would start the interactive shell:-
 
 ```
 $ rocket
@@ -69,7 +69,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ><>
 ```
 
-Or alternatively invoke the `rocket` command follwed by a file path to execute a Rocket program. Like so:-
+Or alternatively invoke the `rocket` command followed by a file path to execute a Rocket program. Like so:-
 
 ```
 $ rocket hello.rckt
@@ -147,7 +147,7 @@ Rocket
 .
 ```
 
-Feel free to issue a PR or open an issue to discuss any bugs :beetle:, imporovements :chart_with_upwards_trend:, Ideas :bulb:, etc.
+Feel free to issue a PR or open an issue to discuss any bugs :beetle:, improvements :chart_with_upwards_trend:, Ideas :bulb:, etc.
 
 ---
 
