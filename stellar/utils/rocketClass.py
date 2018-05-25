@@ -46,18 +46,30 @@ class RocketClass(RocketCallable):
         # We loop through using this sub's decls body IF and ONLY if sup decls body is longer than sub's ELSE we use sup's decls body len
         # 'lim' is the number we use to loop with
         lim = len(sub.decleration.body)
+        reverse_check = False
 
         # check for sup-init decls height and adjust lim appropriately
-        if short_sup_init: lim = len(sup.decleration.body)
+        if short_sup_init:
+            lim = len(sup.decleration.body)
+            # if sup decl is smaller we need to reverse the check to whether a given sup decl is in the sub decls. Else we check for whether the subdec is in the supdecs.
+            reverse_check = True
 
         for i in range(lim):
             try:
+                supdec = sup.decleration.body[i].expression.name.lexeme
                 subdec = sub.decleration.body[i].expression.name.lexeme
                 supdecs = [i.expression.name.lexeme for i in tmp.decleration.body]
+                subdecs = [i.expression.name.lexeme for i in sub.decleration.body]
 
-                if subdec in supdecs:
-                    index = tmp.decleration.body[i]
-                    tmp.decleration.body.remove(index)
+                if not reverse_check:
+                    if subdec in supdecs:
+                        index = tmp.decleration.body[i]
+                        tmp.decleration.body.remove(index)
+
+                else:
+                    if supdec in subdecs:
+                        index = tmp.decleration.body[i]
+                        tmp.decleration.body.remove(index)
 
             except AttributeError:
                 # In case we hit a decleration that isn't an expression in the body. We just remove it from the sub's body.

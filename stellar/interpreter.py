@@ -427,11 +427,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         except:
             # We try to see if its in either 'envs'
             # if not we raise the exception for our interpreter to catch
-            try:
-                return self.environment.get(expr.name)
-
-            except _RuntimeError as err:
-                raise err
+            try: return self.environment.get(expr.name)
+            except _RuntimeError as err: raise err
 
         #return self.lookUpVariable(expr.name, expr)
 

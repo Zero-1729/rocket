@@ -1,0 +1,14 @@
+class Computer {
+	init(os) {
+		this.os = 'Linux';
+	}
+}
+
+class MacBook < Computer {
+	init(os) {
+		this.arch = "x86_64";
+		this.os = os;
+	}
+}
+
+print MacBook('win10').os; /// |> 'Mac Os'
