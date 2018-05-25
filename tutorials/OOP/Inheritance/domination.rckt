@@ -11,4 +11,4 @@ class MacBook < Computer {
 	}
 }
 
-print MacBook('win10').os; /// |> 'Mac Os'
+print MacBook('MacOs').os; /// |> 'MacOs'

@@ -20,7 +20,6 @@ class Environment:
 
         self.values[name] = val
 
-
     def isTaken(self, name: _Token):
         if name.lexeme in self.statics.keys() or name.lexeme in self.values.keys():
             return True;

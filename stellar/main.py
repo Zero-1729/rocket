@@ -228,7 +228,7 @@ def main():
 
     if len(sys.argv) == 2 and (sys.argv[1] not in sca):
         try:
-            KSL = locate_and_assemble()
+            KSL = assemble_ksl()
 
             run_file(sys.argv[1], KSL)
             sys.exit(0) # Run file and exit

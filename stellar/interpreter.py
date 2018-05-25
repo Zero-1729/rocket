@@ -2,6 +2,8 @@
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
+import sys
+
 from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
 from utils.tokens import Token as _Token, TokenType as _TokenType
@@ -41,6 +43,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 self.execute(stmt)
 
         except _RuntimeError as error:
+            print('Interpreter caught: ', error)
             self.errors.append(error)
 
 
@@ -174,6 +177,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitCallExpr(self, expr: _Call):
         callee = self.evaluate(expr.callee)
+        #print('Callee: '. callee)
 
         eval_args = []
         for arg in expr.args:
@@ -198,7 +202,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if len(eval_args) != function.arity():
             raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
-
+ 
         return function.call(self, eval_args)
 
 
@@ -423,12 +427,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # NOTE: 'const' variables get retrieved from this call also
         try:
             return self.globals.get(expr.name)
-
+        
         except:
             # We try to see if its in either 'envs'
             # if not we raise the exception for our interpreter to catch
-            try: return self.environment.get(expr.name)
-            except _RuntimeError as err: raise err
+            try:
+                return self.environment.get(expr.name)
+            
+            except _RuntimeError as err:
+                print(err, file=sys.stderr)
+                raise _RuntimeError(err.token, err.msg)
 
         #return self.lookUpVariable(expr.name, expr)
 
@@ -452,8 +460,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             self.environment = previous
 
 
-    def evaluate(self, stmt: _Stmt):
-        return stmt.accept(self)
+    def evaluate(self, expr: _Expr):
+        return expr.accept(self)
 
 
     def resolve(self, expr: _Expr, depth: int):
