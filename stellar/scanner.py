@@ -2,6 +2,7 @@
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Scanner (C) 2018
 
+import re
 from utils.reporter import ScanError as _ScanError
 from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 
@@ -249,11 +250,47 @@ class Scanner:
         self.addToken(_TokenType.STRING, text, value)
 
 
+    def fromBase(self, val: str, base=16):
+        alphas = {
+                'A': 10,
+                'B': 11,
+                'C': 12,
+                'D': 13,
+                'E': 14,
+                'F': 15
+        }
+
+        val = val [2:]
+        enig = len(val)
+        total = 0
+
+        for i in range(enig):
+            if val[i].isalpha():
+                total += alphas[val[i].upper()] * (base ** (enig - 1))
+
+            else:
+                total += int(val[i]) * (base ** (enig - 1))
+
+            enig -= 1
+
+        return total
+
+
     def number(self):
         start = self.current
         value = float()
+        is_seperated = False
+
+        # Lets scan and transform 'HEX' into an int
+        if self.peek().lower() == 'x' or self.peek().lower() == 'o' or self.peek().lower() == 'b':
+            # We continue along and transform it later
+            self.advance()
 
         while (self.isDigit(self.peek())):
+            self.advance()
+
+        while (self.isDigit(self.peek()) or self.peek() == '_'):
+            is_seperated = True
             self.advance()
 
         # decimal part of number of any
@@ -262,11 +299,14 @@ class Scanner:
             self.advance()
 
             # chew the rest
-            while (self.isDigit(self.peek())):
+            while (self.isDigit(self.peek()) or self.peek() == '_'):
                 self.advance()
 
             # When we are done chewing through the float we grab its value from the source
-            value = float(self.source[start - 1:self.current])
+            value_str = self.source[start - 1:self.current]
+            if '_' in value_str:
+                value = float(''.join(value_str.split('_')))
+            else: value = float(value_str)
 
         elif ((self.peek() == '.') and not (self.isDigit(self.peekNext()))):
             err = _ScanError(self.line, "Expected number after '.'. Did you mean float or int?").report()
@@ -274,12 +314,34 @@ class Scanner:
             return
 
         else:
-            # if not point found we know we have an 'int'
-            value = int(self.source[start - 1:self.current])
+            # if no point found, we know we have an 'int'
+            if self.source[start].lower() == 'x':
+                value = self.fromBase(self.source[start-1:self.current])
+
+            elif self.source[start].lower() == 'o':
+                value = self.fromBase(self.source[start-1:self.current], 8)
+
+            elif self.source[start].lower() == 'b':
+                # Our best would be to use regex
+                match = re.compile('[0-1]*')
+                isFull = match.fullmatch(self.source[start+1:self.current])
+
+                if isFull:
+                    value = self.fromBase(self.source[start-1:self.current], 2)
+                else:
+                    err = _ScanError(self.line, "Expected number to be complete base '2' number")
+                    self.errors.append(err)
+
+            elif is_seperated:
+                value = int(''.join(self.source[start-1:self.current].split('_')))
+
+            else:
+                value = int(self.source[start - 1:self.current])
 
         text = self.source[start - 1:self.current]
 
         self.addToken(_TokenType.NUMBER, text, value)
+
 
     def identifier(self):
         start = self.current
