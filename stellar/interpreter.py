@@ -43,8 +43,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 self.execute(stmt)
 
         except _RuntimeError as error:
-            print('Interpreter caught: ', error)
-            self.errors.append(error)
+            # Hopefully our last hack.
+            # Remember that 'raising' reference error
+            # caught inside of funcs/meths doesn't turn up here
+            # instead we manually print it.
+            # To make it uniform we only print it in 'visitVariableStmt'
+            # to avoid duplicates
+            if 'ReferenceError:' not in error.msg:
+                self.errors.append(error)
+            else:
+                pass
 
 
     def visitLiteralExpr(self, expr: _Literal):
@@ -202,7 +210,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if len(eval_args) != function.arity():
             raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
- 
+
         return function.call(self, eval_args)
 
 
@@ -427,13 +435,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # NOTE: 'const' variables get retrieved from this call also
         try:
             return self.globals.get(expr.name)
-        
+
         except:
             # We try to see if its in either 'envs'
             # if not we raise the exception for our interpreter to catch
             try:
                 return self.environment.get(expr.name)
-            
+
             except _RuntimeError as err:
                 print(err, file=sys.stderr)
                 raise _RuntimeError(err.token, err.msg)

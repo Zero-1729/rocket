@@ -314,14 +314,18 @@ class Scanner:
             return
 
         else:
+            # Keep track of whether we have reached the end of the digit we are parsing
+            # Inorder to aviod 'IndexError'
+            atDigitEnd = True if len(self.source) == start else False
+
             # if no point found, we know we have an 'int'
-            if self.source[start].lower() == 'x':
+            if not atDigitEnd and self.source[start].lower() == 'x':
                 value = self.fromBase(self.source[start-1:self.current])
 
-            elif self.source[start].lower() == 'o':
+            elif not atDigitEnd and self.source[start].lower() == 'o':
                 value = self.fromBase(self.source[start-1:self.current], 8)
 
-            elif self.source[start].lower() == 'b':
+            elif not atDigitEnd and self.source[start].lower() == 'b':
                 # Our best would be to use regex
                 match = re.compile('[0-1]*')
                 isFull = match.fullmatch(self.source[start+1:self.current])
