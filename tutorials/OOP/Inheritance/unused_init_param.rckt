@@ -1,0 +1,7 @@
+class A {
+	init(os) {
+		this.os = 'linux';
+	}
+}
+
+print A("jump").os;

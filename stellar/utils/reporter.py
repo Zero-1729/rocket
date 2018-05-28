@@ -70,7 +70,10 @@ class ResolutionError(RuntimeError):
         self.message = message
 
     def report(self):
-        return f"\033[93m[ResolutionError on line {self.token.line}]\033[0m: {self.message}"
+        try:
+            return f"\033[93m[ResolutionError on line {self.token.line}]\033[0m: {self.message}"
+        except AttributeError:
+            return f"\033[93m[ResolutionError on line {self.token}]\033[0m: {self.message}"
 
     def returnable(self):
         return False

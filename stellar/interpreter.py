@@ -2,6 +2,8 @@
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
+import sys
+
 from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
 from utils.tokens import Token as _Token, TokenType as _TokenType
@@ -41,7 +43,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 self.execute(stmt)
 
         except _RuntimeError as error:
-            self.errors.append(error)
+            # Hopefully our last hack.
+            # Remember that 'raising' reference error
+            # caught inside of funcs/meths doesn't turn up here
+            # instead we manually print it.
+            # To make it uniform we only print it in 'visitVariableStmt'
+            # to avoid duplicates
+            if 'ReferenceError:' not in error.msg:
+                self.errors.append(error)
+            else:
+                pass
 
 
     def visitLiteralExpr(self, expr: _Literal):
@@ -174,6 +185,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitCallExpr(self, expr: _Call):
         callee = self.evaluate(expr.callee)
+        #print('Callee: '. callee)
 
         eval_args = []
         for arg in expr.args:
@@ -240,6 +252,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (method == None):
             # Call works but 'msg' not printing
             raise RuntimeError(expr.keyword, "Cannot find undefined method '{expr.method.lexeme}' in superclass")
+
+        # If we called the 'init' method of our superclass we just return an instance of the superclass
+        if method.__str__() == "<fn 'init'>":
+            return superclass
 
         return method
 
@@ -427,7 +443,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 return self.environment.get(expr.name)
 
             except _RuntimeError as err:
-                raise err
+                print(err, file=sys.stderr)
+                raise _RuntimeError(err.token, err.msg)
 
         #return self.lookUpVariable(expr.name, expr)
 
@@ -451,8 +468,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             self.environment = previous
 
 
-    def evaluate(self, stmt: _Stmt):
-        return stmt.accept(self)
+    def evaluate(self, expr: _Expr):
+        return expr.accept(self)
 
 
     def resolve(self, expr: _Expr, depth: int):

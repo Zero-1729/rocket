@@ -58,7 +58,7 @@ Deciding whether the language should be statically typed like `C/C++`,`Java`,etc
 + Allows for the Programmer to focus on the Design/Structure and not so much the implementation.
 + Fewer Obscure errors.   
 
-As a final note, Rocket's C compiler (`RLuna`) allocates memory in accordance with the length of a value. Where a number like `1024` is considereded as a `16bit` value. This atleast tries to make up for any unneccesary and inefficient memory allocation.
+As a final note, Rocket's C compiler (`RLuna`) allocates memory in accordance with the length of a value. Where a number like `1024` is considered as a `16bit` value. This atleast tries to make up for any unnecessary and inefficient memory allocation.
 
 ---
 
@@ -69,13 +69,13 @@ High-level languages such as `Js`, `Python`, etc all eliminate error-prone, low-
 In these High-level languages there are two main techniques that are implemented for managing memory:-
 
 + Reference Counting (not commonly known as **RC**)
-+ And Trace Garbage Collection (commonly refered to as **Garbage Collection** or **GC** for short).
++ And Trace Garbage Collection (commonly referred to as **Garbage Collection** or **GC** for short).
 
 While Reference counters are much simpler to implement hence why many initial iterations of languages e.g. **PHP**, **Python**, **Perl**, etc start off using them. Along the way they discover that dealing with the [many limitations]() of Reference counting is harder than just swapping it out for GC. Reference Counting is a good proof of concept and GC is just better at the big picture level.
 
 Granted that GC is [notorious]() for causing programmers attempting to debug it with [hex dump]() dreams (That was a stolen Joke). But it has still proven to be robust, and good at what it does - *Picking up the trash for programs*.
 
-Rocket also implements its own Aoutomated GC. Whih takes charge of freeinng up the previously used either by a program or calculation (in the interactive shell).
+Rocket's `rluna` also implements its own Automated GC. Which takes charge of freeing up the previously used either by a program or calculation (in the interactive shell).
 
 ---
 
@@ -101,7 +101,7 @@ By default all literals are set to true unless explicitly specified by setting i
 
 #### Numbers
 
-Rocket uses the `Number` type for values that can be classified as an **int**, **float**, **scientific** (including `i` or `j`), **hex**, **octal** etc. **Luna** dynamically assignes values that are of the `Number` type their equivalent or close enough to type in the **C** Language. For example:-
+Rocket uses the `Number` type for values that can be classified as an **int**, **float**, **scientific** (including `i` or `j`), **hex**, **octal** etc. **Luna** dynamically assigns values that are of the `Number` type their equivalent or close enough to type in the **C** Language. For example:-
 
 ```Rocket
 var num = 1024; /// Stored by Rocket as Number type
@@ -126,13 +126,13 @@ Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text 
 
 #### nin
 
-A little over the board? maybe. nin is Rocket's version of Python's **None**. nin stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null piont errors*, since **Luna** is written in C.
+A little over the board? maybe. nin is Rocket's version of Python's **None**. nin stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null point errors*, since **RLuna** is written in C.
 
 ---
 
 ### 4.0 Expressions :performing_arts:
 
-> "If built-in types and their literals are atoms, then **expressions** must be the Molecules" - Robert Nystrom [Cretor of the Lox Language]
+> "If built-in types and their literals are atoms, then **expressions** must be the Molecules" - Robert Nystrom [Creator of the Lox Language]
 
 Basically expressions are just groupings of literals linked together by some operator or just more literals, the same way in English clauses are groups of words put together. E.g:-
 
@@ -185,7 +185,7 @@ In Rocket *prefixing*  the not operator (`!`) to literal returns the opposite of
 !False; /// Returns True
 ```
 
-Likewise *prefixing* `and` invokes the and operator while `or` invvokes the or operator, logic gate style. The and operator returns True if both literals are True and False otherwise. And the or operator returns True if  either literals if True and False Otherwise.E.g:-
+Likewise *prefixing* `and` invokes the and operator while `or` invokes the or operator, logic gate style. The and operator returns True if both literals are True and False otherwise. And the or operator returns True if  either literals if True and False Otherwise.E.g:-
 
 ```Rocket
 true and true; /// Returns True
@@ -194,7 +194,7 @@ false or true; /// Returns True
 
 ##### Operation Precedence
 
-Rockets operators have the same precendence and assosiativity as observed in Python or C. However, Rocket does allow you to override the default precendence by using braces `()` to group calculations.E.g:-
+Rockets operators have the same precedence and associativity as observed in Python or C. However, Rocket does allow you to override the default precedence by using braces `()` to group calculations.E.g:-
 
 ```Rocket
 var num = low + high / 2; /// Result: low + (high / 2)
@@ -204,7 +204,7 @@ var num = low + high / 2; /// Result: low + (high / 2)
 
 ### 5.0 Statements :speech_balloon:
 
-Statements are just Expressions that produce an effect not neccesseraliy a value. This effect could be modifying a literal's state, reading input, producing output, etc. A good example is our hello world program, because the program is just a statement.
+Statements are just Expressions that produce an effect not necessarily a value. This effect could be modifying a literal's state, reading input, producing output, etc. A good example is our hello world program, because the program is just a statement.
 
 ```Rocket
  /// This Statement displays output: 'Hello, world!'
@@ -212,7 +212,7 @@ Statements are just Expressions that produce an effect not neccesseraliy a value
 print "Hello, world!";
 ```
 
-There are also **expression statements**, where an expression is basically appended with the `;` symbol indicating the end of a statement. Because Rocket like C uses `;` to delimate statements. Thus making `2 + 2;` is actually an **expression statement** only because of the `;` delimator.
+There are also **expression statements**, where an expression is basically appended with the `;` symbol indicating the end of a statement. Because Rocket like C uses `;` to delimit statements. Thus making `2 + 2;` is actually an **expression statement** only because of the `;` delimiter.
 
 A block is grouped using braces `{}` as follows in Rocket:-
 
@@ -255,7 +255,7 @@ In Rocket declaring a variable with `var` without explicitly assigning it a valu
 
 In cases were a variable's value needs to change the following happens:-
 
-> **Note**: This only affects varoables declared with the `var` keyword. `const` variables cannot be re-defined.
+> **Note**: This only affects variables declared with the `var` keyword. `const` variables cannot be re-defined.
 
 ```Rocket
 var favouriteDrink = "Coke";
@@ -270,7 +270,7 @@ Some variable names are considered **illegal** if they begin with number literal
 
 ```Rocket
 /// Wrong
-var 8788L = "woohoo"; /// considered an 'illegal' decleration
+var 8788L = "woohoo"; /// considered an 'illegal' declaration
 
 /// Right
 var validVar = "Uhuhh";
@@ -280,7 +280,7 @@ var validVar = "Uhuhh";
 
 ### 7.0 Control Flow :ocean:
 
-Control flow referefs to the manner inwhich code is executed. Whether a certain block is evaluated only if a certain condition is met. THe keywords used for such are:-
+Control flow refers to the manner in which code is executed. Whether a certain block is evaluated only if a certain condition is met. The keywords used for such are:-
 
 + if, else
 + while
@@ -322,7 +322,7 @@ It is worth noting that there is a difference between a `while` loop and a `for`
 
 ### 8.0 Functions
 
-when the programmer decides that she wants to reuse a block of code later her program a function is declered. A sample function decleration is as follows:-
+when the programmer decides that she wants to reuse a block of code later her program a function is declared. A sample function declaration is as follows:-
 
 ```Rocket
 func name(args) {
@@ -330,13 +330,13 @@ func name(args) {
 }
 ```
 
-Functions are declared with the keyword `func` followed by the function name and an optional argument or arguments and then code is enclosed in braces. Functions that dont explicitly return anything implicitly return `nin`.
+Functions are declared with the keyword `func` followed by the function name and an optional argument or arguments and then code is enclosed in braces. Functions that don't explicitly return anything implicitly return `nin`.
 
 > If a function is invoked without the parenthesis its reference is what is returned.
 
 #### Closures
 
-Functons are *first class* meaning they are actuak values that variables can get reference to. Such manipulations are valid:-
+Functions are *first class* meaning they are actual values that variables can get reference to. Such manipulations are valid:-
 
 ```Rocket
 func digit() {
@@ -518,7 +518,7 @@ var macBook = Laptop("Mac Os", "x86_64");
 
 Rocket comes shipped with a standard library which includes the following packages:-
 
-> The `math` module include a `random` function which retruns a random number between **0** and **1**.
+> The `math` module include a `random` function which returns a random number between **0** and **1**.
 
 + **math**:- For math related functions. E.g `sqrt`, `log`, etc.
 
@@ -540,7 +540,7 @@ Rocket comes shipped with a standard library which includes the following packag
 
 As the language continues to mature more packages would be added. Probably demanding that a centralized package repo store to be set up. Just think **Python**'s pypi.
 
-> **Food For Thought**: How would a `decentralised` *distributed* (like hosted on **IPFS**) package repo host do compared to a `centralized` one like a CDN?
+> **Food For Thought**: How would a `decentralized` *distributed* (like hosted on **IPFS**) package repo host do compared to a `centralized` one like a CDN?
 
 ---
 
