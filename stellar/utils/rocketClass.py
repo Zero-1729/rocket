@@ -200,18 +200,19 @@ class RocketInstance:
 
 
 class RocketFunction(RocketCallable):
-    def __init__(self, decleration, closure, isInit):
+    def __init__(self, decleration, closure, isInit, this_lexeme):
         super(RocketCallable)
         self.closure = closure
         self.decleration = decleration
         self.isInit = isInit
+        self.this_lexeme = this_lexeme
 
 
     def bind(self, instance: RocketInstance):
         env = _Environment(self.closure)
-        env.define("this", instance)
+        env.define(self.this_lexeme, instance)
 
-        bounded = RocketFunction(self.decleration, env, self.isInit)
+        bounded = RocketFunction(self.decleration, env, self.isInit, self.this_lexeme)
         return bounded
 
 
@@ -243,7 +244,7 @@ class RocketFunction(RocketCallable):
                 return ret
 
         if (self.isInit):
-            return self.closure.getAt(0, "this")
+            return self.closure.getAt(0, self.this_lexeme)
 
         return "nin"
 

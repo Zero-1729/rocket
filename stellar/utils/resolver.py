@@ -89,12 +89,12 @@ class Stack(list):
 
 
 class Resolver(_ExprVisitor, _StmtVisitor):
-    def __init__(self, interpreter: object, ksl: dict):
+    def __init__(self, interpreter: object, vw_Dict: dict):
         self.currentFunction = FunctionType.NONE
         self.currentClass = ClassType.NONE
         self.interpreter = interpreter
         self.scopes = Stack()
-        self.ksl = ksl
+        self.vw_Dict = vw_Dict
         self.errors = []
 
 
@@ -126,6 +126,9 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitClassStmt(self, stmt: _Class):
+        super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
+
         self.declare(stmt.name)
         self.define(stmt.name)
 
@@ -138,11 +141,11 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         self.beginScope()
 
         # fake tokens
-        this_tok = _Token(_TokenType.THIS, "this", None, 0)
+        this_tok = _Token(_TokenType.THIS, this_lexeme, None, 0)
 
         self.scopes.peek()[this_tok.lexeme] = Variable(this_tok, VariableState.DECLARED)
 
-        super_tok = _Token(_TokenType.SUPER, "super", None, 0)
+        super_tok = _Token(_TokenType.SUPER, super_lexeme, None, 0)
 
         self.scopes.peek()[super_tok.lexeme] = Variable(super_tok, VariableState.DECLARED)
 
@@ -204,7 +207,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitReturnStmt(self, stmt: _Return):
-        return_lexeme = self.ksl[_TokenType.RETURN.value].lower()
+        return_lexeme = self.vw_Dict[_TokenType.RETURN.value]
         if self.currentFunction == FunctionType.NONE:
             err = _ResolutionError(return_lexeme, f"Cannot return from top-level code.").report()
             self.errors.append(err)
@@ -268,7 +271,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitThisExpr(self, expr: _This):
-        this_lexeme = self.ksl[_TokenType.THIS.value].lower()
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
 
         if (self.currentClass == ClassType.NONE):
             err = _ResolutionError(expr.keyword, f"Cannot use '{this_lexeme}' outside of class")
@@ -281,7 +284,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitSuperExpr(self, expr: _Super):
-        super_lexeme = self.ksl[_TokenType.SUPER.value].lower()
+        super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
 
         if self.currentClass == ClassType.NONE:
             err = _ResolutionError(expr.keyword, f"Cannoy use '{super_lexeme}' outside of a class.")
