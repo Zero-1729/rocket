@@ -14,11 +14,12 @@ from native.functions import locals, clock, copyright, natives, input, random, o
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
-    def __init__(self):
+    def __init__(self, vw_Dict):
         self.globals = _Environment() # For the native functions
         self.environment = _Environment() # Functions / classes
         self.locals = {}
         self.errors = []
+        self.vw_Dict = vw_Dict
 
         # Statically define 'native' functions
         # random n between '0-1' {insecure}
@@ -199,6 +200,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 isNative = True
         except: pass
 
+
         # Specially inject check for 'rocketClass'
         isNotCallable = not isinstance(callee, _RocketCallable)
         isNotClass = not isinstance(callee, _RocketClass)
@@ -240,12 +242,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitSuperExpr(self, expr: _Super):
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
+        super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
+
         # 'super' is defined '2' hops in
         dist = self.locals.get(expr) + 2
-        superclass = self.environment.getAt(dist, "super")
+        superclass = self.environment.getAt(dist, super_lexeme)
 
         # And 'this' is alwats one nearer than 'super'
-        obj = self.environment.getAt(dist - 1, "this")
+        obj = self.environment.getAt(dist - 1, this_lexeme)
 
         method = superclass.locateMethod(obj, expr.method.lexeme)
 
@@ -385,13 +390,18 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitFuncStmt(self, stmt: _Func):
-        function = _RocketFunction(stmt, self.environment, False)
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
+
+        function = _RocketFunction(stmt, self.environment, False, this_lexeme)
         self.globals.define(stmt.name.lexeme, function)
 
         return None
 
 
     def visitClassStmt(self, stmt: _Class):
+        super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
+
         self.environment.define(stmt.name.lexeme, None)
 
         superclass = None
@@ -401,12 +411,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.")
 
         self.environment = _Environment(self.environment)
-        self.environment.define("super", superclass)
+        self.environment.define(super_lexeme, superclass)
 
         methods = {}
 
         for method in stmt.methods:
-            function = _RocketFunction(method, self.environment, method.name.lexeme.__eq__("init"))
+            function = _RocketFunction(method, self.environment, method.name.lexeme.__eq__("init"), this_lexeme)
             methods[method.name.lexeme] = function
 
         class_ = _RocketClass(stmt.name.lexeme, superclass, methods)
@@ -477,12 +487,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def lookUpVariable(self, name: _Token, expr: _Expr):
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
         dist = self.locals[expr] if self.locals.get(expr) else None
 
         # remeber that our expr friend is always hidden at the very first 'env' enclosing; at dist = 0
         # So we might have to do an aditional check to see if the current expr bieng querried is 'this' inorder to artificially make 'dist = 0'
         expr_type = expr.parent()
-        isFoldedThis = expr.keyword.lexeme == "this" if expr_type == "Expr" else False
+        isFoldedThis = expr.keyword.lexeme == this_lexeme if expr_type == "Expr" else False
 
         # Check and artificially inject '0' as dist to fetch out 'this' in enclosing env
         # if a nested 'this' is not in the 'expr' then leave dist untouched

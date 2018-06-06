@@ -19,9 +19,6 @@ from tools.custom_syntax import Scanner as Dante, Parser as Virgil
 # For REPL Auto completion
 from tools.autocompleter import AutoComp
 
-# So that global env is static throughout execution. Especially in REPL
-interpreter = Interpreter()
-
 def find_config(path='.'):
     if os.path.exists(os.path.join(path, 'config.rckt')):
         return True
@@ -58,13 +55,13 @@ def get_env():
         return prompt
 
 
-def assemble_ksl():
+def assemble_ksl(noisy=True):
     KSL = fillKSL()
 
     # Search for config file
     if find_config():
         KSL = load_config('config.rckt')
-        print("\033[1m<> Loaded 'config' <>\033[0m")
+        if noisy: print("\033[1m<> Loaded 'config' <>\033[0m")
 
     return KSL
 
@@ -87,6 +84,10 @@ def assemble_acmp(KSL):
     autoCmp = AutoComp(starters)
 
     return autoCmp
+
+
+# So that global env is static throughout execution. Especially in REPL
+interpreter = Interpreter(assemble_ksl(False)[1])
 
 
 def UpdateAuto(autoCmp):
