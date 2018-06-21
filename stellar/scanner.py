@@ -4,7 +4,7 @@
 
 import re
 from utils.reporter import ScanError as _ScanError
-from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
+from utils.tokens import Token as _Token, TokenType as _TokenType
 
 class Scanner:
     def __init__(self, source, wk_Dict):

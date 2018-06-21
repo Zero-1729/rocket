@@ -4,7 +4,7 @@
 
 import sys
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
 from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
@@ -33,7 +33,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # 'clock'
         self.globals.define(clock.Clock().callee, clock.Clock)
         # 'copyright'
-        self.globals.define(copyright.copyright().callee, copyright.copyright)
+        self.globals.define(copyright.Copyright().callee, copyright.Copyright)
         # 'natives' -> names of nativr functions
         self.globals.define(natives.Natives().callee, natives.Natives)
 
@@ -186,7 +186,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitCallExpr(self, expr: _Call):
         callee = self.evaluate(expr.callee)
-        #print('Callee: '. callee)
 
         eval_args = []
         for arg in expr.args:
@@ -194,21 +193,20 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             eval_args.append(self.evaluate(arg))
 
         # Well, built-in functions in 'stdlib/' have a special 'nature' field to distinguish them from user defined funcs.
-        isNative = False
+        isNotNative = True
         try:
             if callee().nature == "native":
-                isNative = True
+                isNotNative = False
         except: pass
-
 
         # Specially inject check for 'rocketClass'
         isNotCallable = not isinstance(callee, _RocketCallable)
         isNotClass = not isinstance(callee, _RocketClass)
 
-        if isNotCallable and isNotClass and not isNative:
+        if isNotCallable and isNotClass and isNotNative:
             raise _RuntimeError(expr.paren, "Can only call functions and classes")
 
-        function = callee if not isNative else callee()
+        function = callee if isNotNative else callee()
 
         if len(eval_args) != function.arity():
             raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
@@ -235,6 +233,25 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         object.set(expr.name, value)
 
         return value
+
+        def visitLogicalExpr(self, expr: _Logical):
+            left = self.evaluate(expr.left)
+            # Fix for bug #33
+            # Bug #33: Check was not evaluating properly. 'OR' slides into 'else' even if matched as 'or'.
+            if (expr.operator.type.value == _TokenType.OR.value):
+                if self.isTruthy(left):
+                    return left
+
+                else:
+                    if not self.isTruthy(left):
+                        return left
+
+                        return self.evaluate(expr.right)
+
+
+    def visitFunctionExpr(self, expr: _Function):
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
+        return _RocketFunction(expr, self.environment, False, this_lexeme, True)
 
 
     def visitThisExpr(self, expr: _This):
@@ -292,19 +309,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         return None
 
 
-    def visitLogicalExpr(self, expr: _Logical):
-        left = self.evaluate(expr.left)
-        # Fix for bug #33
-        # Bug #33: Check was not evaluating properly. 'OR' slides into 'else' even if matched as 'or'.
-        if (expr.operator.type.value == _TokenType.OR.value):
-            if self.isTruthy(left):
-                return left
-
-        else:
-            if not self.isTruthy(left):
-                return left
-
-        return self.evaluate(expr.right)
 
 
     def visitIfStmt(self, stmt: _If):
@@ -402,16 +406,17 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
         this_lexeme = self.vw_Dict[_TokenType.THIS.value]
 
-        self.environment.define(stmt.name.lexeme, None)
-
         superclass = None
         if (stmt.superclass != None):
             superclass = self.evaluate(stmt.superclass)
             if not isinstance(superclass, _RocketClass):
                 raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.")
 
-        self.environment = _Environment(self.environment)
-        self.environment.define(super_lexeme, superclass)
+        self.environment.define(stmt.name.lexeme, None)
+
+        if stmt.superclass != None:
+            self.environment = _Environment(self.environment)
+            self.environment.define(super_lexeme, superclass)
 
         methods = {}
 
@@ -576,7 +581,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         else:
             try:
-                return value(), None
+                if (value().nature == "native"):
+                    return value(), None
 
             except:
                 return value, None

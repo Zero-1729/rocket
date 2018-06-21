@@ -26,7 +26,7 @@ class RocketClass(RocketCallable):
 
     def locateMethod(self, instance: object, name: str):
         if self.methods.get(name):
-            return self.methods.get(name).bind(instance)
+            return self.methods.get(name).bind(instance, name)
 
         if self.superclass != None:
             return self.superclass.locateMethod(instance, name)
@@ -200,19 +200,21 @@ class RocketInstance:
 
 
 class RocketFunction(RocketCallable):
-    def __init__(self, decleration, closure, isInit, this_lexeme):
+    def __init__(self, decleration, closure, isInit, this_lexeme, isAnon=False, methodName=''):
         super(RocketCallable)
         self.closure = closure
-        self.decleration = decleration
+        self.name = '' or methodName if isAnon else decleration.name.lexeme
+        self.decleration = decleration if isAnon else decleration.function
         self.isInit = isInit
         self.this_lexeme = this_lexeme
+        self.isAnon = isAnon
+        self.isMethod = True if methodName != '' else False
 
-
-    def bind(self, instance: RocketInstance):
+    def bind(self, instance: RocketInstance, name):
         env = _Environment(self.closure)
         env.define(self.this_lexeme, instance)
 
-        bounded = RocketFunction(self.decleration, env, self.isInit, self.this_lexeme)
+        bounded = RocketFunction(self.decleration, env, self.isInit, self.this_lexeme, True, name)
         return bounded
 
 
@@ -252,9 +254,11 @@ class RocketFunction(RocketCallable):
     def type(self):
         return self.__repr__()
 
-
     def __str__(self):
-        return f"<fn '{self.decleration.name.lexeme}'>"
+        if not self.isAnon or self.isMethod:
+            return f"<fn '{self.name}'>"
+        else:
+            return "<anonymous-fn>"
 
     def __repr__(self):
         return self.__str__()

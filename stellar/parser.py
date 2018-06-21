@@ -2,7 +2,7 @@
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
+from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.reporter import ParseError as _ParseError
 from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
@@ -30,10 +30,13 @@ class Parser:
 
     def decleration(self):
         try:
+            if (self.checkNext(_TokenType.IDENTIFIER) and self.match(_TokenType.FUNC)):
+                return self.function('function')
+
             if (self.match(_TokenType.VAR)):
                 return self.varDecleration()
 
-            elif (self.match(_TokenType.CONST)):
+            if (self.match(_TokenType.CONST)):
                 return self.constDecleration()
 
             return self.statement()
@@ -127,6 +130,9 @@ class Parser:
         if (self.match(_TokenType.NUMBER, _TokenType.STRING)):
             return _Literal(self.previous().literal)
 
+        if (self.match(_TokenType.FUNC)):
+            return self.anonFunction('function')
+
         if (self.match(_TokenType.THIS)):
             return _This(self.previous())
 
@@ -144,6 +150,9 @@ class Parser:
             return _Variable(self.previous())
 
         if (self.match(_TokenType.LEFT_PAREN)):
+            # Branch to handle Js (ES6) styled fn lambdas
+            # I.e `var connect = (addr, callback) => {...}`
+
             expr = self.expression()
             self.consume(_TokenType.RIGHT_PAREN, "Expected closing ')' after expression")
             return _Grouping(expr)
@@ -230,9 +239,6 @@ class Parser:
 
         if (self.match(_TokenType.CLASS)):
             return self.classDecleration()
-
-        if (self.match(_TokenType.FUNC)):
-            return self.function("function")
 
         if (self.match(_TokenType.LEFT_BRACE)):
             return _Block(self.block())
@@ -540,10 +546,8 @@ class Parser:
         return _Call(callee, paren, args)
 
 
-    def function(self, kind):
+    def anonFunction(self, kind):
         func_lexeme = self.vw_Dict[_TokenType.FUNC.value].lower()
-        # Fix this !!!
-        name = self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected '{kind}' name")
 
         self.consume(_TokenType.LEFT_PAREN, f"'{func_lexeme}' expected '(' after '{kind}' name")
         params = []
@@ -553,18 +557,26 @@ class Parser:
 
             while self.match(_TokenType.COMMA):
                 if len(params) >= 32:
-                    self.error(self.peek(), f"'{func_lexeme}' cannot have more tan 32 params")
+                    self.error(self.peek(), f"'{func_lexeme}' cannot have more than 32 params")
 
-                params.append(self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected param name"))
+                params.append(self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expression expected param name"))
 
-        self.consume(_TokenType.RIGHT_PAREN, f"'{func_lexeme}' expected ')' after params")
+        self.consume(_TokenType.RIGHT_PAREN, f"'{func_lexeme}' expression expected ')' after params")
 
         # chew '{' to indecate start block
         self.consume(_TokenType.LEFT_BRACE, f"'{func_lexeme}'" + " expected '{' to indicate start of '" + kind + "' body")
 
         body = self.block()
 
-        return _Func(name, params, body)
+        return _Function(params, body)
+
+
+    def function(self, kind):
+        func_lexeme = self.vw_Dict[_TokenType.FUNC.value].lower()
+
+        name = self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected '{kind}' name")
+
+        return _Func(name, self.anonFunction(kind))
 
 
     def peek(self):
@@ -609,6 +621,15 @@ class Parser:
         # Right, so the KSL hack is easier when the _TokenType's 'values' are compared and not the object themselves
         # Should still be consostent since the fake 'Enum's are uniquely identified with numbers
         return self.peek().type.value == type.value
+
+
+    def checkNext(self, type: _TokenType):
+        if self.isAtEnd(): return False
+
+        if self.peekNext().type.value == _TokenType.EOF.value:
+            return False
+
+        return self.peekNext().type.value == type.value
 
 
     def consume(self, toke_type, err):
