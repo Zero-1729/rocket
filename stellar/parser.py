@@ -105,6 +105,21 @@ class Parser:
     def call(self):
         expr = self.primary()
 
+        if isinstance(expr, _Variable):
+            if self.peek().type.value == _TokenType.PLUS.value and self.peekNext().type.value == _TokenType.PLUS.value:
+                expr = _Assign(expr.name, [expr.name, 1, 'inc'])
+
+                # Continue parsing after post inc expr '++'
+                self.advance()
+                self.advance()
+
+            if self.peek().type.value == _TokenType.MINUS.value and self.peekNext().type.value == _TokenType.MINUS.value:
+                expr = _Assign(expr.name, [expr.name, -1, 'dec'])
+
+                # Continue parsing after post inc expr '--'
+                self.advance()
+                self.advance()
+
         while True:
             if self.match(_TokenType.LEFT_PAREN):
                 expr = self.finishCall(expr)
@@ -498,6 +513,91 @@ class Parser:
         # Short circuit
         expr = self.OR()
 
+        # Were we handle our arithmetic assignment ops
+        # I.e:- '+=', '-=', '*=', '/=', '%=', '//=', '**='
+        if self.match(_TokenType.PLUS_INC):
+            value = self.assignment()
+            name = expr.name
+
+            if isinstance(expr, _Variable):
+                return _Assign(name, [name, value, 'add'])
+
+            self.error(self.previous(), 'Invalid assignment target') # E.g '9 += 1'
+
+        if self.match(_TokenType.MINUS_INC):
+            value = self.assignment()
+            name = expr.name
+
+            if isinstance(expr, _Variable):
+                if not isinstance(value, _Variable) and type(value.value) == str:
+                    self.error(self.previous(), 'Invalid assignment target for string concatenation') # E.g 'home -= "/Github";'
+
+                return _Assign(name, [name, value, 'sub'])
+
+            self.error(self.previous(), 'Invalid assignment target') # E.g '9 -= 1'
+
+        if self.match(_TokenType.MULT_INC):
+            value = self.assignment()
+            name = expr.name
+
+            if isinstance(expr, _Variable):
+                if not isinstance(value, _Variable) and type(value.value) == str:
+                    self.error(self.previous(), 'Invalid assignment target for string concatenation') # E.g 'home *= "/Github";'
+
+                return _Assign(name, [name, value, 'mul'])
+
+            self.error(self.previous(), 'Invalid assignment target') # E.g '9 *= 1'
+
+        if self.match(_TokenType.DIV_INC):
+            value = self.assignment()
+            name = expr.name
+
+            if isinstance(expr, _Variable):
+                if not isinstance(value, _Variable) and type(value.value) == str:
+                    self.error(self.previous(), 'Invalid assignment target for string concatenation') # E.g 'home/-= "/Github";'
+
+                return _Assign(name, [name, value, 'div'])
+
+            self.error(self.previous(), 'Invalid assignment target') # E.g '9 /= 1'
+
+        if self.match(_TokenType.MOD_INC):
+            value = self.assignment()
+            name = expr.name
+
+            if isinstance(expr, _Variable):
+                if not isinstance(value, _Variable) and type(value.value) == str:
+                    self.error(self.previous(), 'Invalid assignment target for string concatenation') # E.g 'home %= "/Github";'
+
+                return _Assign(name, [name, value, 'mod'])
+
+            self.error(self.previous(), 'Invalid assignment target') # E.g '9 %= 1'
+
+        if self.match(_TokenType.FLOOR_INC):
+            value = self.assignment()
+            name = expr.name
+
+            if isinstance(expr, _Variable):
+                if not isinstance(value, _Variable) and type(value.value) == str:
+                    self.error(self.previous(), 'Invalid assignment target for string concatenation') # E.g 'home //= "/Github";'
+
+                return _Assign(name, [name, value, 'flo'])
+
+            self.error(self.previous(), 'Invalid assignment target') # E.g '9 //= 1'
+
+        if self.match(_TokenType.EXP_INC):
+            value = self.assignment()
+            name = expr.name
+
+            if isinstance(expr, _Variable):
+                if not isinstance(value, _Variable) and type(value.value) == str:
+                    self.error(self.previous(), 'Invalid assignment target for string concatenation') # E.g 'home **= "/Github";'
+
+                return _Assign(name, [name, value, 'exp'])
+
+            self.error(self.previous(), 'Invalid assignment target') # E.g '9 **= 1'
+
+        # END
+
         if (self.match(_TokenType.EQUAL)):
             equals = self.previous()
             value = self.assignment()
@@ -636,6 +736,9 @@ class Parser:
                 _TokenType.FUNC,
                 _TokenType.VAR,
                 _TokenType.CONST,
+                _TokenType.SUPER,
+                _TokenType.OR,
+                _TokenType.AND,
                 _TokenType.FOR,
                 _TokenType.IF,
                 _TokenType.WHILE,

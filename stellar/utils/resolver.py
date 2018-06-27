@@ -234,11 +234,15 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitAssignExpr(self, expr: _Assign):
-        self.resolveExpr(expr.value)
-        # Not read yet
-        self.resolveLocal(expr, expr.name, False)
+        if type(expr.value) != list:
+            self.resolveExpr(expr.value)
+            # Not read yet
+            self.resolveLocal(expr, expr.name, False)
 
-        return None
+            return None
+
+        else:
+            return None
 
 
     def visitBinaryExpr(self, expr: _Binary):

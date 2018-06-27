@@ -5,49 +5,49 @@ import enum as _enum
 @_enum.unique
 class TokenType(_enum.Enum):
         # Single character tokens
-        LEFT_PAREN       = 1
-        RIGHT_PAREN      = 2
-        LEFT_BRACE       = 3
-        RIGHT_BRACE      = 4
-        DOT              = 5
-        COMMA            = 6
-        PLUS             = 7
-        MINUS            = 8
-        SEMICOLON        = 9
-        DIV              = 10
-        MULT             = 11
-        MOD              = 12
-        EXP              = 13
+        LEFT_PAREN       = 1  # '('
+        RIGHT_PAREN      = 2  # ')'
+        LEFT_BRACE       = 3  # '{'
+        RIGHT_BRACE      = 4  # '}'
+        DOT              = 5  # '.'
+        COMMA            = 6  # ','
+        PLUS             = 7  # '+'
+        MINUS            = 8  # '-'
+        SEMICOLON        = 9  # ';'
+        DIV              = 10 # '/'
+        MULT             = 11 # '*'
+        MOD              = 12 # '%'
+        EXP              = 13 # '**'
 
         # NOTE: floor division is detected only if 'RIGHT' operand is a number
-        FLOOR            = 14
+        FLOOR            = 14 # '//'
 
         # One or Two character tokens
-        BANG             = 15
-        BANG_EQUAL       = 16
-        EQUAL            = 17
-        EQUAL_EQUAL      = 18
-        GREATER          = 19
-        GREATER_EQUAL    = 20
-        LESS             = 21
-        LESS_EQUAL       = 22
+        BANG             = 15 # '!'
+        BANG_EQUAL       = 16 # '!='
+        EQUAL            = 17 # '='
+        EQUAL_EQUAL      = 18 # '=='
+        GREATER          = 19 # '>'
+        GREATER_EQUAL    = 20 # '>='
+        LESS             = 21 # '<'
+        LESS_EQUAL       = 22 # '<='
 
         # Bitshifter operators
-        LESS_LESS        = 200
-        GREATER_GREATER  = 201
+        LESS_LESS        = 200 # '<<'
+        GREATER_GREATER  = 201 # '>>'
 
         # Arithmetic increment oprands
         # rocket v0.7.1
-        # "PLUS_INC": "+=",
-        #"MINUS_INC": "-=",
-        #"MULT_INC": "*=",
-        #"DIV_INC": "/=",
-        #"MOD_INC": "%=",
-        #"FLOOR_INC": "//=",
-        #"EXP_INC": "**=",
+        PLUS_INC         = 1111, # '+='
+        MINUS_INC        = 1112, # '-='
+        MULT_INC         = 1113, # '*='
+        DIV_INC          = 1114, # '/='
+        MOD_INC          = 1115, # '%='
+        FLOOR_INC        = 1116, # '//='
+        EXP_INC          = 1117, # '**='
 
         # Unary prefix
-        TILDE             = 112
+        TILDE             = 112  # '~'
 
         # literals
         IDENTIFIER        = 23
@@ -55,29 +55,29 @@ class TokenType(_enum.Enum):
         NUMBER            = 25
 
         # Keywords
-        AND               = 26
-        CLASS             = 27
-        ELSE              = 28
+        AND               = 26   # 'and'
+        CLASS             = 27   # 'class'
+        ELSE              = 28   # 'else'
         #ELIF              = 29
-        FALSE             = 30
-        FUNC              = 31
-        FOR               = 32
-        BREAK             = 99
-        IF                = 33
-        NIN               = 34
-        OR                = 35
-        PRINT             = 36
-        RETURN            = 37
-        SUPER             = 38
-        THIS              = 39
-        TRUE              = 40
-        CONST             = 41
-        VAR               = 42
-        WHILE             = 43
+        FALSE             = 30   # 'false'
+        FUNC              = 31   # 'func'
+        FOR               = 32   # 'for'
+        BREAK             = 99   # 'break'
+        IF                = 33   # 'if'
+        NIN               = 34   # 'nin'
+        OR                = 35   # 'or'
+        PRINT             = 36   # 'print'
+        RETURN            = 37   # 'return'
+        SUPER             = 38   # 'super'
+        THIS              = 39   # 'this'
+        TRUE              = 40   # 'true'
+        CONST             = 41   # 'const'
+        VAR               = 42   # 'var'
+        WHILE             = 43   # 'while'
 
-        Q_MARK            = 66
+        Q_MARK            = 66   # '?'
 
-        DEL               = 0
+        DEL               = 0    # 'del'
 
         # EOF
         EOF               = 44

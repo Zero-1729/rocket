@@ -87,7 +87,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
 
-        # string concatination and arithmetic operator '+'
+        # string concatenation and arithmetic operator '+'
         if (expr.operator.type == _TokenType.PLUS):
             if self.is_number(left) and self.is_number(right):
                 return left + right
@@ -274,17 +274,19 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         for name in stmt.names:
             if name in glob.keys():
                 del glob[name]
+                return None
 
             if name in var_env.keys():
                 del var_env[name]
+                return None
 
             if name in const_env.keys():
                 del const_env[name]
+                return None
 
             else:
                 raise _RuntimeError(name, f"can't undefined name '{name}'")
-
-        return None
+                return None
 
 
     def visitExpressionStmt(self, stmt: _Expression):
@@ -435,10 +437,113 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitAssignExpr(self, expr: _Assign):
-        value = self.evaluate(expr.value)
-        self.environment.assign(expr.name, value)
+        if type(expr.value) == list:
+            init_value = self.environment.get(expr.value[0])
+            var_value = expr.value[1] if type(expr.value[1]) != _Literal else self.evaluate(expr.value[1])
 
-        return value
+            ### Lets handle our post fix arithmetic ops
+
+            # First lets start with '++'
+            if expr.value[2] == 'inc':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform arithmetic increment on string.")
+
+                value = init_value + 1
+
+                self.environment.assign(expr.name, value)
+
+                # I.e :-
+                #       var p = 2;
+                #       print p++; /// returns '2'
+                return init_value
+
+            # For our decrement post fix operator '--'
+            if expr.value[2] == 'dec':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform arithmetic decrement on string.")
+
+                value = init_value - 1
+
+                self.environment.assign(expr.name, value)
+
+                # I.e :-
+                #       var p = 2;
+                #       print p--; /// returns '2'
+                return init_value
+
+            ### END of post arithmetic ops
+
+            ### Beginning of assignment arithmetic ops
+
+            # Perform op check to determine arithmetic operation to perform
+            # Check for '+='
+            # also works in cases were string concatenation is intended 'home += "/Github;"'
+            if expr.value[2] == 'add':
+                value = init_value + var_value
+
+                self.environment.assign(expr.name, value)
+
+            # Check for '-='
+            if expr.value[2] == 'sub':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform subtraction arithmetic assignment on string.")
+
+                value = init_value - var_value
+
+                self.environment.assign(expr.name, value)
+
+            # Check for '*='
+            if expr.value[2] == 'mul':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform multiplication arithmetic assignment on string.")
+
+                value = init_value * var_value
+
+                self.environment.assign(expr.name, value)
+
+            # Check for '/='
+            if expr.value[2] == 'div':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform division arithmetic assignment on string.")
+
+                value = init_value / var_value
+
+                self.environment.assign(expr.name, value)
+
+            # Check for '//='
+            if expr.value[2] == 'flo':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform floor division arithmetic assignment on string.")
+
+                value = init_value // var_value
+
+                self.environment.assign(expr.name, value)
+
+            # Check for '%='
+            if expr.value[2] == 'mod':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform modulo arithmetic assignment on string.")
+
+                value = init_value % var_value
+
+                self.environment.assign(expr.name, value)
+
+            # Check for '**='
+            if expr.value[2] == 'exp':
+                if type(init_value) == str:
+                    raise _RuntimeError(expr.name, "cannot perform exponent arithmetic assignment on string.")
+
+                value = init_value ** var_value
+
+                self.environment.assign(expr.name, value)
+
+            ### END of assignment arithmetic ops
+
+        else:
+            value = self.evaluate(expr.value)
+            self.environment.assign(expr.name, value)
+
+            return value
 
 
     def visitVariableExpr(self, expr: _Variable):

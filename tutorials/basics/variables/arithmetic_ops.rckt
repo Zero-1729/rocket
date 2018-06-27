@@ -1,0 +1,33 @@
+var p = 0;
+
+/// Testing addition assignment arithmetic operator '+='
+p += 2;
+print p; /// returns '2'
+
+/// Testing addition assignment arithmetic operator '-='
+p -= 4;
+print p; /// returns '-2'
+
+/// Testing addition assignment arithmetic operator '*='
+p *= 2;
+print p; /// returns '-4'
+
+/// Testing addition assignment arithmetic operator '/='
+p /= 2;
+print p; /// returns '-2'
+
+/// Testing addition assignment arithmetic operator '%='
+p %= 2;
+print p; /// returns '0'
+
+p = 2;
+
+/// Testing addition assignment arithmetic operator '//='
+p //= 2;
+print p; /// returns '1'
+
+p = 2;
+
+/// Testing addition assignment arithmetic operator '**='
+p **= 2;
+print p; /// returns '4'
