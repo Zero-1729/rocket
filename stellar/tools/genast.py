@@ -117,6 +117,7 @@ def main():
             "Const": "_Token name, _Expr initializer",
             "If": "Stmt condition, Stmt thenBranch, Stmt elseBranch",
             "While": "_Expr condition, Stmt body",
+            "Import": "list modules",
             "Break": "",
             "Return": "_Token keyword, _Expr value",
             "Del"  : "list names"

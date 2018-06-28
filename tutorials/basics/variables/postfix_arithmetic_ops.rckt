@@ -1,0 +1,11 @@
+var p = 0;
+
+print p++; /// Returns '0'
+print p++; /// Returns '1'
+print p; /// Returns '2'
+
+p = 0;
+
+print p--; /// Returns '0'
+print p--; /// Returns '-1'
+print p; /// Returns '-2'

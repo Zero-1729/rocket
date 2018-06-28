@@ -63,6 +63,7 @@ statement       → print_stmt
                 | break_stmt
                 | return_stmt
                 | del_stmt
+                | import_stmt
                 | block ;
 
 print_stmt       → "print" expression ;
@@ -73,12 +74,13 @@ while_stmt       → "while" "(" expression ")" statement ;
 break_stmt       → "break" ";" ;
 return_stmt      → "return" expression? ";" ;
 del_stmt         → "del" IDENTIFIER ( ( "," IDENTIFIER )* )? ";" ;
+import_stmt      → "import" ( "(" IDENTIFIER*  ")" ) | IDENTIFIER ;
 block            → "{" declaration* "}" ;
 ```
 
 ## Utility Rules
 ```
-function        → IDENTIFIER "(" parameters? ")" block ;
+function        → IDENTIFIER? "(" parameters? ")" block ;
 parameters      → IDENTIFIER ( "," IDENTIFIER )* ;
 arguments       → expression ( "," expression )* ;
 ```

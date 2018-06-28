@@ -22,56 +22,76 @@ class Scanner:
             # Check for lexemes
             # Starting with single character tokens
             if c == "(":
-                tok_type = _TokenType.LEFT_PAREN # "LEFT_PAREN"
+                tok_type = _TokenType.LEFT_PAREN
                 self.addSingleToken(tok_type)
 
             elif c == ")":
-                tok_type = _TokenType.RIGHT_PAREN # "RIGHT_PAREN"
+                tok_type = _TokenType.RIGHT_PAREN
                 self.addSingleToken(tok_type)
 
             elif c == "{":
-                tok_type = _TokenType.LEFT_BRACE # "LEFT_BRACE"
+                tok_type = _TokenType.LEFT_BRACE
                 self.addSingleToken(tok_type)
 
             elif c == "}":
-                tok_type = _TokenType.RIGHT_BRACE # "RIGHT_BRACE"
+                tok_type = _TokenType.RIGHT_BRACE
                 self.addSingleToken(tok_type)
 
             elif c == ";":
-                tok_type = _TokenType.SEMICOLON # "SEMICOLON"
+                tok_type = _TokenType.SEMICOLON
                 self.addSingleToken(tok_type)
 
             elif c == ",":
-                tok_type = _TokenType.COMMA # "COMMA"
+                tok_type = _TokenType.COMMA
                 self.addSingleToken(tok_type)
 
             elif c == ".":
-                tok_type = _TokenType.DOT # "DOT"
+                tok_type = _TokenType.DOT
                 self.addSingleToken(tok_type)
 
             elif c == "+":
-                tok_type = _TokenType.PLUS # "PLUS"
-                self.addSingleToken(tok_type)
+                if self.match("="):
+                    self.addDoubleToken(_TokenType.PLUS_INC)
+
+                else:
+                    tok_type = _TokenType.PLUS
+                    self.addSingleToken(tok_type)
 
             elif c == "-":
-                tok_type = _TokenType.MINUS # "MINUS"
-                self.addSingleToken(tok_type)
+                if self.match("="):
+                    self.addDoubleToken(_TokenType.MINUS_INC)
+
+                else:
+                    tok_type = _TokenType.MINUS
+                    self.addSingleToken(tok_type)
 
             elif c == "~":
-                tok_type = _TokenType.TILDE # "TILDE" ~
+                tok_type = _TokenType.TILDE
                 self.addSingleToken(tok_type)
 
             elif c == "*":
                 if self.match("*"):
-                    self.addDoubleToken(_TokenType.EXP)
+                    if self.peek() == '=':
+                        self.addTripleToken(_TokenType.EXP_INC)
+                        self.advance()
+
+                    else: self.addDoubleToken(_TokenType.EXP)
 
                 else:
-                    tok_type = _TokenType.MULT # "MULT"
-                    self.addSingleToken(tok_type)
+                    if self.match("="):
+                        self.addDoubleToken(_TokenType.MULT_INC)
+
+                    else:
+                        tok_type = _TokenType.MULT
+                        self.addSingleToken(tok_type)
 
             elif c == "%":
-                tok_type = _TokenType.MOD # "MOD"
-                self.addSingleToken(tok_type)
+                if self.match("="):
+                    self.addDoubleToken(_TokenType.MOD_INC)
+
+                else:
+                    tok_type = _TokenType.MOD
+                    self.addSingleToken(tok_type)
 
             # Yes, we use Pytjon styled single comments
             elif c == "#":
@@ -83,13 +103,20 @@ class Scanner:
             # NOTE: single line comment can also begin with "///"
             elif c == "/":
                 if self.match("/"):
-                    if (self.futureNumberPeek()):
+                    if self.peek() == '=':
+                        self.addTripleToken(_TokenType.FLOOR_INC)
+                        self.advance()
+
+                    elif (self.futureNumberPeek()):
                         self.addDoubleToken(_TokenType.FLOOR) # "FLOOR"
                         # AddSingleToken can't do the job so we might aswell
 
-                    if (self.peek() == '/'):
+                    elif (self.peek() == '/'):
                         while ((self.peek() != "\n") and not (self.isAtEnd())):
                             self.advance()
+
+                elif self.match("="):
+                    self.addDoubleToken(_TokenType.DIV_INC)
 
                 # C styled '/**/' multi-line comment
                 elif self.match("*"):
@@ -107,6 +134,9 @@ class Scanner:
                         # Adnavce twice to ignore '*/'
                         self.advance()
                         self.advance()
+
+                elif self.match("="):
+                    self.addDoubleToken(_TokenType.DIV_INC)
 
                 else:
                     self.addSingleToken(_TokenType.DIV) # DIV
@@ -400,6 +430,11 @@ class Scanner:
 
     def addDoubleToken(self, lex_type):
         text = self.source[self.current - 2:self.current]
+        self.addToken(lex_type, text, None)
+
+
+    def addTripleToken(self, lex_type):
+        text = self.source[self.current - 2:self.current + 1]
         self.addToken(lex_type, text, None)
 
 

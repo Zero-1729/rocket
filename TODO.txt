@@ -3,11 +3,6 @@ Flesh out stellar
 | - Get in final Tests and tweaks on parser, interpreter and scanner
 .
 
-Add support for post fix arithmetic ops:
-
-n++; /// The same as 'n = n + 1;'
-n-- ; /// The same as 'n = n - 1;'
-
 Find hack for module "import":-
 
 - Scan file provided after "import" then merge the envs of the interpreters. To allow all funcs, vars, classes to be available in the current file or REPL session. like C's #include <{libname}.h>

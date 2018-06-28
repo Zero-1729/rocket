@@ -1,0 +1,8 @@
+var pwd = '/home/jenny';
+
+print 'Current Directory: ' + pwd; /// '/home/jenny'
+
+/// After a fictional directory change
+pwd += '/Github';
+
+print "Current Directory: " + pwd; /// '/home/jenny/Github'

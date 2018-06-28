@@ -43,6 +43,9 @@ class Expr:
 	def accept(visitor: ExprVisitor):
 		raise NotImplementedError
 
+	def parent(self):
+		return 'Expr'
+
 
 class Assign(Expr):
 	def __init__(self, name: _Token, value: Expr):
