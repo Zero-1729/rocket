@@ -168,8 +168,21 @@ class Parser:
             # Branch to handle Js (ES6) styled fn lambdas
             # I.e `var connect = (addr, callback) => {...}`
 
+            # So we assume its an arrow function we are parsing...
+            # Until we get a 'parseError' from our 'arrowFunc' function
+            # Then we proceed to parsing it as a 'braced' expression
+            try:
+                return self.arrowFunc('function')
+            except _ParseError:
+                pass
+
+            if self.previous().type.value == _TokenType.LEFT_PAREN.value and self.peek().type.value == _TokenType.RIGHT_PAREN.value:
+                self.current += 1
+                return _Literal(None)
+
             expr = self.expression()
             self.consume(_TokenType.RIGHT_PAREN, "Expected closing ')' after expression")
+
             return _Grouping(expr)
 
 
@@ -183,7 +196,7 @@ class Parser:
         # Error productions
         # for '!=', '=='
         if (self.match(_TokenType.BANG_EQUAL, _TokenType.EQUAL_EQUAL)):
-            self.error(self.previous, "Left-hand operand missing.")
+            self.error(self.previous(), "Left-hand operand missing.")
             self.equality()
             return None
 
@@ -229,8 +242,8 @@ class Parser:
         # To sew bug #555
         # Bug #555: `if (true) {print 0; else` causes forever loop here.
         if (self.match(_TokenType.ELSE)):
-            if_lexeme = self.vw_Dict[_TokenType.IF.value].lower()
-            else_lexeme = self.vw_Dict[_TokenType.ELSE.value].lower()
+            if_lexeme = self.vw_Dict[_TokenType.IF.value]
+            else_lexeme = self.vw_Dict[_TokenType.ELSE.value]
 
             self.error(self.peek(), f"Can't use '{else_lexeme}' without beginning '{if_lexeme}'.")
 
@@ -250,7 +263,12 @@ class Parser:
             return self.delStmt()
 
         if (self.match(_TokenType.PRINT)):
-            return self.printStmt()
+            if self.peek().type.value == _TokenType.LEFT_PAREN.value:
+                print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
+
+                self.error(self.peek(), f"'{print_lexeme}' is a keyword 'Print' is the native Function. Use 'Print' instead.")
+
+            else: return self.printStmt()
 
         if (self.match(_TokenType.CLASS)):
             return self.classDecleration()
@@ -285,7 +303,7 @@ class Parser:
 
 
     def ifStmt(self):
-        if_lexeme = self.vw_Dict[_TokenType.IF.value].lower()
+        if_lexeme = self.vw_Dict[_TokenType.IF.value]
         self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{if_lexeme}'.")
         condition = self.expression()
         self.consume(_TokenType.RIGHT_PAREN, f"Expected ')' after '{if_lexeme}' condition.")
@@ -302,7 +320,7 @@ class Parser:
 
 
     def whileStmt(self):
-        while_lexeme = self.vw_Dict[_TokenType.WHILE.value].lower()
+        while_lexeme = self.vw_Dict[_TokenType.WHILE.value]
         self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{while_lexeme}'")
         condition = self.expression()
         self.consume(_TokenType.RIGHT_PAREN, f"Expected ')' after '{while_lexeme}' condition")
@@ -318,7 +336,7 @@ class Parser:
 
 
     def forStmt(self):
-        for_lexeme = self.vw_Dict[_TokenType.FOR.value].lower()
+        for_lexeme = self.vw_Dict[_TokenType.FOR.value]
         self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{for_lexeme}'.")
 
         initializer = None
@@ -365,7 +383,7 @@ class Parser:
 
 
     def breakStmt(self):
-        break_lexeme = self.vw_Dict[_TokenType.BREAK.value].lower()
+        break_lexeme = self.vw_Dict[_TokenType.BREAK.value]
         if self.loopDepth == 0:
             self.error(_TokenType.BREAK, f"'{break_lexeme}' used outside loop")
 
@@ -374,7 +392,7 @@ class Parser:
 
 
     def returnStmt(self):
-        return_lexeme = self.vw_Dict[_TokenType.RETURN.value].lower()
+        return_lexeme = self.vw_Dict[_TokenType.RETURN.value]
         keyword = self.previous()
         value = None
 
@@ -387,7 +405,7 @@ class Parser:
 
 
     def delStmt(self):
-        del_lexeme = self.vw_Dict[_TokenType.DEL.value].lower()
+        del_lexeme = self.vw_Dict[_TokenType.DEL.value]
 
         names = []
 
@@ -425,7 +443,7 @@ class Parser:
 
 
     def printStmt(self):
-        print_lexeme = self.vw_Dict[_TokenType.PRINT.value].lower()
+        print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
         value = self.expression()
 
         self.consume(_TokenType.SEMICOLON, f"'{print_lexeme}' expected ';' after expression.")
@@ -433,7 +451,7 @@ class Parser:
 
 
     def varDecleration(self):
-        var_lexeme = self.vw_Dict[_TokenType.VAR.value].lower()
+        var_lexeme = self.vw_Dict[_TokenType.VAR.value]
         initializer = None
         name = None
 
@@ -457,7 +475,7 @@ class Parser:
 
 
     def constDecleration(self):
-        const_lexeme = self.vw_Dict[_TokenType.CONST.value].lower()
+        const_lexeme = self.vw_Dict[_TokenType.CONST.value]
 
         name = None
         initializer = '' # To avoid Python reference errors
@@ -487,7 +505,7 @@ class Parser:
 
 
     def classDecleration(self):
-        class_lexeme = self.vw_Dict[_TokenType.CLASS.value].lower()
+        class_lexeme = self.vw_Dict[_TokenType.CLASS.value]
         name = self.consume(_TokenType.IDENTIFIER, f"Expected '{class_lexeme}' name.")
 
         superclass = None
@@ -646,8 +664,43 @@ class Parser:
         return _Call(callee, paren, args)
 
 
+    def arrowFunc(self, kind):
+        func_lexeme = self.vw_Dict[_TokenType.FUNC.value]
+        lockedIndex = self.current
+
+        params = []
+
+        if not self.check(_TokenType.RIGHT_PAREN):
+            params.append(self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected param name", 'silent'))
+
+            while self.match(_TokenType.COMMA):
+                if len(params) >= 32:
+                    self.error(self.peek(), f"'{func_lexeme}' cannot have more than 32 params")
+
+                params.append(self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expression expected param name", 'silent'))
+
+        if self.peek().type.value != _TokenType.RIGHT_PAREN.value:
+            self.advance()
+
+        self.consume(_TokenType.RIGHT_PAREN, f"'{func_lexeme}' expression expected ')' after params", 'silent')
+
+        if self.peek().type.value != _TokenType.ARROW.value:
+            # Reset pointer
+            self.current = lockedIndex
+            raise _ParseError(None, None)
+
+        self.consume(_TokenType.ARROW, None)
+
+        # chew '{' to indecate start block
+        self.consume(_TokenType.LEFT_BRACE, f"'{func_lexeme}'" + " expected '{' to indicate start of '" + kind + "' body")
+
+        body = self.block()
+
+        return _Function(params, body)
+
+
     def anonFunction(self, kind):
-        func_lexeme = self.vw_Dict[_TokenType.FUNC.value].lower()
+        func_lexeme = self.vw_Dict[_TokenType.FUNC.value]
 
         self.consume(_TokenType.LEFT_PAREN, f"'{func_lexeme}' expected '(' after '{kind}' name")
         params = []
@@ -672,7 +725,7 @@ class Parser:
 
 
     def function(self, kind):
-        func_lexeme = self.vw_Dict[_TokenType.FUNC.value].lower()
+        func_lexeme = self.vw_Dict[_TokenType.FUNC.value]
 
         name = self.consume(_TokenType.IDENTIFIER, f"'{func_lexeme}' expected '{kind}' name")
 
@@ -732,11 +785,11 @@ class Parser:
         return self.peekNext().type.value == type.value
 
 
-    def consume(self, toke_type, err):
+    def consume(self, toke_type, err, form='loud'):
         if (self.check(toke_type)): return self.advance()
 
-        self.error(self.peek(), err).report()
-
+        if form == 'loud': self.error(self.peek(), err).report()
+        elif form == 'silent': self.advance()
 
     def error(self, token: _Token, message: str):
         err = _ParseError(token, message)

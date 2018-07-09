@@ -1,7 +1,7 @@
 import copy
 
 from env import Environment as _Environment
-from utils.reporter import runtimeError as _RuntimeError
+from reporter import runtimeError as _RuntimeError
 from tokens import Token as _Token
 
 
@@ -10,7 +10,7 @@ class RocketCallable:
         self.callee = callee
 
     def arity(self):
-        return NotImplementedError
+        raise NotImplementedError
 
     def call(self, interpreter: object,  args: list):
         raise NotImplementedError

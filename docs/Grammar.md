@@ -49,6 +49,7 @@ addition    → mult ( ( "-" | "+" | "<<" | ">>" ) mult )* ;
 mult        → unary ( ( "/" | "//" | "%" | "*" | "**" ) unary )* ;
 unary       → ( "~" | "!" | "-" ) unary | call ;
 call        → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
+arrow_func    → "(" arguments ")" "=>" block ;
 primary     → "true" | "false" | "nin" | "this" | NUMBER | STRING | IDENTIFIER | "(" expression ")" | "super" "." IDENTIFIER ;
 ```
 
@@ -74,7 +75,7 @@ while_stmt       → "while" "(" expression ")" statement ;
 break_stmt       → "break" ";" ;
 return_stmt      → "return" expression? ";" ;
 del_stmt         → "del" IDENTIFIER ( ( "," IDENTIFIER )* )? ";" ;
-import_stmt      → "import" ( "(" IDENTIFIER*  ")" ) | IDENTIFIER ;
+import_stmt      → "import" ( "(" IDENTIFIER*  ")" | IDENTIFIER ) ;
 block            → "{" declaration* "}" ;
 ```
 

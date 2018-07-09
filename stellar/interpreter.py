@@ -11,6 +11,7 @@ from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, W
 from env import Environment as _Environment
 from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction, RocketClass as _RocketClass, RocketInstance as _RocketInstance
 from native.functions import locals, clock, copyright, natives, input, random, output
+from native.datatypes import array, string, number
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -36,6 +37,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(copyright.Copyright().callee, copyright.Copyright)
         # 'natives' -> names of nativr functions
         self.globals.define(natives.Natives().callee, natives.Natives)
+
+        # Datatypes
+        self.globals.define(array.Array().callee, array.Array)
+        self.globals.define(string.String().callee, string.String)
+        self.globals.define(number.Int().callee, number.Int)
+        self.globals.define(number.Float().callee, number.Float)
 
 
     def interpret(self, statements: list):
@@ -192,26 +199,53 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Fix passing expr and stmt to 'stdlib' functions
             eval_args.append(self.evaluate(arg))
 
-        # Well, built-in functions in 'stdlib/' have a special 'nature' field to distinguish them from user defined funcs.
+        # Well, built-in functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
         isNotNative = True
+        isNotDatatype = True
         try:
             if callee().nature == "native":
                 isNotNative = False
-        except: pass
+        except:
+            if hasattr(callee, 'nature'):
+                isNotDatatype = False
 
-        # Specially inject check for 'rocketClass'
+        # Specially inject check for 'rocketClass' and 'rocketCallable'
         isNotCallable = not isinstance(callee, _RocketCallable)
         isNotClass = not isinstance(callee, _RocketClass)
 
-        if isNotCallable and isNotClass and isNotNative:
+        if isNotCallable and isNotClass and isNotNative and isNotDatatype:
             raise _RuntimeError(expr.paren, "Can only call functions and classes")
 
         function = callee if isNotNative else callee()
 
-        if len(eval_args) != function.arity():
-            raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+        # We dynamically change 'arity' for Array's 'slice' fn depending on the args
+        if not isNotDatatype:
+            if hasattr(function, 'signature') and hasattr(function, 'slice'):
+                if function.signature == 'Array' and len(eval_args) == 2:
+                    function.inc = True
 
-        return function.call(self, eval_args)
+        if hasattr(function, 'slice'):
+            if len(eval_args) != function.arity(function.inc):
+                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity(function.inc)}' args but got '{len(eval_args)}.'")
+
+        else:
+            # We handle 'Print()' carefully here. so that it print a newline when no args are given
+            if isinstance(function, output.Print) and len(eval_args) == 0:
+                return function.call(self, [''])
+
+            if len(eval_args) != function.arity():
+                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+
+        if hasattr(function, 'inc'):
+            return function.call(self, eval_args, function.inc)
+
+        else:
+            try:
+                return function.call(self, eval_args)
+            except Exception as err:
+                self.errors.append(err)
+                # Trip the interpreter to halt it from printing/returning 'nin'
+                raise err
 
 
     def visitGetExpr(self, expr: _Get):
@@ -220,11 +254,22 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if isinstance(object, _RocketInstance):
             return object.get(expr.name)
 
-        raise _RuntimeError(expr.name, "Only instances have properties.")
+        # Another special check for datatypes
+        if hasattr(object, 'nature'):
+            try:
+                return object.get(expr.name)
+            except Exception as err:
+                raise _RuntimeError(err.token, err.msg)
+
+        else:
+            raise _RuntimeError(expr.name, "Only instances have properties.")
 
 
     def visitSetExpr(self, expr: _Set):
         object = self.evaluate(expr.object)
+
+        if hasattr(object, 'nature'):
+            raise _RuntimeError('Array', f"Cannot assign external attribute to native datatype 'Array'")
 
         if not isinstance(object, _RocketInstance):
             raise _RuntimeError(expr.name, "Only instances have fields.")
@@ -311,8 +356,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         return None
 
 
-
-
     def visitIfStmt(self, stmt: _If):
          if (self.isTruthy(self.evaluate(stmt.condition))):
              self.execute(stmt.thenBranch)
@@ -360,7 +403,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if color:
             print(f"{color}{val}\033[0m")
         else:
-            print(val)
+            # to force '__str__' to be printed for 'native' methods
+            if hasattr(val, 'toString'):
+                print(val.toString)
+
+            else:
+                print(val)
 
         return None
 
@@ -546,7 +594,14 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         else:
             value = self.evaluate(expr.value)
-            self.environment.assign(expr.name, value)
+
+            try:
+                self.environment.assign(expr.name, value)
+            except _RuntimeError as error:
+                if 'ReferenceError:' in error.msg:
+                    self.errors.append(error)
+                else:
+                    pass
 
             return value
 
@@ -679,6 +734,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (value == False and type(value) == bool): return "false", "\033[1m"
 
         if isinstance(value, str):
+            if value == '':
+                return value, None
+
+            if value[0] == '[' and value[-1]:
+                return value, None
+
             return value, "\033[32m"
 
         elif isinstance(value, int) or isinstance(value, float):

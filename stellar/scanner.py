@@ -151,11 +151,17 @@ class Scanner:
                     self.addDoubleToken(_TokenType.BANG_EQUAL) # "BANG_EQUAL"
 
             elif c == "=":
-                if not self.match("="):
-                    self.addSingleToken( _TokenType.EQUAL) # "EQUAL"
+                if self.match('='):
+                    self.addDoubleToken(_TokenType.EQUAL_EQUAL) # "EQUAL_EQUAL"
 
                 else:
-                    self.addDoubleToken(_TokenType.EQUAL_EQUAL) # "EQUAL_EQUAL"
+                    if self.match(">"):
+                        self.addDoubleToken(_TokenType.ARROW)
+
+                    else:
+                        self.addSingleToken( _TokenType.EQUAL) # "EQUAL"
+
+
 
             elif c == "<":
                 if self.match("="):

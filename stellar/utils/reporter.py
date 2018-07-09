@@ -45,7 +45,7 @@ class runtimeError(RuntimeError):
         return False
 
     def __str__(self):
-        return f"\033[93m[RuntimeError]\033[0m '{self.msg}'"
+        return f"\033[93m[RuntimeError]\033[0m {self.msg}"
 
     def __repr__(self):
         return self.__str__()
