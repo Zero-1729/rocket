@@ -2,9 +2,9 @@ import time
 
 from rocketClass import RocketCallable as _RocketCallable
 
-class copyright(_RocketCallable):
+class Copyright(_RocketCallable):
     def __init__(self):
-        self.callee = "copyright"
+        self.callee = "Copyright"
         self.nature = "native"
 
     def arity(self):

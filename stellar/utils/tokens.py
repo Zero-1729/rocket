@@ -49,6 +49,9 @@ class TokenType(_enum.Enum):
         # Unary prefix
         TILDE             = 112  # '~'
 
+        # For arrow functions
+        ARROW             = 9999 # '=>'
+
         # literals
         IDENTIFIER        = 23
         STRING            = 24

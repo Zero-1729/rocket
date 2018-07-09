@@ -1,0 +1,4 @@
+(fn) => {
+	print 'Executing func ' + fn;
+	print fn + ': ' + fn();
+}(() => {return "hi there!";});

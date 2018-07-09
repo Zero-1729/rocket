@@ -125,7 +125,7 @@ def run_prompt(prompt, headerless=False):
     KSL = assemble_ksl()
     autoCmp = assemble_acmp(KSL)
 
-    header = f"""Rocket 0.1.8-p | Rocket Labs | [Stellar 0.2.7-b] (Ubuntu 16.04.3 LTS)] on linux\n"""
+    header = f"""Rocket 0.1.8-p | Rocket Labs | [Stellar 0.2.7-b]\n"""
 
     if not headerless:
         print(header)

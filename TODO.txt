@@ -3,10 +3,113 @@ Flesh out stellar
 | - Get in final Tests and tweaks on parser, interpreter and scanner
 .
 
-Find hack for module "import":-
+Sync 'import' impl. from phone to `master`
+document change for allowing `print ();` to eval to `nin` and not a `ParseError` #DONE
+Implement `string` and `number`(`int` & `float`) datatypes fully #DONE
+Then implement `array` datatype #DONE
 
-- Scan file provided after "import" then merge the envs of the interpreters. To allow all funcs, vars, classes to be available in the current file or REPL session. like C's #include <{libname}.h>
+Parse array/string indexing at `Call` in `Parser` to wrap it up as `_Index(args)`
 
-- Specially scan for all classes defined in the file. Providing some neat packaging for large projects.
+---
 
-- Create an importer class that parses rocket files to fill current global scope with all its defs ('funcs', 'classes', 'vars', 'consts', etc)
+For `_Index` expr it accepts a list of args now this list is what determines the indexing. Because we discard the ':' during parsing
+the length of the args is what we use to interprete the indexing n the `Interpreter`.
+
+So For example:-
+
+`_Index(1)`        -> ARRAY[1] or STRING[1]     --> returns the element at index `1`
+`_Index()`         -> ARRAY[:] or STRING[:]     --> returns all the elements from index `0` to length - 1 (i.e. `-1`)
+                      ARRAY[::] or STRING[::]   -->   ""    ""  ""     ""     ""   ""   ""  ""   ""          ""
+
+`_Index(-1)`       -> ARRAY[-1] or STRING[-1]   --> returns the last element
+`_Index(0, 2)`     -> ARRAY[0:2] or STRING[0:2] --> returns all the elements from `0` to `1`
+
+`_Index(0, -1)`    -> ARRAY[:-1] or STRING[:-1] --> returns all the elements from `0` to the second to the last element. I.e `:` could be used as a short-hand for `0`
+
+Note: might consider adding JS `slice` method to arrays/strings
+
+Thats how indexing works in Rocket.
+
+---
+
+Maybe introduce a new rocketIterable class, so that `[0, 2, 4]` can be interpreted as `ARRAY(0, 2, 4)`. Allowing for expressions latter on like:-
+
+Input:
+```
+for item in ARRAY[0, 2, 4] {
+    print item;
+}
+```
+Outputs:
+```
+0
+2
+4
+```
+
+---
+
+For list comprehensions maybe consider JS (ES6) like expression
+
+```
+var array = [0...6];
+print array;
+```
+
+Outputs
+```
+[0, 1, 2, 3, 4, 5, 6]
+```
+
+=======
+end
+=====
+
+find away to make `Print` native-func to be capable of outputing Unicode emojis. And parsing `f-string` like expressions.
+
+E.g:-
+
+```
+const addr = '127.0.0.1';
+print("The address is: '${addr}'");
+```
+
+Prints out
+```
+The address is: '127.0.0.1'
+```
+
+====
+
+When all this is achieved we move on to our last datatype; `dicts` or `maps`.
+Using principles discussed in for Arrays/Strings
+
+For dict comprehensions it could take the form:-
+
+'{' IterableType ':' IterableType '}'
+
+or the regular
+
+'{' (String | Number | Array ':' String | Number | Array )+ '}'
+
+allowing for empty dict definitions; `var dict = {};`
+
+```
+var names = ['Jamie', 'Sarah', 'Ava'];
+var attendanceBook = {names:0...len(names)};
+
+print attendanceBook;
+```
+
+should print:
+
+```
+{'Jamie':0, 'Sarah':1, 'Ava':2}
+```
+
+======
+
+-----
+print native function
+
+allow it to parse near infinite amount of objects. Check 'print' image in 'Picture' folder

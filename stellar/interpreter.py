@@ -4,13 +4,14 @@
 
 import sys
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
 from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
 from env import Environment as _Environment
 from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction, RocketClass as _RocketClass, RocketInstance as _RocketInstance
 from native.functions import locals, clock, copyright, natives, input, random, output
+from native.datatypes import array, string, number
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -33,9 +34,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # 'clock'
         self.globals.define(clock.Clock().callee, clock.Clock)
         # 'copyright'
-        self.globals.define(copyright.copyright().callee, copyright.copyright)
+        self.globals.define(copyright.Copyright().callee, copyright.Copyright)
         # 'natives' -> names of nativr functions
         self.globals.define(natives.Natives().callee, natives.Natives)
+
+        # Datatypes
+        self.globals.define(array.Array().callee, array.Array)
+        self.globals.define(string.String().callee, string.String)
+        self.globals.define(number.Int().callee, number.Int)
+        self.globals.define(number.Float().callee, number.Float)
 
 
     def interpret(self, statements: list):
@@ -186,34 +193,59 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitCallExpr(self, expr: _Call):
         callee = self.evaluate(expr.callee)
-        #print('Callee: '. callee)
 
         eval_args = []
         for arg in expr.args:
             # Fix passing expr and stmt to 'stdlib' functions
             eval_args.append(self.evaluate(arg))
 
-        # Well, built-in functions in 'stdlib/' have a special 'nature' field to distinguish them from user defined funcs.
-        isNative = False
+        # Well, built-in functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
+        isNotNative = True
+        isNotDatatype = True
         try:
             if callee().nature == "native":
-                isNative = True
-        except: pass
+                isNotNative = False
+        except:
+            if hasattr(callee, 'nature'):
+                isNotDatatype = False
 
-
-        # Specially inject check for 'rocketClass'
+        # Specially inject check for 'rocketClass' and 'rocketCallable'
         isNotCallable = not isinstance(callee, _RocketCallable)
         isNotClass = not isinstance(callee, _RocketClass)
 
-        if isNotCallable and isNotClass and not isNative:
+        if isNotCallable and isNotClass and isNotNative and isNotDatatype:
             raise _RuntimeError(expr.paren, "Can only call functions and classes")
 
-        function = callee if not isNative else callee()
+        function = callee if isNotNative else callee()
 
-        if len(eval_args) != function.arity():
-            raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+        # We dynamically change 'arity' for Array's 'slice' fn depending on the args
+        if not isNotDatatype:
+            if hasattr(function, 'signature') and hasattr(function, 'slice'):
+                if function.signature == 'Array' and len(eval_args) == 2:
+                    function.inc = True
 
-        return function.call(self, eval_args)
+        if hasattr(function, 'slice'):
+            if len(eval_args) != function.arity(function.inc):
+                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity(function.inc)}' args but got '{len(eval_args)}.'")
+
+        else:
+            # We handle 'Print()' carefully here. so that it print a newline when no args are given
+            if isinstance(function, output.Print) and len(eval_args) == 0:
+                return function.call(self, [''])
+
+            if len(eval_args) != function.arity():
+                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+
+        if hasattr(function, 'inc'):
+            return function.call(self, eval_args, function.inc)
+
+        else:
+            try:
+                return function.call(self, eval_args)
+            except Exception as err:
+                self.errors.append(err)
+                # Trip the interpreter to halt it from printing/returning 'nin'
+                raise err
 
 
     def visitGetExpr(self, expr: _Get):
@@ -222,11 +254,22 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if isinstance(object, _RocketInstance):
             return object.get(expr.name)
 
-        raise _RuntimeError(expr.name, "Only instances have properties.")
+        # Another special check for datatypes
+        if hasattr(object, 'nature'):
+            try:
+                return object.get(expr.name)
+            except Exception as err:
+                raise _RuntimeError(err.token, err.msg)
+
+        else:
+            raise _RuntimeError(expr.name, "Only instances have properties.")
 
 
     def visitSetExpr(self, expr: _Set):
         object = self.evaluate(expr.object)
+
+        if hasattr(object, 'nature'):
+            raise _RuntimeError('Array', f"Cannot assign external attribute to native datatype 'Array'")
 
         if not isinstance(object, _RocketInstance):
             raise _RuntimeError(expr.name, "Only instances have fields.")
@@ -235,6 +278,25 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         object.set(expr.name, value)
 
         return value
+
+        def visitLogicalExpr(self, expr: _Logical):
+            left = self.evaluate(expr.left)
+            # Fix for bug #33
+            # Bug #33: Check was not evaluating properly. 'OR' slides into 'else' even if matched as 'or'.
+            if (expr.operator.type.value == _TokenType.OR.value):
+                if self.isTruthy(left):
+                    return left
+
+                else:
+                    if not self.isTruthy(left):
+                        return left
+
+                        return self.evaluate(expr.right)
+
+
+    def visitFunctionExpr(self, expr: _Function):
+        this_lexeme = self.vw_Dict[_TokenType.THIS.value]
+        return _RocketFunction(expr, self.environment, False, this_lexeme, True)
 
 
     def visitThisExpr(self, expr: _This):
@@ -294,21 +356,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         return None
 
 
-    def visitLogicalExpr(self, expr: _Logical):
-        left = self.evaluate(expr.left)
-        # Fix for bug #33
-        # Bug #33: Check was not evaluating properly. 'OR' slides into 'else' even if matched as 'or'.
-        if (expr.operator.type.value == _TokenType.OR.value):
-            if self.isTruthy(left):
-                return left
-
-        else:
-            if not self.isTruthy(left):
-                return left
-
-        return self.evaluate(expr.right)
-
-
     def visitIfStmt(self, stmt: _If):
          if (self.isTruthy(self.evaluate(stmt.condition))):
              self.execute(stmt.thenBranch)
@@ -356,7 +403,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if color:
             print(f"{color}{val}\033[0m")
         else:
-            print(val)
+            # to force '__str__' to be printed for 'native' methods
+            if hasattr(val, 'toString'):
+                print(val.toString)
+
+            else:
+                print(val)
 
         return None
 
@@ -404,16 +456,17 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
         this_lexeme = self.vw_Dict[_TokenType.THIS.value]
 
-        self.environment.define(stmt.name.lexeme, None)
-
         superclass = None
         if (stmt.superclass != None):
             superclass = self.evaluate(stmt.superclass)
             if not isinstance(superclass, _RocketClass):
                 raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.")
 
-        self.environment = _Environment(self.environment)
-        self.environment.define(super_lexeme, superclass)
+        self.environment.define(stmt.name.lexeme, None)
+
+        if stmt.superclass != None:
+            self.environment = _Environment(self.environment)
+            self.environment.define(super_lexeme, superclass)
 
         methods = {}
 
@@ -541,7 +594,14 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         else:
             value = self.evaluate(expr.value)
-            self.environment.assign(expr.name, value)
+
+            try:
+                self.environment.assign(expr.name, value)
+            except _RuntimeError as error:
+                if 'ReferenceError:' in error.msg:
+                    self.errors.append(error)
+                else:
+                    pass
 
             return value
 
@@ -674,6 +734,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (value == False and type(value) == bool): return "false", "\033[1m"
 
         if isinstance(value, str):
+            if value == '':
+                return value, None
+
+            if value[0] == '[' and value[-1]:
+                return value, None
+
             return value, "\033[32m"
 
         elif isinstance(value, int) or isinstance(value, float):
@@ -681,7 +747,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         else:
             try:
-                return value(), None
+                if (value().nature == "native"):
+                    return value(), None
 
             except:
                 return value, None

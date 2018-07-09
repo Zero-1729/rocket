@@ -4,7 +4,7 @@
 
 import re
 from utils.reporter import ScanError as _ScanError
-from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
+from utils.tokens import Token as _Token, TokenType as _TokenType
 
 class Scanner:
     def __init__(self, source, wk_Dict):
@@ -151,11 +151,17 @@ class Scanner:
                     self.addDoubleToken(_TokenType.BANG_EQUAL) # "BANG_EQUAL"
 
             elif c == "=":
-                if not self.match("="):
-                    self.addSingleToken( _TokenType.EQUAL) # "EQUAL"
+                if self.match('='):
+                    self.addDoubleToken(_TokenType.EQUAL_EQUAL) # "EQUAL_EQUAL"
 
                 else:
-                    self.addDoubleToken(_TokenType.EQUAL_EQUAL) # "EQUAL_EQUAL"
+                    if self.match(">"):
+                        self.addDoubleToken(_TokenType.ARROW)
+
+                    else:
+                        self.addSingleToken( _TokenType.EQUAL) # "EQUAL"
+
+
 
             elif c == "<":
                 if self.match("="):
