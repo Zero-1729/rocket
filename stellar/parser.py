@@ -2,10 +2,10 @@
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
+from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, Conditional as _Conditional, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.reporter import ParseError as _ParseError
-from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
+from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Import as _Import, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
 
 class Parser:
     def __init__(self, tokens, vw_Dict):
@@ -44,6 +44,66 @@ class Parser:
         except _ParseError:
             self.synchronize()
             return None
+
+
+    def statement(self):
+        if (self.match(_TokenType.IF)):
+            return self.ifStmt()
+
+        # To sew bug #555
+        # Bug #555: `if (true) {print 0; else` causes forever loop here.
+        if (self.match(_TokenType.ELSE)):
+            if_lexeme = self.vw_Dict[_TokenType.IF.value]
+            else_lexeme = self.vw_Dict[_TokenType.ELSE.value]
+
+            self.error(self.peek(), f"Can't use '{else_lexeme}' without beginning '{if_lexeme}'.")
+
+        if (self.match(_TokenType.WHILE)):
+            return self.whileStmt()
+
+        if (self.match(_TokenType.FOR)):
+            return self.forStmt()
+
+        if (self.match(_TokenType.BREAK)):
+            return self.breakStmt()
+
+        if (self.match(_TokenType.RETURN)):
+            return self.returnStmt()
+
+        if (self.match(_TokenType.DEL)):
+            return self.delStmt()
+
+        if (self.match(_TokenType.IMPORT)):
+            return self.importStmt()
+
+        if (self.match(_TokenType.PRINT)):
+            if self.peek().type.value == _TokenType.LEFT_PAREN.value:
+                print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
+
+                self.error(self.peek(), f"'{print_lexeme}' is a keyword 'Print' is the native Function. Use 'Print' instead.")
+
+            else: return self.printStmt()
+
+        if (self.match(_TokenType.CLASS)):
+            return self.classDecleration()
+
+        if (self.match(_TokenType.LEFT_BRACE)):
+            return _Block(self.block())
+
+        return self.expressionStmt()
+
+
+    def conditional(self):
+        expr = self.equality()
+
+        if self.match(_TokenType.Q_MARK):
+            thenExpr = self.expression()
+            self.consume(_TokenType.COLON, "Expected ':' after then expression branch of the conditional expression")
+
+            elseExpr = self.conditional()
+            expr = _Conditional(expr, thenExpr, elseExpr)
+
+        return expr
 
 
     def equality(self):
@@ -235,50 +295,6 @@ class Parser:
         raise self.error(self.peek(), "Expected expression.")
 
 
-    def statement(self):
-        if (self.match(_TokenType.IF)):
-            return self.ifStmt()
-
-        # To sew bug #555
-        # Bug #555: `if (true) {print 0; else` causes forever loop here.
-        if (self.match(_TokenType.ELSE)):
-            if_lexeme = self.vw_Dict[_TokenType.IF.value]
-            else_lexeme = self.vw_Dict[_TokenType.ELSE.value]
-
-            self.error(self.peek(), f"Can't use '{else_lexeme}' without beginning '{if_lexeme}'.")
-
-        if (self.match(_TokenType.WHILE)):
-            return self.whileStmt()
-
-        if (self.match(_TokenType.FOR)):
-            return self.forStmt()
-
-        if (self.match(_TokenType.BREAK)):
-            return self.breakStmt()
-
-        if (self.match(_TokenType.RETURN)):
-            return self.returnStmt()
-
-        if (self.match(_TokenType.DEL)):
-            return self.delStmt()
-
-        if (self.match(_TokenType.PRINT)):
-            if self.peek().type.value == _TokenType.LEFT_PAREN.value:
-                print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
-
-                self.error(self.peek(), f"'{print_lexeme}' is a keyword 'Print' is the native Function. Use 'Print' instead.")
-
-            else: return self.printStmt()
-
-        if (self.match(_TokenType.CLASS)):
-            return self.classDecleration()
-
-        if (self.match(_TokenType.LEFT_BRACE)):
-            return _Block(self.block())
-
-        return self.expressionStmt()
-
-
     def OR(self):
         expr = self.AND()
 
@@ -291,11 +307,11 @@ class Parser:
 
 
     def AND(self):
-        expr = self.equality()
+        expr = self.conditional() # self.equality()
 
         while (self.match(_TokenType.AND)):
             operator = self.previous()
-            right = self.equality()
+            right = self.conditional() # self.equality()
 
             expr = _Logical(expr, operator, right)
 
@@ -440,6 +456,40 @@ class Parser:
             self.error(_TokenType.DEL, f"'{del_lexeme}' requires atleast one identifier")
 
         return _Del(names)
+
+
+    def importStmt(self):
+        import_lexeme = self.vw_Dict[_TokenType.IMPORT.value]
+
+        modules = []
+
+        isFull = False
+        shift = False
+
+        if not self.check(_TokenType.SEMICOLON) and not self.isAtEnd():
+            if self.check(_TokenType.IDENTIFIER) or self.check(_TokenType.STRING):
+                modules.append(self.peek())
+
+            if self.check(_TokenType.LEFT_PAREN):
+                isFull = True
+
+                while not self.check(_TokenType.RIGHT_PAREN) and not self.isAtEnd():
+                    if self.check(_TokenType.IDENTIFIER) or self.check(_TokenType.STRING):
+                        modules.append(self.peek())
+
+                    self.advance()
+
+        if self.peek() == _TokenType.RIGHT_PAREN:
+            shift = True
+
+        if isFull:
+            self.consume(_TokenType.RIGHT_PAREN, f"'(' expected closing ')' in {import_lexeme} statement")
+
+        if shift:
+            # Move beyond the ')'
+            self.advance()
+
+        return _Import(modules)
 
 
     def printStmt(self):

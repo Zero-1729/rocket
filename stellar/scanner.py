@@ -45,6 +45,14 @@ class Scanner:
                 tok_type = _TokenType.COMMA
                 self.addSingleToken(tok_type)
 
+            elif c == "?":
+                tok_type = _TokenType.Q_MARK
+                self.addSingleToken(tok_type)
+
+            elif c == ':':
+                tok_type = _TokenType.COLON
+                self.addSingleToken(tok_type)
+
             elif c == ".":
                 tok_type = _TokenType.DOT
                 self.addSingleToken(tok_type)

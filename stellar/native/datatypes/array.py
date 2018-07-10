@@ -333,7 +333,7 @@ class RocketArray(_RocketInstance):
             return rocketCallable
 
         else:
-            raise _RuntimeError(name, f"'Array' has no '{name.lexeme}' method.")
+            raise _RuntimeError(name, f"'Array' has no method '{name.lexeme}'.")
 
 
     def set(self, name, value):

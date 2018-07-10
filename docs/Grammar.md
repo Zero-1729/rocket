@@ -42,14 +42,16 @@ expression  → assignment ;
 assignment  → ( call "." )? IDENTIFIER "=" assignment | logic_or ;
 
 logic_or    → logic_and ( "or" logic_and )* ;
-logic_and   → equality  ( "and" equality )* ;
+logic_and   → conditional  ( "and" conditional )* ;
+conditional → equality ( "?" equality : conditional )? ;
 equality    → comparison ( ( "!=" | "==" ) comparison )* ;
 comparison  → addition ( ( ">" | ">=" | "<" | "<=" ) addition)* ;
 addition    → mult ( ( "-" | "+" | "<<" | ">>" ) mult )* ;
 mult        → unary ( ( "/" | "//" | "%" | "*" | "**" ) unary )* ;
 unary       → ( "~" | "!" | "-" ) unary | call ;
 call        → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
-arrow_func    → "(" arguments ")" "=>" block ;
+arrow_func  → "(" arguments ")" "=>" block ;
+postfix     → primary ( "--" | "++" ) ;
 primary     → "true" | "false" | "nin" | "this" | NUMBER | STRING | IDENTIFIER | "(" expression ")" | "super" "." IDENTIFIER ;
 ```
 

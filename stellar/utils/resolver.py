@@ -3,8 +3,8 @@ from tokens import Token as _Token, TokenType as _TokenType
 from expr import ExprVisitor as _ExprVisitor
 from stmt import StmtVisitor as _StmtVisitor
 
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
-from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Func as _Func, Class as _Class,  Block as _Block, Return as _Return, Del as _Del, Print as _Print, Expression as _Expression
+from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Conditional as _Conditional, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
+from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Import as _Import, Func as _Func, Class as _Class,  Block as _Block, Return as _Return, Del as _Del, Print as _Print, Expression as _Expression
 
 from utils.reporter import  ResolutionError as _ResolutionError
 
@@ -96,6 +96,10 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         self.scopes = Stack()
         self.vw_Dict = vw_Dict
         self.errors = []
+
+
+    def visitImportStmt(Self, stmt: _Import):
+        return None
 
 
     def visitBlockStmt(self, stmt: _Block):
@@ -312,6 +316,9 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
 
     def visitLiteralExpr(self, expr: _Literal):
+        return None
+
+    def visitConditionalExpr(self, expr: _Conditional):
         return None
 
 

@@ -3,10 +3,7 @@ Flesh out stellar
 | - Get in final Tests and tweaks on parser, interpreter and scanner
 .
 
-Sync 'import' impl. from phone to `master`
-document change for allowing `print ();` to eval to `nin` and not a `ParseError` #DONE
-Implement `string` and `number`(`int` & `float`) datatypes fully #DONE
-Then implement `array` datatype #DONE
+Add more examples illustrating new futures and datatypes. Add 'Dict'/'Hash Map' datatype. Ensiure consistency of datatypes in `interpreter`
 
 Parse array/string indexing at `Call` in `Parser` to wrap it up as `_Index(args)`
 
@@ -17,14 +14,14 @@ the length of the args is what we use to interprete the indexing n the `Interpre
 
 So For example:-
 
-`_Index(1)`        -> ARRAY[1] or STRING[1]     --> returns the element at index `1`
-`_Index()`         -> ARRAY[:] or STRING[:]     --> returns all the elements from index `0` to length - 1 (i.e. `-1`)
+`_Index(IDENTIFIER, 1)`        -> ARRAY[1] or STRING[1]     --> returns the element at index `1`
+`_Index(IDENTIFIER)`         -> ARRAY[:] or STRING[:]     --> returns all the elements from index `0` to length - 1 (i.e. `-1`)
                       ARRAY[::] or STRING[::]   -->   ""    ""  ""     ""     ""   ""   ""  ""   ""          ""
 
-`_Index(-1)`       -> ARRAY[-1] or STRING[-1]   --> returns the last element
-`_Index(0, 2)`     -> ARRAY[0:2] or STRING[0:2] --> returns all the elements from `0` to `1`
+`_Index(IDENTIFIER, -1)`       -> ARRAY[-1] or STRING[-1]   --> returns the last element
+`_Index(IDENTIFIER, 0, 2)`     -> ARRAY[0:2] or STRING[0:2] --> returns all the elements from `0` to `1`
 
-`_Index(0, -1)`    -> ARRAY[:-1] or STRING[:-1] --> returns all the elements from `0` to the second to the last element. I.e `:` could be used as a short-hand for `0`
+`_Index(IDENTIFIER, 0, -1)`    -> ARRAY[:-1] or STRING[:-1] --> returns all the elements from `0` to the second to the last element. I.e `:` could be used as a short-hand for `0`
 
 Note: might consider adding JS `slice` method to arrays/strings
 

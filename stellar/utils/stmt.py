@@ -30,6 +30,9 @@ class StmtVisitor:
 	def visitWhileStmt(self, stmt):
 		raise NotImplementedError
 
+	def visitImportStmt(self, stmt):
+		raise NotImplementedError
+
 	def visitBreakStmt(self, stmt):
 		raise NotImplementedError
 
@@ -83,10 +86,9 @@ class Class(Stmt):
 
 
 class Func(Stmt):
-	def __init__(self, name: _Token, params: list, body: list):
+	def __init__(self, name: _Token, function: _Expr):
 		self.name = name
-		self.params = params
-		self.body = body
+		self.function = function
 
 	def accept(self, visitor: StmtVisitor):
 		return visitor.visitFuncStmt(self)
@@ -127,6 +129,14 @@ class While(Stmt):
 
 	def accept(self, visitor: StmtVisitor):
 		return visitor.visitWhileStmt(self)
+
+
+class Import(Stmt):
+	def __init__(self, modules: list):
+		self.modules = modules
+
+	def accept(self, visitor: StmtVisitor):
+		return visitor.visitImportStmt(self)
 
 
 class Break(Stmt):
