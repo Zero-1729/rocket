@@ -220,6 +220,10 @@ def main():
             run_prompt(prompt)
 
         except EOFError:
+            # Ctrl-D
+            # Save REPL history before exit
+            readline.write_history_file('.rocket_repl_history')
+
             # to avoid mangled return shell text
             print()
             sys.exit(0)
