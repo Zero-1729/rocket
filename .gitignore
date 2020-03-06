@@ -1,9 +1,4 @@
-*.py[cod]
-
-# C extensions
-*.so
-
-# Packages
+# Py Packages
 *.egg
 *.egg-info
 dist
@@ -20,27 +15,28 @@ lib64
 !api/lib
 __pycache__
 
+
 # Installer logs
 pip-log.txt
+
 
 # Unit test / coverage reports
 .coverage
 .tox
 nosetests.xml
 
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
 
 # Hydrogen
 .ropeproject
 
-# Local Data
-local_data/*
+
+# Rocket repl file
+.rocket_repl_history 
+config.rckt
 
 # Mac
 .DS_Store
+
 
 # vim
 *.swp
