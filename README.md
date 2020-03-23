@@ -100,7 +100,7 @@ If you have made up your mind you can follow the instructions below for your pla
 
 ### Download
 
-Get the appropriate install file(s) from [Here](https://github.com/rocket.labs/Rocket/releases)
+Get the appropriate install file(s) from [Here](https://github.com/Zero-1729/Rocket/releases)
 
 ### Source :scroll:
 
@@ -108,7 +108,7 @@ Get the appropriate install file(s) from [Here](https://github.com/rocket.labs/R
 
 ```sh
 # clone the repo
-$ git clone https://github.com/rocket.labs/Rocket/
+$ git clone https://github.com/Zero-1729/Rocket/
 
 # Navigate into the repo and install for your platform
 $ cd Rocket/ && make
@@ -127,7 +127,7 @@ $ make install
 
 ```sh
 # clone the repo and Navigate into repo
-$ git clone https://github.com/rocket.labs/Rocket/ && cd Rocket/
+$ git clone https://github.com/Zero-1729/Rocket/ && cd Rocket/
 ```
 
 > Just hack on it as you wish!
@@ -158,5 +158,5 @@ Rocket's creation was made possible by the insights provided by Robert Nystrom i
 
 ---
 
-> Copyright &copy; Abubakar NK (@Zero-1729) :neckbeard:<br>
-[**Rocket Labs**](https://github.com/rocket.labs) RLOL &copy; 2018 - 2019
+> Copyright &copy; Abubakar N K (@Zero-1729) :neckbeard:<br>
+[**Rocket Labs**](https://github.com/Zero-1729) RLOL &copy; 2018 - 19

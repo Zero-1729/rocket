@@ -1,4 +1,4 @@
-# Author: Abubakar NK (Zero-1729)
+# Author: Abubakar N K (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Parser (C) 2018
 
