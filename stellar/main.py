@@ -35,16 +35,16 @@ def load_config(filename):
         f.close()
 
     tks = Dante(source).scan()
-    keywords, vk_Dict = Virgil(tks).parse()
-    return [keywords, vk_Dict]
+    wk_Dict, vk_Dict = Virgil(tks).parse()
+    return [wk_Dict, vk_Dict]
 
 
 def fillKSL():
     # Passing an empty fake 'config.rckt' will return th default KSL
     tks = Dante("").scan()
-    keywords, vk_Dict = Virgil(tks).parse()
+    wk_Dict, vk_Dict = Virgil(tks).parse()
 
-    return [keywords, vk_Dict]
+    return [wk_Dict, vk_Dict]
 
 
 def get_env():
