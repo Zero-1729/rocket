@@ -109,7 +109,7 @@ class RocketClass(RocketCallable):
                 self.merged = True
 
         if init != None:
-            binded_init = init.bind(instance)
+            binded_init = init.bind(instance, 'init')
             binded_init.call(interpreter, args)
 
         return instance
@@ -175,7 +175,7 @@ class RocketInstance:
         if method != None:
             # 'init' should just return an instance when called instead of 'nin'
             if method.isInit:
-                return method.bind(self)
+                return method.bind(self, name.lexeme)
 
             return method
 
