@@ -417,6 +417,7 @@ class Parser:
             value = self.expression()
 
         self.consume(_TokenType.SEMICOLON, f"Expected ';' after {return_lexeme} value")
+
         return _Return(keyword, value)
 
 
@@ -521,6 +522,7 @@ class Parser:
             initializer = self.expression()
 
         self.consume(_TokenType.SEMICOLON, f"'{var_lexeme}' expected ';' after decleration.")
+
         return _Var(name, initializer)
 
 
