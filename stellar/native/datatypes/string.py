@@ -119,28 +119,6 @@ class RocketArray(_RocketInstance):
 
             return rocketCallable
 
-        if name.lexeme == 'count':
-            rocketCallable = _RocketCallable(self)
-
-            def arity():
-                return 1
-
-            def call(interpreter, args):
-                item = args[0]
-
-                if item in self.elements:
-                    return self.elements.count(args[0])
-
-                else:
-                    return 0
-
-            rocketCallable.arity = arity
-            rocketCallable.call = call
-            rocketCallable.toString = "<native method 'count' of Array>"
-            rocketCallable.nature = 'native'
-
-            return rocketCallable
-
         if name.lexeme == 'length':
             rocketCallable = _RocketCallable(self)
 
