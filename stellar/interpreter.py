@@ -23,6 +23,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.locals = {}
         self.errors = []
         self.KSL = None
+        self.stackCount = 0 # tracks stmt repetitions, 'stackoverflow' errs
+        self.fnCallee = None # Tracks current fn callee
 
         # Statically define 'native' functions
         # random n between '0-1' {insecure}
@@ -259,7 +261,24 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         else:
             try:
+                # Monitor recursive calls to same function
+                # set current function
+                if (self.stackCount == 66):
+                    # Reset counter
+                    self.stackCount = 0
+
+                    raise _RuntimeError(expr.callee.name.lexeme, f"Maximum recursion depth reached from calls to '{expr.callee.name.lexeme}' fn.")
+
+                # We increment our stack counter if same fn called from previous call
+                if (self.fnCallee == expr.callee.name.lexeme):
+                    self.stackCount += 1
+
+                # Set new fn callee
+                else:
+                    self.fnCallee = expr.callee.name.lexeme
+                
                 return function.call(self, eval_args)
+
             except Exception as err:
                 self.errors.append(err)
                 # Trip the interpreter to halt it from printing/returning 'nin'
@@ -621,8 +640,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Check for '+='
             # also works in cases were string concatenation is intended 'home += "/Github;"'
             if expr.value[2] == 'add':
-                print(type(init_value), type(var_value))
-
                 value = init_value.value + var_value
                 value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
 

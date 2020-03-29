@@ -237,7 +237,7 @@ class RocketFunction(RocketCallable):
 
         # Hack to avoid "ReturnException" from prematurely quiting prog
         except Exception as ret:
-            if ret.returnable():
+            if hasattr(ret, 'returnable') and hasattr(ret, 'value'):
                 return ret.value
 
             # If 'ret' is not 'returnable'
