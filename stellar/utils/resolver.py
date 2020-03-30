@@ -357,7 +357,13 @@ class Resolver(_ExprVisitor, _StmtVisitor):
     def resolveStmts(self, stmts: list):
         # Loop 'n' resolve
         for stmt in stmts:
-            self.resolveStmt(stmt)
+            # I.e when multi-variable/const declerations are made
+            if type(stmt) == list:
+                for decl in stmt:
+                    self.resolveStmt(decl)
+
+            else:
+                self.resolveStmt(stmt)
 
         return None
 

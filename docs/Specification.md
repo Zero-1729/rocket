@@ -276,6 +276,35 @@ var 8788L = "woohoo"; /// considered an 'illegal' declaration
 var validVar = "Uhuhh";
 ```
 
+#### Multi-variable declaration
+
+Rocket supports multi-variable declaration for both variables that are declared with either `const` or `var`. This enables us to make multiple declarations at a time using a single `const` or `var`.
+
+Below is an example using both the `var` and `const` declarations:
+
+```
+/// Const multi-variable declaration
+const {
+    author = 'Abubakar N. K.',;
+    email = 'zero1729@protonmail.com';
+}
+
+/// Var multi-variable decelration
+var {
+    length = 0.2;
+    height = 2;
+}
+
+/// Please note, the multi-variable declaration does not require ';' after the declarations like every other statement in the language, meaning, both declarations bewlo are valid.
+var {
+    name = '01729';
+};
+
+var {
+    show = 'Halt And Catch Fire';
+}
+```
+
 ---
 
 ### 7.0 Control Flow :ocean:

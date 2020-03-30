@@ -52,7 +52,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def interpret(self, statements: list):
         try:
             for stmt in statements:
-                self.execute(stmt)
+                if type(stmt) == list:
+                    # We know we have proberbly hit a multi-variable definition
+                    for decl in stmt:
+                        self.execute(decl)
+
+                else:
+                    self.execute(stmt)
 
         except _RuntimeError as error:
             # Hopefully our last hack.

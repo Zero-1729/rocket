@@ -501,8 +501,7 @@ class Parser:
         return _Print(value)
 
 
-    def varDecleration(self):
-        var_lexeme = self.vw_Dict[_TokenType.VAR.value]
+    def parseVarDecl(self, var_lexeme):
         initializer = None
         name = None
 
@@ -517,21 +516,17 @@ class Parser:
         else:
             self.error(self.peek(), f"'{var_lexeme}' can't declare class instance.")
 
-
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
 
-        self.consume(_TokenType.SEMICOLON, f"'{var_lexeme}' expected ';' after decleration.")
+        self.consume(_TokenType.SEMICOLON, f"'{var_lexeme}' expected ';' after declaration.")
 
         return _Var(name, initializer)
 
 
-    def constDecleration(self):
-        const_lexeme = self.vw_Dict[_TokenType.CONST.value]
-
+    def parseConstDecl(self, const_lexeme):
         name = None
-        initializer = '' # To avoid Python reference errors
-
+        initializer = None # To avoid Python reference errors
 
         if (self.peekNext().type != _TokenType.LEFT_PAREN):
             name = self.consume(_TokenType.IDENTIFIER, f"'{const_lexeme}' expected variable name.")
@@ -545,7 +540,7 @@ class Parser:
         else:
             self.consume(_TokenType.EQUAL, f"'{const_lexeme}' variables require initializers.")
 
-        self.consume(_TokenType.SEMICOLON, f"'{const_lexeme}' expected ';' after decleration.")
+        self.consume(_TokenType.SEMICOLON, f"'{const_lexeme}' expected ';' after declaration.")
 
         # BUG #19: 'Const' are re-assignable using 'const' decl
         # E.g const y = 9; // Perfectly legit
@@ -556,7 +551,63 @@ class Parser:
         return _Const(name, initializer)
 
 
-    def classDecleration(self):
+    def varDeclaration(self):
+        var_lexeme = self.vw_Dict[_TokenType.VAR.value]
+        vars = []
+
+        if self.match(_TokenType.LEFT_BRACE):
+            # The following symbols keep giving us a hard time, so we only proceed if they aren't next:
+            # '}', '{', '~', ')'
+            # the combination specifically is:
+            # var { [name] = [value][symbol]
+            # e.g.:
+            # var { n = 0~
+            # Note: The same solution is used for const multi-var decls below
+            while not (self.peek().type in [_TokenType.RIGHT_BRACE,  _TokenType.LEFT_BRACE, _TokenType.TILDE, _TokenType.RIGHT_PAREN, _TokenType.EOF]):
+                vars.append(self.parseVarDecl(var_lexeme))
+
+            self.consume(_TokenType.RIGHT_BRACE, "'{}' expected closing '{}' after multi-variable declaration".format(var_lexeme, '}'))
+
+            # This check ensures that const multi-variable declarations can end with ';'.
+            # Since all statements end with ';', though it is optional for the import stmt and in multi-variable defintions
+            # So both 'var {...};' and 'var {...}' are valid
+            if self.peek().type == _TokenType.SEMICOLON:
+                self.advance()
+
+            # Returns a list of 'vars' if we indeed detected multi-variable declaration (i.e var {...})
+            return vars
+
+
+        else:
+            # We simply return a single parsed variable
+            return self.parseVarDecl(var_lexeme)
+
+
+    def constDeclaration(self):
+        const_lexeme = self.vw_Dict[_TokenType.CONST.value]
+        consts = []
+
+        if self.match(_TokenType.LEFT_BRACE):
+            while not (self.peek().type in [_TokenType.RIGHT_BRACE,  _TokenType.LEFT_BRACE, _TokenType.TILDE, _TokenType.RIGHT_PAREN, _TokenType.EOF]):
+                consts.append(self.parseConstDecl(const_lexeme))
+
+            self.consume(_TokenType.RIGHT_BRACE, "'{}' expected closing '{}' after multi-variable declaration".format(const_lexeme, '}'))
+
+            # This check ensures that const multi-variable declarations can end with ';'.
+            # Since all statements end with ';', though it is optional for the import stmt and in multi-variable defintions
+            # So both 'const {...};' and 'const {...}' are valid
+            if self.peek().type == _TokenType.SEMICOLON:
+                self.advance()
+
+        else:
+            # We simply return a single parsed variable
+            return self.parseConstDecl(const_lexeme)
+
+        # Returns a list of 'vars' if we indeed detected multi-variable declaration (i.e var {...})
+        return consts
+
+
+    def classDeclaration(self):
         class_lexeme = self.vw_Dict[_TokenType.CLASS.value]
         name = self.consume(_TokenType.IDENTIFIER, f"Expected '{class_lexeme}' name.")
 
@@ -840,8 +891,10 @@ class Parser:
     def consume(self, toke_type, err, form='loud'):
         if (self.check(toke_type)): return self.advance()
 
-        if form == 'loud': self.error(self.peek(), err).report()
-        elif form == 'silent': self.advance()
+        if (form == 'loud'):
+            self.error(self.peek(), err).report()
+        else:
+            self.advance()
 
     def error(self, token: _Token, message: str):
         err = _ParseError(token, message)
