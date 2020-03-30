@@ -126,7 +126,7 @@ Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text 
 
 #### nin
 
-A little over the board? maybe. nin is Rocket's version of Python's **None**. nin stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null point errors*, since **RLuna** is written in C.
+A little over the board? maybe, nin is Rocket's version of Python's **None**. It stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null point errors*, since **RLuna** is written in C.
 
 ---
 

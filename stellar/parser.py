@@ -19,7 +19,7 @@ class Parser:
     def parse(self):
         statements = []
         while not (self.isAtEnd()):
-            statements.append(self.decleration())
+            statements.append(self.declaration())
 
         return statements
 
@@ -28,16 +28,16 @@ class Parser:
         return self.assignment()
 
 
-    def decleration(self):
+    def declaration(self):
         try:
             if (self.checkNext(_TokenType.IDENTIFIER) and self.match(_TokenType.FUNC)):
                 return self.function('function')
 
             if (self.match(_TokenType.VAR)):
-                return self.varDecleration()
+                return self.varDeclaration()
 
             if (self.match(_TokenType.CONST)):
-                return self.constDecleration()
+                return self.constDeclaration()
 
             return self.statement()
 
@@ -85,7 +85,7 @@ class Parser:
             else: return self.printStmt()
 
         if (self.match(_TokenType.CLASS)):
-            return self.classDecleration()
+            return self.classDeclaration()
 
         if (self.match(_TokenType.LEFT_BRACE)):
             return _Block(self.block())
@@ -360,7 +360,7 @@ class Parser:
             initializer = None
 
         elif (self.match(_TokenType.VAR)):
-            initializer = self.varDecleration()
+            initializer = self.varDeclaration()
 
         else:
             initializer = self.expressionStmt()
@@ -695,7 +695,7 @@ class Parser:
 
         # Grab enclosed statements in block
         while not self.check(_TokenType.RIGHT_BRACE) and not self.isAtEnd():
-            statements.append(self.decleration())
+            statements.append(self.declaration())
 
         self.consume(_TokenType.RIGHT_BRACE, "Expected matching '}' after block")
 
