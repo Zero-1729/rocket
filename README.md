@@ -1,6 +1,6 @@
 # ![](logo/logo-full-with-text-large.png)
 
-# The Syntax* Hackable Language
+## The Syntax* Hackable Language
 
 ---
 
@@ -21,7 +21,7 @@ Rocket is a High level Dynamically-typed, Object-Oriented Programming Language t
 
 ## Rocket's Compiler & Interpreter
 
-> The Rocket Repo comes with Rocket's C VM (**Luna**) aswell as the Python Interpreter (**Stellar**).
+> The Rocket Repo comes with Rocket's C VM (**Luna**) as well as the Python Interpreter (**Stellar**).
 
 #### Which am I running?
 
@@ -59,17 +59,17 @@ The commands are:
 
 ##### Stellar :dizzy:
 
-This is recommended for Beginners and Users who prefer to use the interactive shell or run their code without compiling. Like the Python Interpreter. **Stellar** can be run as an interactive shell by invoking the `rocket` command which would start the interactive shell:-
+This is recommended for Beginners and Users who prefer to use the interactive shell or run their code without compiling. Like the Python interpreter, **Stellar** can be run as an interactive shell by invoking the `rocket` command which would start the interactive shell:-
 
 ```
 $ rocket
-Rocket 1.0.1 | Rocket Labs | [Sally 0.2.1] (Ubuntu 4.4.7-1)] on linux
+Rocket 1.0.1 | Rocket Labs | [Stellar 0.2.1] (Ubuntu 4.4.7-1)] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 
 ><>
 ```
 
-Or alternatively invoke the `rocket` command followed by a file path to execute a Rocket program. Like so:-
+Or alternatively invoke the `rocket` command followed by a file path to execute a Rocket program like so:-
 
 ```
 $ rocket hello.rckt
@@ -100,7 +100,7 @@ If you have made up your mind you can follow the instructions below for your pla
 
 ### Download
 
-Get the appropriate install file(s) from [Here](https://github.com/rocket.labs/Rocket/releases)
+Get the appropriate install file(s) from [Here](https://github.com/Zero-1729/rocket/releases)
 
 ### Source :scroll:
 
@@ -108,7 +108,7 @@ Get the appropriate install file(s) from [Here](https://github.com/rocket.labs/R
 
 ```sh
 # clone the repo
-$ git clone https://github.com/rocket.labs/Rocket/
+$ git clone https://github.com/Zero-1729/rocket/
 
 # Navigate into the repo and install for your platform
 $ cd Rocket/ && make
@@ -127,7 +127,7 @@ $ make install
 
 ```sh
 # clone the repo and Navigate into repo
-$ git clone https://github.com/rocket.labs/Rocket/ && cd Rocket/
+$ git clone https://github.com/Zero-1729/rocket/ && cd rocket/
 ```
 
 > Just hack on it as you wish!
@@ -136,7 +136,7 @@ The Rocket folder has the following structure:-
 
 ```sh
 $ tree
-Rocket
+rocket
 .
 | -docs
 | -logo
@@ -147,16 +147,16 @@ Rocket
 .
 ```
 
-Feel free to issue a PR or open an issue to discuss any bugs :beetle:, improvements :chart_with_upwards_trend:, Ideas :bulb:, etc.
+Feel free to open a PR or issue to discuss any bugs :beetle:, improvements :chart_with_upwards_trend:, Ideas :bulb:, etc.
 
 ---
 
 ## Acknowledgements :pushpin:
 
 
-Rocket's creation was made possible by the insights provided by Robert Nystrom in his [craftinginterpreters series](https://github.com/munificent/craftinginterpreters). And Various other works like [byterun](https://github.com/byterun).
+Rocket's creation was made possible by the insights provided by Robert Nystrom in his [craftinginterpreters series](https://github.com/munificent/craftinginterpreters) and various other works like [byterun](https://github.com/byterun).
 
 ---
 
-> Copyright &copy; Abubakar NK (@Zero-1729) :neckbeard:<br>
-[**Rocket Labs**](https://github.com/rocket.labs) RLOL &copy; 2018 - 2019
+> Copyright &copy; Abubakar N K (@Zero-1729) :neckbeard:<br>
+[**Rocket Labs**](https://github.com/Zero-1729) RLOL &copy; 2018 - 20

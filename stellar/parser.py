@@ -1,11 +1,11 @@
-# Author: Abubakar NK (Zero-1729)
+# Author: Abubakar N K (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
+from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, Conditional as _Conditional, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
 from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.reporter import ParseError as _ParseError
-from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
+from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Import as _Import, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
 
 class Parser:
     def __init__(self, tokens, vw_Dict):
@@ -19,7 +19,7 @@ class Parser:
     def parse(self):
         statements = []
         while not (self.isAtEnd()):
-            statements.append(self.decleration())
+            statements.append(self.declaration())
 
         return statements
 
@@ -28,22 +28,82 @@ class Parser:
         return self.assignment()
 
 
-    def decleration(self):
+    def declaration(self):
         try:
             if (self.checkNext(_TokenType.IDENTIFIER) and self.match(_TokenType.FUNC)):
                 return self.function('function')
 
             if (self.match(_TokenType.VAR)):
-                return self.varDecleration()
+                return self.varDeclaration()
 
             if (self.match(_TokenType.CONST)):
-                return self.constDecleration()
+                return self.constDeclaration()
 
             return self.statement()
 
         except _ParseError:
             self.synchronize()
             return None
+
+
+    def statement(self):
+        if (self.match(_TokenType.IF)):
+            return self.ifStmt()
+
+        # To sew bug #555
+        # Bug #555: `if (true) {print 0; else` causes forever loop here.
+        if (self.match(_TokenType.ELSE)):
+            if_lexeme = self.vw_Dict[_TokenType.IF.value]
+            else_lexeme = self.vw_Dict[_TokenType.ELSE.value]
+
+            self.error(self.peek(), f"Can't use '{else_lexeme}' without beginning '{if_lexeme}'.")
+
+        if (self.match(_TokenType.WHILE)):
+            return self.whileStmt()
+
+        if (self.match(_TokenType.FOR)):
+            return self.forStmt()
+
+        if (self.match(_TokenType.BREAK)):
+            return self.breakStmt()
+
+        if (self.match(_TokenType.RETURN)):
+            return self.returnStmt()
+
+        if (self.match(_TokenType.DEL)):
+            return self.delStmt()
+
+        if (self.match(_TokenType.IMPORT)):
+            return self.importStmt()
+
+        if (self.match(_TokenType.PRINT)):
+            if self.peek().type.value == _TokenType.LEFT_PAREN.value:
+                print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
+
+                self.error(self.peek(), f"'{print_lexeme}' is a keyword 'Print' is the native Function. Use 'Print' instead.")
+
+            else: return self.printStmt()
+
+        if (self.match(_TokenType.CLASS)):
+            return self.classDeclaration()
+
+        if (self.match(_TokenType.LEFT_BRACE)):
+            return _Block(self.block())
+
+        return self.expressionStmt()
+
+
+    def conditional(self):
+        expr = self.equality()
+
+        if self.match(_TokenType.Q_MARK):
+            thenExpr = self.expression()
+            self.consume(_TokenType.COLON, "Expected ':' after then expression branch of the conditional expression")
+
+            elseExpr = self.conditional()
+            expr = _Conditional(expr, thenExpr, elseExpr)
+
+        return expr
 
 
     def equality(self):
@@ -235,50 +295,6 @@ class Parser:
         raise self.error(self.peek(), "Expected expression.")
 
 
-    def statement(self):
-        if (self.match(_TokenType.IF)):
-            return self.ifStmt()
-
-        # To sew bug #555
-        # Bug #555: `if (true) {print 0; else` causes forever loop here.
-        if (self.match(_TokenType.ELSE)):
-            if_lexeme = self.vw_Dict[_TokenType.IF.value]
-            else_lexeme = self.vw_Dict[_TokenType.ELSE.value]
-
-            self.error(self.peek(), f"Can't use '{else_lexeme}' without beginning '{if_lexeme}'.")
-
-        if (self.match(_TokenType.WHILE)):
-            return self.whileStmt()
-
-        if (self.match(_TokenType.FOR)):
-            return self.forStmt()
-
-        if (self.match(_TokenType.BREAK)):
-            return self.breakStmt()
-
-        if (self.match(_TokenType.RETURN)):
-            return self.returnStmt()
-
-        if (self.match(_TokenType.DEL)):
-            return self.delStmt()
-
-        if (self.match(_TokenType.PRINT)):
-            if self.peek().type.value == _TokenType.LEFT_PAREN.value:
-                print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
-
-                self.error(self.peek(), f"'{print_lexeme}' is a keyword 'Print' is the native Function. Use 'Print' instead.")
-
-            else: return self.printStmt()
-
-        if (self.match(_TokenType.CLASS)):
-            return self.classDecleration()
-
-        if (self.match(_TokenType.LEFT_BRACE)):
-            return _Block(self.block())
-
-        return self.expressionStmt()
-
-
     def OR(self):
         expr = self.AND()
 
@@ -291,11 +307,11 @@ class Parser:
 
 
     def AND(self):
-        expr = self.equality()
+        expr = self.conditional() # self.equality()
 
         while (self.match(_TokenType.AND)):
             operator = self.previous()
-            right = self.equality()
+            right = self.conditional() # self.equality()
 
             expr = _Logical(expr, operator, right)
 
@@ -344,7 +360,7 @@ class Parser:
             initializer = None
 
         elif (self.match(_TokenType.VAR)):
-            initializer = self.varDecleration()
+            initializer = self.varDeclaration()
 
         else:
             initializer = self.expressionStmt()
@@ -401,6 +417,7 @@ class Parser:
             value = self.expression()
 
         self.consume(_TokenType.SEMICOLON, f"Expected ';' after {return_lexeme} value")
+
         return _Return(keyword, value)
 
 
@@ -442,6 +459,40 @@ class Parser:
         return _Del(names)
 
 
+    def importStmt(self):
+        import_lexeme = self.vw_Dict[_TokenType.IMPORT.value]
+
+        modules = []
+
+        isFull = False
+        shift = False
+
+        if not self.check(_TokenType.SEMICOLON) and not self.isAtEnd():
+            if self.check(_TokenType.IDENTIFIER) or self.check(_TokenType.STRING):
+                modules.append(self.peek())
+
+            if self.check(_TokenType.LEFT_PAREN):
+                isFull = True
+
+                while not self.check(_TokenType.RIGHT_PAREN) and not self.isAtEnd():
+                    if self.check(_TokenType.IDENTIFIER) or self.check(_TokenType.STRING):
+                        modules.append(self.peek())
+
+                    self.advance()
+
+        if self.peek() == _TokenType.RIGHT_PAREN:
+            shift = True
+
+        if isFull:
+            self.consume(_TokenType.RIGHT_PAREN, f"'(' expected closing ')' in {import_lexeme} statement")
+
+        if shift:
+            # Move beyond the ')'
+            self.advance()
+
+        return _Import(modules)
+
+
     def printStmt(self):
         print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
         value = self.expression()
@@ -450,8 +501,7 @@ class Parser:
         return _Print(value)
 
 
-    def varDecleration(self):
-        var_lexeme = self.vw_Dict[_TokenType.VAR.value]
+    def parseVarDecl(self, var_lexeme):
         initializer = None
         name = None
 
@@ -466,20 +516,17 @@ class Parser:
         else:
             self.error(self.peek(), f"'{var_lexeme}' can't declare class instance.")
 
-
         if (self.match(_TokenType.EQUAL)):
             initializer = self.expression()
 
-        self.consume(_TokenType.SEMICOLON, f"'{var_lexeme}' expected ';' after decleration.")
+        self.consume(_TokenType.SEMICOLON, f"'{var_lexeme}' expected ';' after declaration.")
+
         return _Var(name, initializer)
 
 
-    def constDecleration(self):
-        const_lexeme = self.vw_Dict[_TokenType.CONST.value]
-
+    def parseConstDecl(self, const_lexeme):
         name = None
-        initializer = '' # To avoid Python reference errors
-
+        initializer = None # To avoid Python reference errors
 
         if (self.peekNext().type != _TokenType.LEFT_PAREN):
             name = self.consume(_TokenType.IDENTIFIER, f"'{const_lexeme}' expected variable name.")
@@ -493,7 +540,7 @@ class Parser:
         else:
             self.consume(_TokenType.EQUAL, f"'{const_lexeme}' variables require initializers.")
 
-        self.consume(_TokenType.SEMICOLON, f"'{const_lexeme}' expected ';' after decleration.")
+        self.consume(_TokenType.SEMICOLON, f"'{const_lexeme}' expected ';' after declaration.")
 
         # BUG #19: 'Const' are re-assignable using 'const' decl
         # E.g const y = 9; // Perfectly legit
@@ -504,7 +551,63 @@ class Parser:
         return _Const(name, initializer)
 
 
-    def classDecleration(self):
+    def varDeclaration(self):
+        var_lexeme = self.vw_Dict[_TokenType.VAR.value]
+        vars = []
+
+        if self.match(_TokenType.LEFT_BRACE):
+            # The following symbols keep giving us a hard time, so we only proceed if they aren't next:
+            # '}', '{', '~', ')'
+            # the combination specifically is:
+            # var { [name] = [value][symbol]
+            # e.g.:
+            # var { n = 0~
+            # Note: The same solution is used for const multi-var decls below
+            while not (self.peek().type in [_TokenType.RIGHT_BRACE,  _TokenType.LEFT_BRACE, _TokenType.TILDE, _TokenType.RIGHT_PAREN, _TokenType.EOF]):
+                vars.append(self.parseVarDecl(var_lexeme))
+
+            self.consume(_TokenType.RIGHT_BRACE, "'{}' expected closing '{}' after multi-variable declaration".format(var_lexeme, '}'))
+
+            # This check ensures that const multi-variable declarations can end with ';'.
+            # Since all statements end with ';', though it is optional for the import stmt and in multi-variable defintions
+            # So both 'var {...};' and 'var {...}' are valid
+            if self.peek().type == _TokenType.SEMICOLON:
+                self.advance()
+
+            # Returns a list of 'vars' if we indeed detected multi-variable declaration (i.e var {...})
+            return vars
+
+
+        else:
+            # We simply return a single parsed variable
+            return self.parseVarDecl(var_lexeme)
+
+
+    def constDeclaration(self):
+        const_lexeme = self.vw_Dict[_TokenType.CONST.value]
+        consts = []
+
+        if self.match(_TokenType.LEFT_BRACE):
+            while not (self.peek().type in [_TokenType.RIGHT_BRACE,  _TokenType.LEFT_BRACE, _TokenType.TILDE, _TokenType.RIGHT_PAREN, _TokenType.EOF]):
+                consts.append(self.parseConstDecl(const_lexeme))
+
+            self.consume(_TokenType.RIGHT_BRACE, "'{}' expected closing '{}' after multi-variable declaration".format(const_lexeme, '}'))
+
+            # This check ensures that const multi-variable declarations can end with ';'.
+            # Since all statements end with ';', though it is optional for the import stmt and in multi-variable defintions
+            # So both 'const {...};' and 'const {...}' are valid
+            if self.peek().type == _TokenType.SEMICOLON:
+                self.advance()
+
+        else:
+            # We simply return a single parsed variable
+            return self.parseConstDecl(const_lexeme)
+
+        # Returns a list of 'vars' if we indeed detected multi-variable declaration (i.e var {...})
+        return consts
+
+
+    def classDeclaration(self):
         class_lexeme = self.vw_Dict[_TokenType.CLASS.value]
         name = self.consume(_TokenType.IDENTIFIER, f"Expected '{class_lexeme}' name.")
 
@@ -643,7 +746,7 @@ class Parser:
 
         # Grab enclosed statements in block
         while not self.check(_TokenType.RIGHT_BRACE) and not self.isAtEnd():
-            statements.append(self.decleration())
+            statements.append(self.declaration())
 
         self.consume(_TokenType.RIGHT_BRACE, "Expected matching '}' after block")
 
@@ -788,8 +891,10 @@ class Parser:
     def consume(self, toke_type, err, form='loud'):
         if (self.check(toke_type)): return self.advance()
 
-        if form == 'loud': self.error(self.peek(), err).report()
-        elif form == 'silent': self.advance()
+        if (form == 'loud'):
+            self.error(self.peek(), err).report()
+        else:
+            self.advance()
 
     def error(self, token: _Token, message: str):
         err = _ParseError(token, message)

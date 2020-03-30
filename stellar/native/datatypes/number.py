@@ -31,7 +31,7 @@ class RocketInt(_RocketInstance):
         self.nature = 'Datatype'
 
     def get(self, name):
-        raise _RuntimeError(name, f"'Int' has no '{name.lexeme}' method.")
+        raise _RuntimeError(name, f"'Int' has no method '{name.lexeme}'.")
 
     def set(self, name, value):
         raise _RuntimeError(name, "Cannot mutate an Int's props")
@@ -90,7 +90,7 @@ class RocketFloat(_RocketInstance):
             return rocketCallable
 
         else:
-            raise _RuntimeError(name, f"'Float' has no '{name.lexeme}' method.")
+            raise _RuntimeError(name, f"'Float' has no method '{name.lexeme}'.")
 
     def set(self, name, value):
         raise _RuntimeError(name, "Cannot mutate an Float's props")

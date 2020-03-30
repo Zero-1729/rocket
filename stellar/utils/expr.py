@@ -11,6 +11,12 @@ class ExprVisitor:
 	def visitCallExpr(self, expr):
 		raise NotImplementedError
 
+	def visitIndexExpr(self, expr):
+		raise NotImplementedError
+
+	def visitConditionalExpr(self, expr):
+		raise NotImplementedError
+
 	def visitGetExpr(self, expr):
 		raise NotImplementedError
 
@@ -21,6 +27,9 @@ class ExprVisitor:
 		raise NotImplementedError
 
 	def visitThisExpr(self, expr):
+		raise NotImplementedError
+
+	def visitFunctionExpr(self, expr):
 		raise NotImplementedError
 
 	def visitGroupingExpr(self, expr):
@@ -76,6 +85,25 @@ class Call(Expr):
 		return visitor.visitCallExpr(self)
 
 
+class Index(Expr):
+	def __init__(self, callee: Expr, args: _Token):
+		self.callee = callee
+		self.args = args
+
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitIndexExpr(self)
+
+
+class Conditional(Expr):
+	def __init__(self, expr: Expr, thenExpr: Expr, elseExpr: Expr):
+		self.expr = expr
+		self.thenExpr = thenExpr
+		self.elseExpr = elseExpr
+
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitConditionalExpr(self)
+
+
 class Get(Expr):
 	def __init__(self, object: Expr, name: _Token):
 		self.object = object
@@ -110,6 +138,15 @@ class This(Expr):
 
 	def accept(self, visitor: ExprVisitor):
 		return visitor.visitThisExpr(self)
+
+
+class Function(Expr):
+	def __init__(self, params: list, body: list):
+		self.params = params
+		self.body = body
+
+	def accept(self, visitor: ExprVisitor):
+		return visitor.visitFunctionExpr(self)
 
 
 class Grouping(Expr):

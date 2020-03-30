@@ -58,6 +58,7 @@ class TokenType(_enum.Enum):
         NUMBER            = 25
 
         # Keywords
+        IMPORT            = 999  # 'import'
         AND               = 26   # 'and'
         CLASS             = 27   # 'class'
         ELSE              = 28   # 'else'
@@ -79,6 +80,7 @@ class TokenType(_enum.Enum):
         WHILE             = 43   # 'while'
 
         Q_MARK            = 66   # '?'
+        COLON         = 67   # ':'
 
         DEL               = 0    # 'del'
 
@@ -87,6 +89,7 @@ class TokenType(_enum.Enum):
 
 
 Keywords = {
+        "import": TokenType.IMPORT,
         "class": TokenType.CLASS,
         "else": TokenType.ELSE,
         "func": TokenType.FUNC,

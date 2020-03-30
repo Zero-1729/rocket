@@ -94,6 +94,7 @@ def main():
                 "Binary": "Expr left, _Token operator, Expr right",
                 "Call": "Expr callee, _Token paren, list args",
                 "Index": "Expr callee, _Token list args",
+                "Conditional": "Expr expr, Expr thenExpr, Expr elseExpr",
                 "Get": "Expr object, _Token name",
                 "Set": "Expr object, _Token name, Expr value",
                 "Super": "_Token keyword, _Token method",

@@ -1,0 +1,8 @@
+var {
+     node = "127.0.0.1";
+     port = 8080;
+     os = "Ubuntu/Linux 18.04 LTS x86_64";
+};
+
+print node;
+print os;

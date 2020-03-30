@@ -1,4 +1,4 @@
-# Author: Abubakar NK (Zero-1729)
+# Author: Abubakar N K (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) KSL creator (C) 2018
 
@@ -129,7 +129,7 @@ class Parser:
         self.current = 0
         self.customs = []
         self.defaults = []
-        self.keywords = {}
+        self.wk_Dict = {}
         self.vw_Dict = {}
 
 
@@ -153,13 +153,13 @@ class Parser:
 
         # How we parse the tokens in binary form allow for them to be of the same height
         for i in range(len(self.defaults)):
-            self.keywords[self.customs[i]] = self.defaults[i].type
+            self.wk_Dict[self.customs[i]] = self.defaults[i].type
             self.vw_Dict[self.defaults[i].type.value] = self.customs[i]
 
         # fill in remaining item unassignd items in KSL
         self.fillKSL()
 
-        return self.keywords, self.vw_Dict
+        return [self.wk_Dict, self.vw_Dict]
 
 
     def advance(self):
@@ -188,11 +188,11 @@ class Parser:
         tmp = _Keywords
         trash = []
         for name in tmp:
-            if tmp[name] in self.keywords.values():
+            if tmp[name] in self.wk_Dict.values():
                 trash.append(name)
 
             else:
-                self.keywords[name] = tmp[name]
+                self.wk_Dict[name] = tmp[name]
 
         del trash
 

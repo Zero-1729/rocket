@@ -31,7 +31,8 @@ Language's Specification info.
 print "Hello, World!";
 ```
 
-> Note that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.  
+> **Note**: that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.<br>
+> We support floor division (`//`) hence why we can't use it as a comment delimiter.
 
 ---
 
@@ -126,7 +127,7 @@ Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text 
 
 #### nin
 
-A little over the board? maybe. nin is Rocket's version of Python's **None**. nin stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null point errors*, since **RLuna** is written in C.
+A little over the board? maybe, nin is Rocket's version of Python's **None**. It stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null point errors*, since **RLuna** is written in C.
 
 ---
 
@@ -274,6 +275,35 @@ var 8788L = "woohoo"; /// considered an 'illegal' declaration
 
 /// Right
 var validVar = "Uhuhh";
+```
+
+#### Multi-variable declaration
+
+Rocket supports multi-variable declaration for both variables that are declared with either `const` or `var`. This enables us to make multiple declarations at a time using a single `const` or `var`.
+
+Below is an example using both the `var` and `const` declarations:
+
+```
+/// Const multi-variable declaration
+const {
+    author = 'Abubakar N. K.',;
+    email = 'zero1729@protonmail.com';
+}
+
+/// Var multi-variable decelration
+var {
+    length = 0.2;
+    height = 2;
+}
+
+/// Please note, the multi-variable declaration does not require ';' after the declarations like every other statement in the language, meaning, both declarations bewlo are valid.
+var {
+    name = '01729';
+};
+
+var {
+    show = 'Halt And Catch Fire';
+}
 ```
 
 ---

@@ -1,4 +1,4 @@
-# Author: Abubakar NK (Zero-1729)
+# Author: Abubakar N K (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Scanner (C) 2018
 
@@ -43,6 +43,14 @@ class Scanner:
 
             elif c == ",":
                 tok_type = _TokenType.COMMA
+                self.addSingleToken(tok_type)
+
+            elif c == "?":
+                tok_type = _TokenType.Q_MARK
+                self.addSingleToken(tok_type)
+
+            elif c == ':':
+                tok_type = _TokenType.COLON
                 self.addSingleToken(tok_type)
 
             elif c == ".":

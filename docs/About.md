@@ -9,7 +9,7 @@ Really the language is inspired by Python's clean syntax and OOP structure and J
 
 ## What do we mean by **hackable**?
 
-The language comes with a set of default keywords ([list of keywords](https://github.com/rocket.labs/Rokcet/docs/Specification.md)), Operator Signs (Op Signs), etc like all other languages. However, You can customize Rocket's keywords to your liking by writing a small `config.rckt` file. E.g:-
+The language comes with a set of default keywords ([list of keywords](https://github.com/Zero-1729/rocket/tree/master/docs/Specification.md)), Operator Signs (Op Signs), etc like all other languages. However, You can customize Rocket's keywords to your liking by writing a small `config.rckt` file. E.g:-
 
 Create `config.rckt` file in your project's **root directory**
 

@@ -1,4 +1,4 @@
-# Author: Abubakar NK (Zero-1729)
+# Author: Abubakar N K (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) (C) 2018
 #!/usr/bin/python
@@ -35,16 +35,16 @@ def load_config(filename):
         f.close()
 
     tks = Dante(source).scan()
-    keywords, vk_Dict = Virgil(tks).parse()
-    return [keywords, vk_Dict]
+    wk_Dict, vk_Dict = Virgil(tks).parse()
+    return [wk_Dict, vk_Dict]
 
 
 def fillKSL():
     # Passing an empty fake 'config.rckt' will return th default KSL
     tks = Dante("").scan()
-    keywords, vk_Dict = Virgil(tks).parse()
+    wk_Dict, vk_Dict = Virgil(tks).parse()
 
-    return [keywords, vk_Dict]
+    return [wk_Dict, vk_Dict]
 
 
 def get_env():
@@ -86,10 +86,6 @@ def assemble_acmp(KSL):
     return autoCmp
 
 
-# So that global env is static throughout execution. Especially in REPL
-interpreter = Interpreter(assemble_ksl(False)[1])
-
-
 def UpdateAuto(autoCmp):
     autoCmp.updateEnv(interpreter.environment)
     autoCmp.updateEnv(interpreter.globals)
@@ -115,6 +111,9 @@ def usage():
 
     return info
 
+# So that global env is static throughout execution. Especially in REPL
+interpreter = Interpreter()
+
 
 def run_file(path, KSL):
     with open(path, encoding='utf-8') as f:
@@ -124,6 +123,8 @@ def run_file(path, KSL):
 def run_prompt(prompt, headerless=False):
     KSL = assemble_ksl()
     autoCmp = assemble_acmp(KSL)
+
+    interpreter.KSL = KSL
 
     header = f"""Rocket 0.1.8-p | Rocket Labs | [Stellar 0.2.7-b]\n"""
 
@@ -169,6 +170,8 @@ def run_prompt(prompt, headerless=False):
 def run(source, KSL, mode=None):
     # To avoid running resolver on statements
     hadError = False
+
+    interpreter.KSL = KSL
 
     scanner = Scanner(source, KSL[0])
     tokens = scanner.scan()
@@ -217,6 +220,10 @@ def main():
             run_prompt(prompt)
 
         except EOFError:
+            # Ctrl-D
+            # Save REPL history before exit
+            readline.write_history_file('.rocket_repl_history')
+
             # to avoid mangled return shell text
             print()
             sys.exit(0)
