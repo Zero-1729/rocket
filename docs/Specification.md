@@ -31,7 +31,8 @@ Language's Specification info.
 print "Hello, World!";
 ```
 
-> Note that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.  
+> **Note**: that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.<br>
+> We support floor division (`//`) hence why we can't use it as a comment delimiter.
 
 ---
 
