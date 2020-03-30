@@ -15,6 +15,11 @@ lib64
 !api/lib
 __pycache__
 
+# Large files
+./tutorials/.Wallice/basics/loops/forever_for.wlc
+./tutorials/.Wallice/basics/loops/while.wlc
+./tutorials/.Wallice/basics/loops/while.wlc
+./tutorials/.Wallice/basics/loops/forever_for.wlc
 
 # Installer logs
 pip-log.txt
