@@ -853,11 +853,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         return n
 
     def sanitizeString(self, n):
-        #properly stringifies Array if avail
+        # properly stringifies Array if avail
         if (isinstance(n, array.RocketArray)):
             return n.raw_string()
 
-        return n.value
+        return n.__str__()
 
     def is_number(self, obj: object):
         if (type(obj) in [int, float, number.RocketInt, number.RocketFloat]):
