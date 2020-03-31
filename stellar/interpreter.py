@@ -128,15 +128,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             # To support implicit string concactination
             # E.g "Hailey" + 4 -> "Hailey4"
+            # We can also add Arrays and strings
+            # E.g. "List: " + "[3, 4, 6]" -> "List: [3, 4, 6]"
             # No need to allow this anymore. We make 'String' compulsory
-            if ((isinstance(left, str)) or (isinstance(right, str))):
+            if ((isinstance(left, string.RocketString)) or (isinstance(right, string.RocketString))):
                 # Concatenation of 'nin' is prohibited!
-                if left.value == None or right.value == None:
+                if left == None or right == None:
                     raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
 
-                return string.String().call(self, [str(left) + str(right)])
-
-            raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
+                return string.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
 
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
@@ -848,6 +848,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         # otherwise it returns it unchanged
         return n
+
+    def sanitizeString(self, n):
+        #properly stringifies Array if avail
+        if (isinstance(n, array.RocketArray)):
+            return n.raw_string()
+
+        return n.value
 
     def is_number(self, obj: object):
         if isinstance(obj, int) or isinstance(obj, float):

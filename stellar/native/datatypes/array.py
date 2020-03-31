@@ -324,7 +324,7 @@ class RocketArray(_RocketInstance):
 
         return True
 
-    def stringify(self, elm):
+    def stringify(self, elm, uncoloured=False):
         try:
             elm = elm.value
 
@@ -332,26 +332,29 @@ class RocketArray(_RocketInstance):
             # If detected 'Array'
             return elm.__str__()
 
+        if uncoloured:
+            return elm.__str__() if elm != None else 'nin'
+
         if type(elm) == int or type(elm) == float:
-            return f'\033[36m{elm}\033[0m'
+            return f'\033[36m{elm}\033[0m' if not uncoloured else elm
 
         if type(elm) == str:
             if elm == 'nin':
-                return '\033[1mnin\033[0m'
+                return '\033[1mnin\033[0m' if not uncoloured else 'nin'
 
             else:
-                return f'\033[32m{elm}\033[0m'
+                return f'\033[32m{elm}\033[0m' if not uncoloured else elm
 
         if type(elm) == bool and (type(elm) == True or type(elm) == False):
-            return f'\033[1m{elm}\033[0m'
+            return f'\033[1m{elm}\033[0m' if not uncoloured else elm
 
         if type(elm) == None:
-            return '\033[1mnin\033[0m'
+            return '\033[1mnin\033[0m' if not uncoloured else 'nin'
 
         return elm
 
 
-    def stringifyList(self, array):
+    def stringifyList(self, array, uncoloured=False):
         result = '[ '
 
         # if called to display and empty Array
@@ -360,14 +363,17 @@ class RocketArray(_RocketInstance):
 
         if len(array) >= 1:
             for elm in array[0:-1]:
-                result += self.stringify(elm) + ", "
+                result += self.stringify(elm, uncoloured) + ", "
 
-            result += f"{self.stringify(array[-1])} ]"
+            result += f"{self.stringify(array[-1], uncoloured)} ]"
 
         else:
-            result += self.stringify(array[0]) + ' ]'
+            result += self.stringify(array[0], uncoloured) + ' ]'
 
         return result
+
+    def raw_string(self):
+        return self.stringifyList(self.elements, True)
 
     def __repr__(self):
         if len(self.elements) >= 1:
