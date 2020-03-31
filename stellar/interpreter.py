@@ -92,8 +92,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitUnaryExpr(self, expr: _Unary):
-        right = self.evaluate(expr.right)
-        right = number.Int().call(self, [right]) if type(right) == int else number.Float().call(self, [right])
+        right = self.sanitizeNum(self.evaluate(expr.right))
 
         # Handle '~' bit shifter
         if (expr.operator.type == _TokenType.TILDE):
@@ -114,20 +113,18 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitBinaryExpr(self, expr: _Binary):
-        left = self.evaluate(expr.left)
-        right = self.evaluate(expr.right)
-
-        left = number.Int().call(self, [left]) if type(left) == int else number.Float().call(self, [left])
-        right = number.Int().call(self, [right]) if type(right) == int else number.Float().call(self, [right])
+        # Sanitize to get nums if avail
+        left = self.sanitizeNum(self.evaluate(expr.left))
+        right = self.sanitizeNum(self.evaluate(expr.right))
 
         # string concatenation and arithmetic operator '+'
         if (expr.operator.type == _TokenType.PLUS):
-            if self.is_number(left.value) and self.is_number(right.value):
+            if self.is_number(left) and self.is_number(right):
                 sum = left.value + right.value
                 return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
-            if (isinstance(left, str) and isinstance(right, str)):
-                return string.String().call(self, [left + right])
+            if (isinstance(left, string.RocketString) and isinstance(right, string.RocketString)):
+                return string.String().call(self, [left.value + right.value])
 
             # To support implicit string concactination
             # E.g "Hailey" + 4 -> "Hailey4"
@@ -842,6 +839,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         return left_obj == right_obj
 
+
+    def sanitizeNum(self, n):
+        # Returns a Rocket num if number received
+        if (self.is_number(n)):
+            if type(n) == int: return number.Int().call(self, [n])
+            else: return number.Int().call(self, n)
+
+        # otherwise it returns it unchanged
+        return n
 
     def is_number(self, obj: object):
         if isinstance(obj, int) or isinstance(obj, float):
