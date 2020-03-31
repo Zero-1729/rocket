@@ -896,16 +896,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (value == True and type(value) == bool): return "true", "\033[1m"
         if (value == False and type(value) == bool): return "false", "\033[1m"
 
-        if isinstance(value, str):
+        if isinstance(value, string.RocketString):
             if value == '':
-                return value, None
-
-            if value[0] == '[' and value[-1]:
                 return value, None
 
             return value, "\033[32m"
 
-        elif isinstance(value, int) or isinstance(value, float):
+        elif isinstance(value, number.RocketInt) or isinstance(value, number.RocketFloat):
             return value, "\033[36m"
 
         else:
