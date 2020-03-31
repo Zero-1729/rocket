@@ -1,0 +1,7 @@
+func test() {
+	var t = Clock();
+	return 'Ran 1 in ' + t + ' secs';
+}
+
+
+print test();
