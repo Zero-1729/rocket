@@ -3,6 +3,7 @@
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
 import sys
+import os
 
 from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Conditional as _Conditional, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
@@ -451,30 +452,40 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitImportStmt(self, stmt: _Import):
         import_lexeme = self.KSL[1][_TokenType.IMPORT.value]
 
+        # TODO: add more built-in modules
         native_modules = [
-            'math',
-            'time',
-            'crypto',
-            'io',
-            'os',
-            'socket',
-            'web',
-            'chain'
+            'math' # Note: even this module isn't done
         ]
+
+        if len(stmt.modules) == 0:
+            raise _RuntimeError(import_lexeme, f"{import_lexeme} statement requires atleast one module name.")
 
         for module in stmt.modules:
             if module.type == _TokenType.IDENTIFIER and module.lexeme in native_modules:
-                print("Native: ", module)
+                # read and execute sorce file
+                contents = ''
 
-            elif module.type == _TokenType.IDENTIFIER and not (module.lexeme in native_modules):
-                raise _RuntimeError(import_lexeme, f"Module {module.lexeme} not a 'native module'.")
+                # Get exec base home
+                basehome = os.path.dirname(os.path.realpath(__file__))
+
+                # Assemble native module path
+                filename = os.path.join(basehome, "native/modules/" + module.lexeme + '.rckt')
+
+                with open(filename, 'r') as f:
+                    contents = f.read()
+                    f.close()
+
+                    tks = _Scanner(contents, self.KSL[0]).scan()
+                    stmts = _Parser(tks, self.KSL[1]).parse()
+                    self.interpret(stmts)
 
             else:
                 try:
                     # read and execute sorce file
                     contents = ''
 
-                    filename = module.lexeme + '.rckt'
+                    # This way the user can specify both './path/to/module.rckt' and './path/to/module' are valid
+                    filename = (module.lexeme + '.rckt') if module.lexeme.split(os.path.extsep)[-1] != 'rckt' else module.lexeme
 
                     with open(filename, 'r') as f:
                         contents = f.read()
@@ -485,7 +496,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                         self.interpret(stmts)
 
                 except FileNotFoundError:
-                    raise _RuntimeError(import_lexeme, f"Module {module.lexeme} does not exist.")
+                    raise _RuntimeError(import_lexeme, f"No native or local module named '{module.lexeme}'.")
 
         return None
 
