@@ -1,7 +1,5 @@
-Flesh out stellar
-.
-| - Get in final Tests and tweaks on parser, interpreter and scanner
-.
+Maybe add a formal to write inline 'Python' code? To help library support. 
+Allow python code to importable?
 
 Add more examples illustrating new futures and datatypes. Add 'Dict'/'Hash Map' datatype. Ensiure consistency of datatypes in `interpreter`
 
