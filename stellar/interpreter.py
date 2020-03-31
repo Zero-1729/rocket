@@ -545,10 +545,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitConstStmt(self, stmt: _Const):
         value = self.evaluate(stmt.initializer)
 
-        # NOTE: Fix for #19
         # check for variable before definition to avoid passing in 'const' redefinitions
-        if self.environment.isTaken(stmt.name):
-            raise _RuntimeError(stmt.name.lexeme, "Name already used as 'const'.")
+        if self.environment.constExists(stmt.name):
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as const.")
+
+        if self.environment.varExists(stmt.name):
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as variable.")
 
         # stop 'const' re-decl for 'classes' 'functions'
         elif self.globals.isTaken(stmt.name):
