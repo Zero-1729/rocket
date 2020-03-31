@@ -534,12 +534,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         else:
             value = None
 
-        # To avoid redifining vars with the same name as functions or classes
-        if stmt.name.lexeme not in self.globals.values.keys():
+        # To avoid redifining vars with the same name as consts, functions, or classes
+        if not (self.globals.isTaken(stmt.name)):
             self.environment.define(stmt.name.lexeme, value)
 
         else:
-            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'variable' or 'class' or 'function'")
+            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'class' or 'function'")
 
 
     def visitConstStmt(self, stmt: _Const):
