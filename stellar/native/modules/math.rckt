@@ -1,0 +1,103 @@
+/// Constant values
+const e = 2.718281828459045;
+const nan = 'nan';
+const inf = 'inf';
+const tau = 6.283185307179586;
+const pi = 3.141592653589793;
+
+/// Enginerring funcs
+func sin () {}
+func cos () {}
+func tan () {}
+
+func asin () {}
+func acos () {}
+func atan () {}
+
+func sinh () {}
+func cosh () {}
+
+func asinh () {}
+func acosh () {}
+
+func atanh () {}
+func atan2 () {}
+
+/// powerplay
+func exp (n) {
+    return e ** n;
+}
+
+func pow (n, x) {
+    return n ** x;
+}
+
+func fmod () {}
+
+func hypot () {}
+
+
+func log () {}
+func log1p () {}
+func log2 () {}
+func log10 () {}
+
+
+func degrees () {}
+
+func expm1 () {}
+func frexp () {}
+
+func ldexp () {}
+
+func radians () {}
+
+
+func ceil () {}
+
+
+func fabs () {}
+func fsum () {}
+
+
+func lgamma () {}
+func modf () {}
+
+
+func copysign () {}
+func erf () {}
+func erfc () {}
+
+
+func factorial () {}
+func gamma () {}
+
+
+func trunc (n) {
+    return Int(n);
+}
+
+func floor () {}
+
+
+func gcd (a, b) {
+    var tmp;
+    var result;
+
+    while (b != 0) {
+        result = b;
+
+        tmp = a;
+        a = b;
+        b = tmp % b;
+    }
+
+    return result;
+}
+
+
+func sqrt (n) {}
+
+/// Type testing
+func isnan () {}
+func isinf () {}
