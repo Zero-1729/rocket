@@ -329,16 +329,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitSetExpr(self, expr: _Set):
-        object = self.evaluate(expr.object)
+        obj = self.evaluate(expr.object)
 
-        if hasattr(object, 'nature'):
+        if hasattr(obj, 'nature'):
             raise _RuntimeError('Array', f"Cannot assign external attribute to native datatype 'Array'")
 
-        if not isinstance(object, _RocketInstance):
+        if not isinstance(obj, _RocketInstance):
             raise _RuntimeError(expr.name, "Only instances have fields.")
 
         value = self.evaluate(expr.value)
-        object.set(expr.name, value)
+        obj.set(expr.name, value)
 
         return value
 
