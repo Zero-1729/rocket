@@ -64,13 +64,17 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args, inc=False):
                 if inc:
-                    if args[0] >= len(self.value) or args[1] >= len(self.value):
+                    if (args[0].value >= len(self.value)) or (args[1].value >= len(self.value)):
                         raise _RuntimeError('String', "IndexError: string index out of range")
 
-                    else:
-                        return self.stringifyList(self.value[args[0]:args[1]])
+                    # Special case
+                    if (args[0].value >= args[1].value):
+                        return "''"
 
-                return self.stringifyList(self.value[args[0]:])
+                    else:
+                        return self.value[args[0].value:args[1].value]
+
+                return self.value[args[0].value:]
 
             rocketCallable.arity = arity
             rocketCallable.call = call

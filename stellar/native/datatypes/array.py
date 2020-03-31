@@ -66,6 +66,10 @@ class RocketArray(_RocketInstance):
                     if args[0].value >= len(self.elements) or args[1].value >= len(self.elements):
                         raise _RuntimeError('Array', "IndexError: list index out of range")
 
+                    # Special case
+                    if (args[0].value >= args[1].value):
+                        return self.stringifyList([])
+
                     else:
                         return self.stringifyList(self.elements[args[0].value:args[1].value])
 
@@ -323,6 +327,7 @@ class RocketArray(_RocketInstance):
     def stringify(self, elm):
         try:
             elm = elm.value
+
         except:
             # If detected 'Array'
             return elm.__str__()
@@ -349,7 +354,11 @@ class RocketArray(_RocketInstance):
     def stringifyList(self, array):
         result = '[ '
 
-        if len(array) != 1:
+        # if called to display and empty Array
+        if len(array) == 0:
+            return []
+
+        if len(array) >= 1:
             for elm in array[0:-1]:
                 result += self.stringify(elm) + ", "
 
