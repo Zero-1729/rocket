@@ -238,8 +238,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # Well, built-in functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
         isNotNative = True
         isNotDatatype = True
+        overideArity = False # To allow (near) infinite 'arity' for 'Array' elements
+
         try:
             if callee().nature == "native":
+                if isinstance(callee(), array.Array):
+                    overideArity = True
+
                 isNotNative = False
         except:
             if hasattr(callee, 'nature'):
@@ -269,11 +274,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if isinstance(function, output.Print) and len(eval_args) == 0:
                 return function.call(self, [''])
 
-            if len(eval_args) != function.arity():
+            if len(eval_args) != function.arity() and not overideArity:
                 raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+
+            else: pass
 
         if hasattr(function, 'inc'):
             return function.call(self, eval_args, function.inc)
+
+        if overideArity:
+            return function.call(self, eval_args)
 
         else:
             try:
