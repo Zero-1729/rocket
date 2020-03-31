@@ -75,6 +75,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitLiteralExpr(self, expr: _Literal):
+        if type(expr.value) == int:
+            return number.Int().call(self, [expr.value])
+
+        if type(expr.value) == float:
+            return number.Float().call(self, [expr.value])
+
+        if type(expr.value) == str:
+            return string.String().call(self, [expr.value])
+
         return expr.value
 
 
@@ -522,15 +531,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (stmt.initializer is not None):
             value = self.evaluate(stmt.initializer)
 
-            # Replace it with appropriate datatype
-            if type(value) == int or type(value) == float:
-                value = number.Int().call(self, [value]) if type(value) == int else number.Int().call(self, [value])
-
-            if type(value) == str:
-                value = string.String().call(self, [value])
-
-            if type(value) == list:
-                value = array.Array().call(self, [value])
         else:
             value = None
 
@@ -544,16 +544,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def visitConstStmt(self, stmt: _Const):
         value = self.evaluate(stmt.initializer)
-
-        # Replace it with appropriate datatype
-        if type(value) == int or type(value) == float:
-            value = number.Int().call(self, [value]) if type(value) == int else number.Int().call(self, [value])
-
-        if type(value) == str:
-            value = string.String().call(self, [value])
-
-        if type(value) == list:
-            value = array.Array().call(self, [value])
 
         # NOTE: Fix for #19
         # check for variable before definition to avoid passing in 'const' redefinitions
