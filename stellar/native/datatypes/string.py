@@ -185,7 +185,7 @@ class RocketString(_RocketInstance):
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'endsWith' of String>"
+            rocketCallable.toString = "<native method 'capitalize' of String>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -318,7 +318,7 @@ class RocketString(_RocketInstance):
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'upper' of String>"
+            rocketCallable.toString = "<native method 'center' of String>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
