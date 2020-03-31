@@ -16,9 +16,24 @@ class Environment:
         # Variables declared 'var' don't get checks because they are redifined
         # FIX: #20 check if 'name' taken in 'const' scope
         if name in self.statics.keys():
-            raise _RuntimeError(name, "already declared as 'const'")
+            raise _RuntimeError(name, f"Variable name '{name}' already declared as 'const'")
 
         self.values[name] = val
+
+
+    def varExists(self, name: _Token):
+        if name.lexeme in self.values.keys():
+            return True
+
+        return False
+
+    
+    def constExists(self, name: _Token):
+        if name.lexeme in self.statics.keys():
+            return True
+
+        return False
+
 
     def isTaken(self, name: _Token):
         if name.lexeme in self.statics.keys() or name.lexeme in self.values.keys():
@@ -68,13 +83,13 @@ class Environment:
 
 
     def assign(self, name: _Token, val: object):
+        if (name.lexeme in self.statics.keys()):
+            raise _RuntimeError(name, f"AssignmentError: 'const' variables can't be re-assigned")
+
         # recursively check for variable in scope(s) before assigning
         if (name.lexeme in self.values.keys()): # or name.lexeme in self.values
             self.values[name.lexeme] = val
             return
-
-        if (name.lexeme in self.statics.keys()):
-            raise _RuntimeError(name, f"AssignmentError: 'const' variables can't be re-assigned")
 
         elif (self.enclosing is not None):
             self.enclosing.assign(name, val)
