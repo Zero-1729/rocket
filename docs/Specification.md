@@ -16,6 +16,7 @@ Language's Specification info.
 |  7.0  | [Control Flow](#control-flow) :ocean:                                                |    
 |  8.0  | [Functions](#functions)                                                              |
 |  9.0  | [Classes](#classes) (Yes there's OOP) :neckbeard:                                    |
+|  10.0  | [Importing](#importing)                                                              |
 |  x.x  | [The Standard Library](#the-standard-library) (or The Core Library) :file_folder:    |
 
 ---
@@ -544,11 +545,67 @@ var macBook = Laptop("Mac Os", "x86_64");
 
 ---
 
+### Importing
+
+Rocket uses a similar concept of Python's modules, as it is indeed also possible to import rocket code or certain modules fromt the standard library.
+
+Additionally, when code is imported, Rocket simply executes the file's contents, meaning, all defined variables, classes, and functions are added to the current env.
+
+It is important to note that specifying a module without string quotes would make Rocket search for a native module that matches the name and imports it. To import non-native modules (i.e. rocket files), you are required to provide the file path with the option of including the file extension, as it is automatically added by Rocket.
+
+There are several ways to import code in rocket, it is possible to import each file or built-in module (i.e. `import ...`) or import multiple native and or non-native modules (i.e. `import ( ... )`), e.g.
+
+```
+/// Single module importing
+import math
+import './runner'
+```
+
+```
+/// Multi-module importing
+import (
+    math
+    './runner'
+    './tasker'
+)
+```
+
+When specifying the file path of a rocket file it is not necessary to append a dot ('.') to specify the current directory as Rocket assumes it is in the current directory if no slash '/' is prepending the path.
+
+```
+import './runner' /// valid
+
+import 'runner' /// also valid, it is assumed to be in the current working directory
+
+import '/path/to/module' /// again also valid
+```
+
+While all statements in Rocket require the semicolon ';' to indicate the end of its decelartion, the `import` keyword does not require a semicolon for both single import and multi-import. If you do however feel like including semi-colons after each import declaration whether for single imports or multi-import it is possible to do, and also after the module name (e.g. `import module;`) or after the multi-import declaration (e.g. `import (math env);`).
+
+```
+import module; /// valid
+```
+
+```
+import ( math; env; ) /// valid
+import ( math; env; ); /// also valid
+import (
+    module;
+    module1;
+) /// valid
+import (
+    module;
+    module1;
+); /// also valid
+```
+
+Rocket makes semicolons optional for both the `import` and variable keywords (`var` & `const`) statements to make code look less verbose or at at the very least cleaner.
+
 ### x.x The Standard Library :file_folder:
 
-Rocket comes shipped with a standard library which includes the following packages:-
+> Note: At the moment only the math module is available, and is still incomplete
 
-> The `math` module include a `random` function which returns a random number between **0** and **1**.
+Rocket comes shipped with a standard library which includes the following packages:-
 
 + **math**:- For math related functions. E.g `sqrt`, `log`, etc.
 
