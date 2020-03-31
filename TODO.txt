@@ -1,6 +1,8 @@
 Maybe add a formal to write inline 'Python' code? To help library support. 
 Allow python code to importable?
 
+---
+
 Add more examples illustrating new futures and datatypes. Add 'Dict'/'Hash Map' datatype. Ensiure consistency of datatypes in `interpreter`
 
 Parse array/string indexing at `Call` in `Parser` to wrap it up as `_Index(args)`
@@ -102,9 +104,6 @@ should print:
 {'Jamie':0, 'Sarah':1, 'Ava':2}
 ```
 
-======
-
------
-print native function
-
-allow it to parse near infinite amount of objects. Check 'print' image in 'Picture' folder
+-------
+========
+=
