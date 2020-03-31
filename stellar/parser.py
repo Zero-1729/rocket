@@ -562,8 +562,9 @@ class Parser:
             # var { [name] = [value][symbol]
             # e.g.:
             # var { n = 0~
-            # Note: The same solution is used for const multi-var decls below
-            while not (self.peek().type in [_TokenType.RIGHT_BRACE,  _TokenType.LEFT_BRACE, _TokenType.TILDE, _TokenType.RIGHT_PAREN, _TokenType.EOF]):
+            # NOTE: The same solution is used for const multi-var decls below
+            # ... we only allow identifiers and equal sign to trigger pass
+            while (self.peek().type in [_TokenType.IDENTIFIER,  _TokenType.EQUAL]):
                 vars.append(self.parseVarDecl(var_lexeme))
 
             self.consume(_TokenType.RIGHT_BRACE, "'{}' expected closing '{}' after multi-variable declaration".format(var_lexeme, '}'))
@@ -588,7 +589,7 @@ class Parser:
         consts = []
 
         if self.match(_TokenType.LEFT_BRACE):
-            while not (self.peek().type in [_TokenType.RIGHT_BRACE,  _TokenType.LEFT_BRACE, _TokenType.TILDE, _TokenType.RIGHT_PAREN, _TokenType.EOF]):
+            while (self.peek().type in [_TokenType.IDENTIFIER,  _TokenType.EQUAL]):
                 consts.append(self.parseConstDecl(const_lexeme))
 
             self.consume(_TokenType.RIGHT_BRACE, "'{}' expected closing '{}' after multi-variable declaration".format(const_lexeme, '}'))
