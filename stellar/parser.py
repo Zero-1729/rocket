@@ -470,6 +470,7 @@ class Parser:
         if not self.check(_TokenType.SEMICOLON) and not self.isAtEnd():
             if self.check(_TokenType.IDENTIFIER) or self.check(_TokenType.STRING):
                 modules.append(self.peek())
+                self.advance()
 
             if self.check(_TokenType.LEFT_PAREN):
                 isFull = True
@@ -487,8 +488,23 @@ class Parser:
             self.consume(_TokenType.RIGHT_PAREN, f"'(' expected closing ')' in {import_lexeme} statement")
 
         if shift:
-            # Move beyond the ')'
+            # Move beyond the ')' or only identifier
             self.advance()
+
+        # NOTE: including ending semicolon ';' in single or multi import decleration is optional
+
+        # We skip over the only module name parsed and the semi-colon
+        # This is what enables ';' to be optional in single-module definitions
+        if self.peek().type == _TokenType.SEMICOLON:
+            # If the current token after
+            # ... the ')' is a semi-colon (;)
+            # ... we skip the semicolon itself
+            # allowing for ';' after the multi-module definition to be optional
+            self.advance()
+
+        else:
+            # Otherwise, we simply skip over only the single-module name
+            pass
 
         return _Import(modules)
 
