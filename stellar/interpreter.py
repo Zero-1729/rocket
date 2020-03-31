@@ -300,7 +300,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 else:
                     self.fnCallee = expr.callee.name.lexeme
                 
-                return function.call(self, eval_args)
+                return self.sanitizeNum(function.call(self, eval_args))
 
             except Exception as err:
                 self.errors.append(err)
