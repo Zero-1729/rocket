@@ -262,7 +262,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # We dynamically change 'arity' for Array's 'slice' fn depending on the args
         if not isNotDatatype:
             if hasattr(function, 'signature') and hasattr(function, 'slice'):
-                if function.signature == 'Array' and len(eval_args) == 2:
+                if ((function.signature == 'String') or (function.signature == 'Array')) and (len(eval_args) == 2):
                     function.inc = True
 
         if hasattr(function, 'slice'):
