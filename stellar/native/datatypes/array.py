@@ -11,9 +11,7 @@ class Array(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        size = int(args[0])
-
-        return RocketArray(size)
+        return RocketArray(args)
 
     def type(self):
         return self.__repr__()
@@ -26,8 +24,8 @@ class Array(_RocketCallable):
 
 
 class RocketArray(_RocketInstance):
-    def __init__(self, size):
-        self.elements = ['nin' for i in range(size)]
+    def __init__(self, elms):
+        self.elements = elms
         self.nature = 'Datatype'
 
     def get(self, name):
@@ -39,7 +37,7 @@ class RocketArray(_RocketInstance):
                 return 1
 
             def call(interpreter, args):
-                index = args[0]
+                index = args[0].value
 
                 if index >= len(self.elements):
                     raise _RuntimeError('Array', "IndexError: list index out of range")
@@ -64,13 +62,13 @@ class RocketArray(_RocketInstance):
 
             def call(interpreter, args, inc=False):
                 if inc:
-                    if args[0] >= len(self.elements) or args[1] >= len(self.elements):
+                    if args[0].value >= len(self.elements) or args[1].value >= len(self.elements):
                         raise _RuntimeError('Array', "IndexError: list index out of range")
 
                     else:
-                        return self.stringifyList(self.elements[args[0]:args[1]])
+                        return self.stringifyList(self.elements[args[0].value:args[1].value])
 
-                return self.stringifyList(self.elements[args[0]:])
+                return self.stringifyList(self.elements[args[0].value:])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -319,9 +317,7 @@ class RocketArray(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    print(args[0])
-                    for item in self.elements:
-                        pass
+                    for item in self.elements: args[0].call(interpreter, [item])
                 else:
                     raise _RuntimeError('Array', "IndexError: cannot run function on an empty list")
 
@@ -347,6 +343,12 @@ class RocketArray(_RocketInstance):
         return True
 
     def stringify(self, elm):
+        try:
+            elm = elm.value
+        except:
+            # If detected 'Array'
+            return elm.__str__()
+
         if type(elm) == int or type(elm) == float:
             return f'\033[36m{elm}\033[0m'
 
