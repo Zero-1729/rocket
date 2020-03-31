@@ -11,7 +11,7 @@ class Int(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        size = int(args[0])
+        size = int(args[0]) if not (type(args[0]) in [RocketInt, RocketFloat]) else int(args[0].value)
 
         return RocketInt(size)
 
