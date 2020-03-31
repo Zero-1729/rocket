@@ -2,6 +2,7 @@ from rocketClass import RocketCallable as _RocketCallable
 from rocketClass import RocketInstance as _RocketInstance
 from reporter import runtimeError as _RuntimeError
 
+
 class Array(_RocketCallable):
     def __init__(self):
         self.callee = 'Array'
