@@ -39,7 +39,7 @@ class RocketString(_RocketInstance):
                 return 1
 
             def call(interpreter, args):
-                index = args[0]
+                index = args[0].value
 
                 if index >= len(self.value):
                     raise _RuntimeError('String', "IndexError: string index out of range")
@@ -113,8 +113,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    if args[0] in self.value:
-                        self.value.remove(args[0])
+                    if args[0].value in self.value:
+                        self.value.remove(args[0].value)
                         return None
                     else:
                         raise _RuntimeError('String', "IndexError: Item not in string")
@@ -312,7 +312,7 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.center(args[0])
+                    return self.value.center(args[0].value)
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -330,7 +330,7 @@ class RocketString(_RocketInstance):
                 return 1
 
             def call(interpreter, args):
-                new_list = args[0]
+                new_list = args[0].value
 
                 if isinstance(new_list, RocketString):
                     self.value = self.value + new_list.elements
@@ -353,8 +353,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    if args[0] in self.value:
-                        return self.value.index(args[0])
+                    if args[0].value in self.value:
+                        return self.value.index(args[0].value)
                     else:
                         raise _RuntimeError('String', "IndexError: Item not in string")
                 else:
@@ -375,7 +375,7 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    if args[0] in self.value:
+                    if args[0].value in self.value:
                         return True
                     else:
                         return False
@@ -397,7 +397,7 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    endlen = len(args[0])
+                    endlen = len(args[0].value)
                     index = -(endlen)
                     if args[0] == self.value[index:]:
                         return True
@@ -421,13 +421,13 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    if args[0] in self.value:
+                    if args[0].value in self.value:
                         # NOTE: Manually implement this later
-                        count = self.value.count(args[0])
+                        count = self.value.count(args[0].value)
                         arr = _array.Array().call(interpreter, [count+1])
 
-                        print(args[0], self.value.split(args[0]), arr)
-                        tmp_array = self.value.split(args[0])
+                        print(args[0], self.value.split(args[0].value), arr)
+                        tmp_array = self.value.split(args[0].value)
 
                         for i in range(count+1):
                             arr.elements[i] = tmp_array[i]
