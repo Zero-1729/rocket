@@ -733,9 +733,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             try:
                 self.environment.assign(expr.name, value)
+
             except _RuntimeError as error:
-                if 'ReferenceError:' in error.msg:
+                if ('ReferenceError:' in error.msg) or ('AssignmentError: ' in error.msg):
                     self.errors.append(error)
+
                 else:
                     pass
 
