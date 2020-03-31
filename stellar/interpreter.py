@@ -843,8 +843,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def sanitizeNum(self, n):
         # Returns a Rocket num if number received
         if (self.is_number(n)):
-            if type(n) == int: return number.Int().call(self, [n])
-            else: return number.Int().call(self, n)
+            if (isinstance(n, int)):
+                return number.Int().call(self, [n])
+            
+            if (isinstance(n, number.Float)):
+                return number.Float().call(self, [n])
 
         # otherwise it returns it unchanged
         return n
@@ -857,7 +860,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         return n.value
 
     def is_number(self, obj: object):
-        if isinstance(obj, int) or isinstance(obj, float):
+        if (type(obj) in [int, float, number.RocketInt, number.RocketFloat]):
             return True
 
         else:
