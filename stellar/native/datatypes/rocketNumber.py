@@ -2,6 +2,8 @@ from utils.rocketClass import RocketCallable as _RocketCallable
 from utils.rocketClass import RocketInstance as _RocketInstance
 from utils.reporter import runtimeError as _RuntimeError
 
+from native.datatypes import rocketString as _string
+
 class Int(_RocketCallable):
     def __init__(self):
         self.callee = 'Int'
@@ -53,9 +55,14 @@ class Float(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        size = args[0]
+        if (isinstance(args[0], RocketFloat) or isinstance(args[0], RocketInt)):
+            return RocketFloat(float(args[0].value))
+            
+        if (type(args[0]) == int) or (type(args[0]) == float):
+            return RocketFloat(float(args[0]))
 
-        return RocketFloat(size)
+        else:
+            raise _RuntimeError(obj, f"'Float' accepts either Int or Float as an argument.")
 
     def __repr__(self):
         return self.__str__()
