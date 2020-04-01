@@ -78,7 +78,11 @@ class RocketFloat(_RocketInstance):
                 return 0
 
             def call(interpreter, args):
-                return self.value.__trunc__()
+                if (args[0].value > 0):
+                    return _string.String().call(self, [str(self.value)[0:args[0].value + 2]])
+
+                else:
+                    return _string.String().call(self, [str(int(self.value))])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
