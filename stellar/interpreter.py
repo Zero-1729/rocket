@@ -13,7 +13,7 @@ from env import Environment as _Environment
 from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction, RocketClass as _RocketClass, RocketInstance as _RocketInstance
 from scanner import Scanner as _Scanner
 from parser import Parser as _Parser
-from native.functions import locals, clock, copyright, natives, input, random, output
+from native.functions import locals, clock, copyright, natives, input, random, output, kind
 from native.datatypes import array, string, number, boolean
 
 
@@ -42,6 +42,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(copyright.Copyright().callee, copyright.Copyright)
         # 'natives' -> names of nativr functions
         self.globals.define(natives.Natives().callee, natives.Natives)
+        # 'type' -> check datatype
+        self.globals.define(kind.Type().callee, kind.Type)
 
         # Datatypes
         self.globals.define(array.Array().callee, array.Array)
