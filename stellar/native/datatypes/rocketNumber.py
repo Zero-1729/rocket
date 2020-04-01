@@ -75,7 +75,7 @@ class RocketFloat(_RocketInstance):
             rocketCallable = _RocketCallable(self)
 
             def arity():
-                return 0
+                return 1
 
             def call(interpreter, args):
                 if (args[0].value > 0):
