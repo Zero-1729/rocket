@@ -71,7 +71,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # instead we manually print it.
             # To make it uniform we only print it in 'visitVariableStmt'
             # to avoid duplicates
-            if 'ReferenceError:' not in error.msg:
+
+            # TODO: Find a better way if searching for 'ReferenceError' and datatype errors
+            if not (('ReferenceError:' in error.msg) or ("'Bool'" in error.msg) or ("'Array'" in error.msg) or ("'Int'" in error.msg) or ("'Float'" in error.msg)):
                 self.errors.append(error)
             else:
                 pass
