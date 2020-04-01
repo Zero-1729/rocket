@@ -13,8 +13,8 @@ class Print(_RocketCallable):
     def call(self, obj: object, args: list):
         # We will permit escsaped characters on user outputs, like '\n', '\t', etc
         # wrap it in 'utf-8' to decode escapes
-        encoded_input = codecs.escape_decode(args[0], "utf-8")[0]
-        print(encoded_input.decode("utf-8"))
+        encoded_input = codecs.escape_decode(args[0].value, "utf-8")[0]
+        print("\033[32m" + encoded_input.decode("utf-8") + "\033[0m")
 
     def __repr__(self):
         return "<native fn 'Print'>"
