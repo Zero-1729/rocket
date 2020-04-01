@@ -140,12 +140,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value - right.value
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.DIV):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
@@ -153,7 +153,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.MOD):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
@@ -161,7 +161,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.FLOOR):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
@@ -169,56 +169,56 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.MULT):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value * right.value
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.EXP):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value ** right.value
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         # bitshifters "<<", ">>"
         if (expr.operator.type == _TokenType.LESS_LESS):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value * (2 ** right.value)
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.GREATER_GREATER):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value // (2 ** right.value)
             return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
         # Comparison operators ">", "<", ">=", "<=", "!=", "=="
         if (expr.operator.type == _TokenType.GREATER):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value > right.value
 
         if (expr.operator.type == _TokenType.LESS):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value < right.value
 
         if (expr.operator.type == _TokenType.GREATER_EQUAL):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value >= right.value
 
         if (expr.operator.type == _TokenType.LESS_EQUAL):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value <= right.value
 
         if (expr.operator.type == _TokenType.BANG_EQUAL):
-            self.checkValidOperands(expr.operator, left.value, right.value)
-            return not (self.isEqual(left.value, right.value))
+            self.checkValidOperands(expr.operator, left, right)
+            return not (self.isEqual(left, right))
 
         if (expr.operator.type == _TokenType.EQUAL_EQUAL):
-            if left.value == None or right.value == None:
-                return self.isEqual(left.value, right.value)
+            if left == None or right == None:
+                return self.isEqual(left, right)
 
             if isinstance(left.value, bool) or isinstance(right.value, bool):
                 return self.isEqual(left.value, right.value)
 
-            self.checkValidOperands(expr.operator, left.value, right.value)
-            return self.isEqual(left.value, right.value)
+            self.checkValidOperands(expr.operator, left, right)
+            return self.isEqual(left, right)
 
         # If can't be matched return None
         return None
@@ -830,6 +830,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def isEqual(self, left_obj: object, right_obj: object):
+        # get values
+        if (hasattr(left_obj, 'value')):
+            left_obj = left_obj.value
+
+        if (hasattr(right_obj, 'value')):
+            right_obj = right_obj.value
+
         if ((left_obj == None) and (right_obj == None)):
             return True
 
