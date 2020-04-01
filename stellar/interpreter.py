@@ -14,7 +14,7 @@ from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction 
 from scanner import Scanner as _Scanner
 from parser import Parser as _Parser
 from native.functions import locals, clock, copyright, natives, input, random, output
-from native.datatypes import array, string, number
+from native.datatypes import array, string, number, boolean
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -48,6 +48,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(string.String().callee, string.String)
         self.globals.define(number.Int().callee, number.Int)
         self.globals.define(number.Float().callee, number.Float)
+        self.globals.define(boolean.Bool().callee, boolean.Bool)
 
 
     def interpret(self, statements: list):
@@ -83,6 +84,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if type(expr.value) == str:
             return string.String().call(self, [expr.value])
+
+        if type(expr.value) == bool:
+            return boolean.Bool().call(self, [expr.value])
 
         return expr.value
 
@@ -214,8 +218,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if left == None or right == None:
                 return self.isEqual(left, right)
 
-            if isinstance(left.value, bool) or isinstance(right.value, bool):
-                return self.isEqual(left.value, right.value)
+            if isinstance(left, boolean.RocketBool) or isinstance(right, boolean.RocketBool):
+                return self.isEqual(left, right)
 
             self.checkValidOperands(expr.operator, left, right)
             return self.isEqual(left, right)
