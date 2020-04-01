@@ -73,7 +73,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # to avoid duplicates
 
             # TODO: Find a better way if searching for 'ReferenceError' and datatype errors
-            if not (('ReferenceError:' in error.msg) or ("'Bool'" in error.msg) or ("'Array'" in error.msg) or ("'Int'" in error.msg) or ("'Float'" in error.msg)):
+            if not (('ReferenceError:' in error.msg) or ("'Bool'" in error.msg) or ("IndexError" in error.msg) or ("'Int'" in error.msg) or ("'Float'" in error.msg)):
                 self.errors.append(error)
             else:
                 pass
