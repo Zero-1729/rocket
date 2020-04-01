@@ -17,7 +17,7 @@ class Print(_RocketCallable):
         print(encoded_input.decode("utf-8"))
 
     def __repr__(self):
-        return "<built-in fn 'Print'>"
+        return "<native fn 'Print'>"
 
     def __str__(self):
-        return "<built-in fn 'Print'>"
+        return "<native fn 'Print'>"

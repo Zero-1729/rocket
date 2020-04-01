@@ -17,7 +17,7 @@ class Input(_RocketCallable):
         return encoded_input.decode("utf-8")
 
     def __repr__(self):
-        return "<built-in fn 'Input'>"
+        return "<native fn 'Input'>"
 
     def __str__(self):
-        return "<built-in fn 'Input'>"
+        return "<native fn 'Input'>"

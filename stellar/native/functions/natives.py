@@ -13,7 +13,7 @@ class Natives(_RocketCallable):
         return ', '.join(list(obj.globals.values.keys()))
 
     def __repr__(self):
-        return "<built-in fn 'Natives'>"
+        return "<native fn 'Natives'>"
 
     def __str__(self):
-        return "<built-in fn 'Natives'>"
+        return "<native fn 'Natives'>"

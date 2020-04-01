@@ -238,7 +238,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Fix passing expr and stmt to 'stdlib' functions
             eval_args.append(self.evaluate(arg))
 
-        # Well, built-in functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
+        # Well, native functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
         isNotNative = True
         isNotDatatype = True
         overideArity = False # To allow (near) infinite 'arity' for 'Array' elements
@@ -474,7 +474,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitImportStmt(self, stmt: _Import):
         import_lexeme = self.KSL[1][_TokenType.IMPORT.value]
 
-        # TODO: add more built-in modules
+        # TODO: add more native modules
         native_modules = [
             'math' # Note: even this module isn't done
         ]

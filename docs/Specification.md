@@ -28,7 +28,7 @@ Language's Specification info.
 *Because we believe language syntax should be clean as simple.*
 
 ```rocket
-/// Print is a built-in command
+/// Print is a native command
 print "Hello, World!";
 ```
 
@@ -134,7 +134,7 @@ A little over the board? maybe, nin is Rocket's version of Python's **None**. It
 
 ### 4.0 Expressions :performing_arts:
 
-> "If built-in types and their literals are atoms, then **expressions** must be the Molecules" - Robert Nystrom [Creator of the Lox Language]
+> "If native types and their literals are atoms, then **expressions** must be the Molecules" - Robert Nystrom [Creator of the Lox Language]
 
 Basically expressions are just groupings of literals linked together by some operator or just more literals, the same way in English clauses are groups of words put together. E.g:-
 
@@ -553,7 +553,7 @@ Additionally, when code is imported, Rocket simply executes the file's contents,
 
 It is important to note that specifying a module without string quotes would make Rocket search for a native module that matches the name and imports it. To import non-native modules (i.e. rocket files), you are required to provide the file path with the option of including the file extension, as it is automatically added by Rocket.
 
-There are several ways to import code in rocket, it is possible to import each file or built-in module (i.e. `import ...`) or import multiple native and or non-native modules (i.e. `import ( ... )`), e.g.
+There are several ways to import code in rocket, it is possible to import each file or native module (i.e. `import ...`) or import multiple native and or non-native modules (i.e. `import ( ... )`), e.g.
 
 ```
 /// Single module importing

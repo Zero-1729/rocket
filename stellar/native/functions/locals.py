@@ -22,7 +22,7 @@ class Locals(_RocketCallable):
             return None
 
     def __repr__(self):
-        return "<built-in fn 'Locals'>"
+        return "<native fn 'Locals'>"
 
     def __str__(self):
-        return "<built-in fn 'Locals'>"
+        return "<native fn 'Locals'>"

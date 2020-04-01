@@ -15,7 +15,7 @@ class Random(_RocketCallable):
         return _random.random()
 
     def __repr__(self):
-        return "<built-in fn 'Random'>"
+        return "<native fn 'Random'>"
 
     def __str__(self):
-        return "<built-in fn 'Random'>"
+        return "<native fn 'Random'>"

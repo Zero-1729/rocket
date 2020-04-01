@@ -13,14 +13,13 @@ class Copyright(_RocketCallable):
 
     def call(self, obj: object, args: list):
         info = """
-        Copyright (c) Abubakar NK 2018
-        Copyright (c) Rocket Labs 2018
+        Copyright (c) Abubakar N K 2018
         """
 
         return info
 
     def __repr__(self):
-        return "<built-in fn 'copyright'>"
+        return "<native fn 'copyright'>"
 
     def __str__(self):
-        return "<built-in fn 'copyright'>"
+        return "<native fn 'copyright'>"

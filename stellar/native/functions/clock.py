@@ -15,7 +15,7 @@ class Clock(_RocketCallable):
         return _time.clock()
 
     def __repr__(self):
-        return "<built-in fn 'Clock'>"
+        return "<native fn 'Clock'>"
 
     def __str__(self):
-        return "<built-in fn 'Clock'>"
+        return "<native fn 'Clock'>"
