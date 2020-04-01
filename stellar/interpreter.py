@@ -129,6 +129,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 sum = left.value + right.value
                 return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
 
+            # String concatenation
             if (isinstance(left, string.RocketString) and isinstance(right, string.RocketString)):
                 return string.String().call(self, [left.value + right.value])
 
@@ -139,10 +140,14 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # No need to allow this anymore. We make 'String' compulsory
             if ((isinstance(left, string.RocketString)) or (isinstance(right, string.RocketString))):
                 # Concatenation of 'nin' is prohibited!
-                if left == None or right == None:
+                if (type(left) == type(None)) or (type(right) == type(None)):
                     raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
 
                 return string.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
+
+            if (type(left) == type(None)) or (type(right) == type(None)):
+                raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.")
+
 
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
