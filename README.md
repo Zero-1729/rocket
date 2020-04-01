@@ -85,7 +85,7 @@ usage: rocket [ <option> | <file> ]
 
 ### Source :scroll:
 
-> You need GNU's **GCC**, **git** and **make**
+> You need **Python** 3.6.x+ installed.
 
 ```sh
 # clone the repo
@@ -102,7 +102,7 @@ $ python main.py
 
 ## Contributing :busts_in_silhouette: :wrench:
 
-> Note: You need GNU's **GCC**, **git** and **make**<br>
+> Note: You need **Python** 3.6.x+ and **git** installed.<br>
 
 ```sh
 # clone the repo and Navigate into repo
