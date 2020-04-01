@@ -1,4 +1,4 @@
-from rocketClass import RocketCallable as _RocketCallable
+from utils.rocketClass import RocketCallable as _RocketCallable
 import codecs
 
 class Input(_RocketCallable):

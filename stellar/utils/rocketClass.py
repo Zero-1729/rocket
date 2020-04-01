@@ -1,8 +1,8 @@
 import copy
 
-from env import Environment as _Environment
-from reporter import runtimeError as _RuntimeError
-from tokens import Token as _Token
+from utils.env import Environment as _Environment
+from utils.reporter import runtimeError as _RuntimeError
+from utils.tokens import Token as _Token
 
 
 class RocketCallable:

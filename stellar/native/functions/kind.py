@@ -1,5 +1,5 @@
-from rocketClass import RocketCallable as _RocketCallable
-from rocketClass import RocketClass, RocketFunction
+from utils.rocketClass import RocketCallable as _RocketCallable
+from utils.rocketClass import RocketClass, RocketFunction
 
 class Type(_RocketCallable):
     def __init__(self):

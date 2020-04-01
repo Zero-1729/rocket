@@ -1,4 +1,4 @@
-from tokens import TokenType as _TokenType, Token as _Token
+from utils.tokens import TokenType as _TokenType, Token as _Token
 
 
 class ScanError(Exception):

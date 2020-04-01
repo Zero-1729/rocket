@@ -1,7 +1,7 @@
-from tokens import Token as _Token, TokenType as _TokenType
+from utils.tokens import Token as _Token, TokenType as _TokenType
 
-from expr import ExprVisitor as _ExprVisitor
-from stmt import StmtVisitor as _StmtVisitor
+from utils.expr import ExprVisitor as _ExprVisitor
+from utils.stmt import StmtVisitor as _StmtVisitor
 
 from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Conditional as _Conditional, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Import as _Import, Func as _Func, Class as _Class,  Block as _Block, Return as _Return, Del as _Del, Print as _Print, Expression as _Expression

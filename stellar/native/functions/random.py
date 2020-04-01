@@ -1,6 +1,6 @@
 import random as _random
 
-from rocketClass import RocketCallable as _RocketCallable
+from utils.rocketClass import RocketCallable as _RocketCallable
 
 class Random(_RocketCallable):
     def __init__(self):

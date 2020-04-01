@@ -1,6 +1,6 @@
 import time as _time
 
-from rocketClass import RocketCallable as _RocketCallable
+from utils.rocketClass import RocketCallable as _RocketCallable
 
 class Clock(_RocketCallable):
     def __init__(self):

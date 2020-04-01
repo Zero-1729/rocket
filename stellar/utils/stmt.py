@@ -1,5 +1,5 @@
-from expr import Expr as _Expr
-from tokens import Token as _Token
+from utils.expr import Expr as _Expr
+from utils.tokens import Token as _Token
 
 
 class StmtVisitor:

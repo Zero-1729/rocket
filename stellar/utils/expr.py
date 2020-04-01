@@ -1,4 +1,4 @@
-from tokens import Token as _Token
+from utils.tokens import Token as _Token
 
 
 class ExprVisitor:

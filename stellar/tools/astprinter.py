@@ -1,4 +1,4 @@
-from expr import Expr as Expr, Visitor as __Visitor, Binary as Binary, Grouping, Literal, Unary
+from utils.expr import Expr as Expr, Visitor as __Visitor, Binary as Binary, Grouping, Literal, Unary
 
 
 class LispAstPrinter(__Visitor):

@@ -1,5 +1,5 @@
-from tokens import Token as _Token
-from reporter import runtimeError as _RuntimeError
+from utils.tokens import Token as _Token
+from utils.reporter import runtimeError as _RuntimeError
 
 class Environment:
     def __init__(self, enclosing=None):
