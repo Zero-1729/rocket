@@ -36,6 +36,8 @@ class RocketInt(_RocketInstance):
     def set(self, name, value):
         raise _RuntimeError(name, "Cannot mutate an Int's props")
 
+    def raw_string(self):
+        return str(self.value)
 
     def __repr__(self):
         return f'\033[36m{self.value}\033[0m'
@@ -95,6 +97,8 @@ class RocketFloat(_RocketInstance):
     def set(self, name, value):
         raise _RuntimeError(name, "Cannot mutate an Float's props")
 
+    def raw_string(self):
+        return str(self.value)
 
     def __repr__(self):
         return f'\033[36m{self.value}\033[0m'

@@ -462,6 +462,9 @@ class RocketString(_RocketInstance):
 
         return True
 
+    def raw_string(self):
+        return self.value
+
     def __repr__(self):
         return f'\033[32m{self.value}\033[0m'
 
