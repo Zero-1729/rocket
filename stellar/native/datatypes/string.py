@@ -15,9 +15,6 @@ class String(_RocketCallable):
     def call(self, obj, args):
         return RocketString(args[0])
 
-    def type(self):
-        return self.__repr__()
-
     def __repr__(self):
         return self.__str__()
 
@@ -28,7 +25,8 @@ class String(_RocketCallable):
 class RocketString(_RocketInstance):
     def __init__(self, value):
         self.value = value
-        self.nature = 'Datatype'
+        self.nature = 'datatype'
+        self.kind = "<native type 'String'>"
 
     def get(self, name):
         # Note: 'edna' is what we use to manipulate arity for 'slice' function from '1' to '2'

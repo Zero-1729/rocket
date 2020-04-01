@@ -14,9 +14,6 @@ class Array(_RocketCallable):
     def call(self, obj, args):
         return RocketArray(args)
 
-    def type(self):
-        return self.__repr__()
-
     def __repr__(self):
         return self.__str__()
 
@@ -27,7 +24,8 @@ class Array(_RocketCallable):
 class RocketArray(_RocketInstance):
     def __init__(self, elms):
         self.elements = elms
-        self.nature = 'Datatype'
+        self.nature = 'datatype'
+        self.kind = "<native type 'Array'>"
 
     def get(self, name):
         # Note: 'edna' is what we use to manipulate arity for 'slice' function from '1' to '2'

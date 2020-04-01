@@ -4,15 +4,13 @@ class Natives(_RocketCallable):
     def __init__(self):
         self.callee = "Natives"
         self.nature = "native"
+        self.kind = "<native function type>"
 
     def arity(self):
         return 0
 
     def call(self, obj: object, args: list):
         return ', '.join(list(obj.globals.values.keys()))
-
-    def type(self):
-        return self.__repr__()
 
     def __repr__(self):
         return "<built-in fn 'Natives'>"

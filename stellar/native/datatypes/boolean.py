@@ -30,9 +30,6 @@ class Bool(_RocketCallable):
 
         return RocketBool(True)
 
-    def type(self):
-        return type(self)
-
     def __repr__(self):
         return self.__str__()
 
@@ -43,7 +40,8 @@ class Bool(_RocketCallable):
 class RocketBool(_RocketInstance):
     def __init__(self, value):
         self.value = value
-        self.nature = 'Datatype'
+        self.nature = 'datatype'
+        self.kind = "<native type 'Bool'>"
 
     def get(self, name):
         raise _RuntimeError(name, f"'Bool' has no method '{name.lexeme}'.")

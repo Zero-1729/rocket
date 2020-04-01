@@ -6,6 +6,7 @@ class Copyright(_RocketCallable):
     def __init__(self):
         self.callee = "Copyright"
         self.nature = "native"
+        self.kind = "<native function type>"
 
     def arity(self):
         return 0
@@ -17,9 +18,6 @@ class Copyright(_RocketCallable):
         """
 
         return info
-
-    def type(self):
-        return self.__repr__()
 
     def __repr__(self):
         return "<built-in fn 'copyright'>"

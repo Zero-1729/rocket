@@ -15,9 +15,6 @@ class Int(_RocketCallable):
 
         return RocketInt(size)
 
-    def type(self):
-        return self.__repr__()
-
     def __repr__(self):
         return self.__str__()
 
@@ -28,7 +25,8 @@ class Int(_RocketCallable):
 class RocketInt(_RocketInstance):
     def __init__(self, value):
         self.value = value.__trunc__()
-        self.nature = 'Datatype'
+        self.nature = 'datatype'
+        self.kind = "<native type 'Int'>"
 
     def get(self, name):
         raise _RuntimeError(name, f"'Int' has no method '{name.lexeme}'.")
@@ -59,9 +57,6 @@ class Float(_RocketCallable):
 
         return RocketFloat(size)
 
-    def type(self):
-        return self.__repr__()
-
     def __repr__(self):
         return self.__str__()
 
@@ -72,7 +67,8 @@ class Float(_RocketCallable):
 class RocketFloat(_RocketInstance):
     def __init__(self, value):
         self.value = value
-        self.nature = 'Datatype'
+        self.nature = 'datatype'
+        self.kind = "<native type 'Float'>"
 
     def get(self, name):
         if name.lexeme == 'toFixed':

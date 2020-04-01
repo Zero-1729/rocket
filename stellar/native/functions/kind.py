@@ -5,7 +5,7 @@ class Type(_RocketCallable):
     def __init__(self):
         self.callee = "Type"
         self.nature = "native"
-        self.kind = "<native function type 'Type'>"
+        self.kind = "<native function type>"
 
     def arity(self):
         return 1
@@ -25,11 +25,6 @@ class Type(_RocketCallable):
         except:
             # TODO: Check all other edge cases
             return "<unknown type>"
-
-
-    def __type__(self):
-        return self.__repr__()
-
 
     def __repr__(self):
         return "<native fn 'Type'>"
