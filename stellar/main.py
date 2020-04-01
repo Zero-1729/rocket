@@ -91,6 +91,22 @@ def assemble_acmp(KSL):
     return autoCmp
 
 
+def save_and_quit():
+     # Ctrl-D
+    # Save REPL history before exit
+    readline.write_history_file('.rocket_repl_history')
+
+    # to avoid mangled return shell text
+    print()
+    sys.exit(0)
+
+
+def silent_quit():
+    # same reason as discussed above
+    print()
+    sys.exit(0)
+
+
 def UpdateAuto(autoCmp):
     autoCmp.updateEnv(interpreter.environment)
     autoCmp.updateEnv(interpreter.globals)
@@ -149,7 +165,13 @@ def run_prompt(prompt, headerless=False):
 
     while True:
 
-        chunk = input(prompt)
+        try:
+            chunk = input(prompt)
+        except EOFError:
+            save_and_quit()
+
+        except KeyboardInterrupt:
+            silent_quit()
 
         if chunk == "exit":
             readline.write_history_file('.rocket_repl_history')
@@ -222,18 +244,10 @@ def main():
             run_prompt(prompt)
 
         except EOFError:
-            # Ctrl-D
-            # Save REPL history before exit
-            readline.write_history_file('.rocket_repl_history')
-
-            # to avoid mangled return shell text
-            print()
-            sys.exit(0)
+            save_and_quit()
 
         except KeyboardInterrupt:
-            # same reason as discussed above
-            print()
-            sys.exit(0)
+            silent_quit()
 
 
     if len(sys.argv) == 2 and (sys.argv[1] not in sca):
