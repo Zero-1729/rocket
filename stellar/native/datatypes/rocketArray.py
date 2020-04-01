@@ -1,6 +1,8 @@
-from rocketClass import RocketCallable as _RocketCallable
-from rocketClass import RocketInstance as _RocketInstance
-from reporter import runtimeError as _RuntimeError
+from utils.rocketClass import RocketCallable as _RocketCallable
+from utils.rocketClass import RocketInstance as _RocketInstance
+from utils.reporter import runtimeError as _RuntimeError
+
+from utils.tokens import Token as _Token
 
 
 class Array(_RocketCallable):
@@ -27,7 +29,7 @@ class RocketArray(_RocketInstance):
         self.nature = 'datatype'
         self.kind = "<native type 'Array'>"
 
-    def get(self, name):
+    def get(self, name: _Token):
         # Note: 'edna' is what we use to manipulate arity for 'slice' function from '1' to '2'
         if name.lexeme == 'get':
             rocketCallable = _RocketCallable(self)

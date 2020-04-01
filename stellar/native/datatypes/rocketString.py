@@ -1,7 +1,12 @@
-from rocketClass import RocketCallable as _RocketCallable
-from rocketClass import RocketInstance as _RocketInstance
-from reporter import runtimeError as _RuntimeError
-import array as _array
+from utils.tokens import Token as _Token
+from utils.tokens import TokenType as _TokenType
+
+from   utils.rocketClass import RocketCallable as _RocketCallable
+from   utils.rocketClass import RocketInstance as _RocketInstance
+from   utils.reporter import runtimeError as _RuntimeError
+import native.datatypes.rocketArray as _array
+import native.datatypes.rocketBoolean as _boolean
+import native.datatypes.rocketNumber as _number
 
 
 class String(_RocketCallable):
@@ -42,7 +47,7 @@ class RocketString(_RocketInstance):
                 if index >= len(self.value):
                     raise _RuntimeError('String', "IndexError: string index out of range")
 
-                return self.value[index]
+                return String().call(self, [self.value[index]])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -67,10 +72,10 @@ class RocketString(_RocketInstance):
 
                     # Special case
                     if (args[0].value >= args[1].value):
-                        return "''"
+                        String().call(self, [''])
 
                     else:
-                        return self.value[args[0].value:args[1].value]
+                        return String().call(self, [self.value[args[0].value:args[1].value]])
 
                 return self.value[args[0].value:]
 
@@ -92,56 +97,13 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return len(self.value)
+                    return _number.Int().call(self, [len(self.value)])
                 else:
                     return 0
 
             rocketCallable.arity = arity
             rocketCallable.call = call
             rocketCallable.toString = "<native method 'length' of String>"
-            rocketCallable.nature = 'native'
-
-            return rocketCallable
-
-        if name.lexeme == 'remove':
-            rocketCallable = _RocketCallable(self)
-
-            def arity():
-                return 1
-
-            def call(interpreter, args):
-                if self.notEmpty():
-                    if args[0].value in self.value:
-                        self.value.remove(args[0].value)
-                        return None
-                    else:
-                        raise _RuntimeError('String', "IndexError: Item not in string")
-                else:
-                    raise _RuntimeError('String', "IndexError: cannot remove items from an empty string")
-
-            rocketCallable.arity = arity
-            rocketCallable.call = call
-            rocketCallable.toString = "<native method 'remove' of String>"
-            rocketCallable.nature = 'native'
-
-            return rocketCallable
-
-        if name.lexeme == 'sort':
-            rocketCallable = _RocketCallable(self)
-
-            def arity():
-                return 0
-
-            def call(interpreter, args):
-                if self.notEmpty():
-                    self.value.sort()
-                    return None
-                else:
-                    return None
-
-            rocketCallable.arity = arity
-            rocketCallable.call = call
-            rocketCallable.toString = "<native method 'sort' of String>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -154,10 +116,10 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    self.value.reverse()
-                    return None
+                    return String().call(self, [self.value[::-1]])
+
                 else:
-                    return None
+                    return String().call(self, [self.value['']])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -175,9 +137,10 @@ class RocketString(_RocketInstance):
             def call(interpreter, args):
                 if self.notEmpty():
                     if len(self.value) >= 2:
-                        return self.value[0].upper() + self.value[1:]
+                        return String().call(self, [self.value[0].upper() + self.value[1:]])
+
                     else:
-                        return self.value
+                        return String().call(self, [self.value])
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -196,7 +159,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.upper()
+                    return String().call(self, [self.value.upper()])
+
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -215,7 +179,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.lower()
+                    return String().call(self, [self.value.lower()])
+
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -234,7 +199,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.isupper()
+                    return _boolean.Bool().call(self, [self.value.isupper()])
+
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -253,7 +219,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.islower()
+                    return _boolean.Bool().call(self, [self.value.islower()])
+
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -272,7 +239,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.isalpha()
+                    return _boolean.Bool().call(self, [self.value.isalpha()])
+
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -291,7 +259,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.isdecimal()
+                    return _boolean.Bool().call(self, [self.value.isdecimal()])
+
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -310,7 +279,8 @@ class RocketString(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    return self.value.center(args[0].value)
+                    return String().call(self, [self.value.center(args[0].value)])
+
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -328,11 +298,13 @@ class RocketString(_RocketInstance):
                 return 1
 
             def call(interpreter, args):
-                new_list = args[0].value
+                if isinstance(args[0], RocketString):
+                    # We do not internally edit it, instead its returned
+                    # self.value = self.value + new_list.elements
+                    text = args[0].value
 
-                if isinstance(new_list, RocketString):
-                    self.value = self.value + new_list.elements
-                    return None
+                    return String().call(self, [self.value + text])
+
                 else:
                     raise _RuntimeError('String', "IndexError: can only concatenate 'String' native type with another 'String'.")
 
@@ -352,7 +324,8 @@ class RocketString(_RocketInstance):
             def call(interpreter, args):
                 if self.notEmpty():
                     if args[0].value in self.value:
-                        return self.value.index(args[0].value)
+                        return String().call(self, [self.value.index(args[0].value)])
+                        
                     else:
                         raise _RuntimeError('String', "IndexError: Item not in string")
                 else:
@@ -374,9 +347,9 @@ class RocketString(_RocketInstance):
             def call(interpreter, args):
                 if self.notEmpty():
                     if args[0].value in self.value:
-                        return True
+                        return _boolean.Bool().call(self, [True])
                     else:
-                        return False
+                        return _boolean.Bool().call(self, [False])
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -398,9 +371,9 @@ class RocketString(_RocketInstance):
                     endlen = len(args[0].value)
                     index = -(endlen)
                     if args[0] == self.value[index:]:
-                        return True
+                        return _boolean.Bool().call(self, [True])
                     else:
-                        return False
+                        return _boolean.Bool().call(self, [False])
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
@@ -420,22 +393,24 @@ class RocketString(_RocketInstance):
             def call(interpreter, args):
                 if self.notEmpty():
                     if args[0].value in self.value:
-                        # NOTE: Manually implement this later
-                        count = self.value.count(args[0].value)
-                        arr = _array.Array().call(interpreter, [count+1])
+                        # split it Python style
+                        splitted_array = self.value.split(args[0].value)
 
-                        print(args[0], self.value.split(args[0].value), arr)
-                        tmp_array = self.value.split(args[0].value)
+                        # Create a Rocket Array
+                        arr = _array.Array().call(self, [])
 
-                        for i in range(count+1):
-                            arr.elements[i] = tmp_array[i]
+                        # Create fake token for getter
+                        append_tok = _Token(_TokenType.STRING, 'append', 'append', 0)
 
+                        # Add chunks to Rocket Array
+                        for i in range(len(splitted_array)):
+                            arr.get(append_tok).call(self, [splitted_array[i]])
+
+                        # return new rocket Array with chunks
                         return arr
+
                     else:
-                        arr = _array.Array().call(interpreter, [0])
-                        arr.elements[0] = self.value
-
-                        return arr
+                        return _array.Array().call(self, [self.value])
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 
