@@ -4,6 +4,9 @@ from utils.reporter import runtimeError as _RuntimeError
 
 from utils.tokens import Token as _Token
 
+from native.datatypes import rocketBoolean as _boolean
+from native.datatypes import rocketNumber as _number
+
 
 class Array(_RocketCallable):
     def __init__(self):
@@ -68,12 +71,12 @@ class RocketArray(_RocketInstance):
 
                     # Special case
                     if (args[0].value >= args[1].value):
-                        return self.stringifyList([])
+                        return Array().call(self, [])
 
                     else:
-                        return self.stringifyList(self.elements[args[0].value:args[1].value])
+                        return Array().call(self, self.elements[args[0].value:args[1].value])
 
-                return self.stringifyList(self.elements[args[0].value:])
+                return Array().call(self, self.elements[args[0].value:])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -85,17 +88,18 @@ class RocketArray(_RocketInstance):
 
             return rocketCallable
 
-        if name.lexeme == 'append':
+        if (name.lexeme == 'append') or (name.lexeme == 'push'):
             rocketCallable = _RocketCallable(self)
 
             def arity():
                 return 1
 
             def call(interpreter, args):
-                item = args[0]
-                self.elements.append(item)
+                # Internally add new elm
+                self.elements.append(args[0])
 
-                return None
+                # we return the appended array
+                return self
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -113,7 +117,8 @@ class RocketArray(_RocketInstance):
             def call(interpreter, args):
                 self.elements = []
 
-                return None
+                # return the newly cleared array
+                return self
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -170,11 +175,19 @@ class RocketArray(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    if args[0] in self.elements:
-                        self.elements.remove(args[0])
-                        return None
-                    else:
+                    removed_index = -1
+
+                    for i in range(len(self.elements) - 1):
+                        if args[0].value == self.elements[i].value:
+                            self.elements.remove(self.elements[i])
+                            removed_index = i
+
+                    if removed_index == -1:
                         raise _RuntimeError('Array', "IndexError: Item not in list")
+                
+                    else:
+                        return _number.Int().call(self, [removed_index])
+
                 else:
                     raise _RuntimeError('Array', "IndexError: cannot remove items from an empty list")
 
@@ -213,10 +226,12 @@ class RocketArray(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
+                    # internally change and return mutation
                     self.elements.reverse()
-                    return None
+                    return self
+
                 else:
-                    return None
+                    return Array().call(self, [])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -232,11 +247,10 @@ class RocketArray(_RocketInstance):
                 return 1
 
             def call(interpreter, args):
-                new_list = args[0]
+                if isinstance(args[0], RocketArray):
+                    # we return the mutation
+                    return Array().call(self, self.elements + args[0].elements)
 
-                if isinstance(new_list, RocketArray):
-                    self.elements = self.elements + new_list.elements
-                    return None
                 else:
                     raise _RuntimeError('Array', "IndexError: can only concatenate 'Array' native type with another 'Array'.")
 
@@ -255,10 +269,12 @@ class RocketArray(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    if args[0] in self.elements:
-                        return self.elements.index(args[0])
-                    else:
-                        raise _RuntimeError('Array', "IndexError: Item not in list")
+                    for i in range(len(self.elements)):
+                        if args[0].value == self.elements[i].value:
+                            return _number.Int().call(self, [i])
+
+                    raise _RuntimeError('Array', "IndexError: Item not in list")
+
                 else:
                     raise _RuntimeError('Array', "IndexError: cannot index from an empty list")
 
@@ -277,10 +293,12 @@ class RocketArray(_RocketInstance):
 
             def call(interpreter, args):
                 if self.notEmpty():
-                    if args[0] in self.elements:
-                        return True
-                    else:
-                        return False
+                    for i in range(len(self.elements)):
+                        if args[0].value == self.elements[i].value:
+                            return _boolean.Bool().call(self, [True])
+                    
+                    return _boolean.Bool().call(self, [False])
+
                 else:
                     raise _RuntimeError('Array', "IndexError: cannot index from an empty list")
 
@@ -373,14 +391,18 @@ class RocketArray(_RocketInstance):
         return result
 
     def raw_string(self):
-        return self.stringifyList(self.elements, True)
+        if len(self.elements) > 0:
+            return self.stringifyList(self.elements, True)
+
+        else:
+            return '[]'
 
     def __repr__(self):
         if len(self.elements) >= 1:
             return self.stringifyList(self.elements)
 
         else:
-            return '[]'
+            return "[]"
 
     def __str__(self):
         return self.__repr__()
