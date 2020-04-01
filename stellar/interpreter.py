@@ -868,7 +868,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (isinstance(n, array.RocketArray)):
             return n.raw_string()
 
-        return n.__str__()
+        # NOTE: All datatypes must have this method
+        return n.raw_string()
 
     def is_number(self, obj: object):
         if (type(obj) in [int, float, number.RocketInt, number.RocketFloat]):
