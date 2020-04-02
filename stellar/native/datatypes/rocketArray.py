@@ -88,6 +88,87 @@ class RocketArray(_RocketInstance):
 
             return rocketCallable
 
+        if name.lexeme == 'splice':
+            rocketCallable = _RocketCallable(self)
+
+            def arity(inc=False):
+                if inc:
+                    return 2
+
+                return 1
+
+            def call(interpreter, args, inc=False):
+                # If initial index is beyond the limit then nothing is returned
+                if args[0].value >= len(self.elements):
+                        return Array().call(self, [])
+
+                removed_array = []
+                is_negative_index = False
+
+                if inc:
+                    if args[1].value >= len(self.elements):
+                        raise _RuntimeError('Array', "IndexError: list index out of range")
+
+                    # Please note, if the item count is zer then nothing is returned
+                    if args[1] == 0:
+                        return Array().call(self, [])
+
+                    # Negative steps return nothing irrespective of the index
+                    # ... so we need to perform a negativivty test on the input
+                    # if p is negative then
+                    # (p * -1) - p will be equal to twice the absolute value of p (aka |p| ** 2), where x != 0
+                    #
+                    # Proof:
+                    #   Assume x = -x
+                    #
+                    #   (-x * -1) - (-x)
+                    #   = x - (-x)
+                    #   = x + x
+                    #   2x (hence |x| * 2)
+                    #
+                    # Now assume x = x
+                    #
+                    #       (x * -1) - (x)
+                    #       -x - x
+                    #       -2x (hence -|x| * 2 and not |x| * 2)
+                    #
+                    # QED
+                    if (((args[1] * -1) - args[1]) == 2 * abs(args[1])) and (not args[1] == 0):
+                        return Array().call(self, [])
+
+                    # Handle Positive and negative index
+                    # count is always positive
+                    # Run positivity test for index to determine behaviour (adapted from test above)
+                    if (((args[0]) * -1) - args[0]) != 2 * abs(args[0]):
+                        removed_array = self.elements[args[0]:args[0] + args[1]:]
+
+                    else:
+                        # I.e. when index is negative
+                        removed_array = self.elements[args[0]:(args[0] * -1) + args[1]:]
+                        is_negative_index = True
+
+                # if only index provided then the entire list from the index to end is returned
+                removed_array = Array().call(self, self.elements[args[0]:])
+
+                # Remove array items
+                # Remember the slices are contiguously stored so we can safely use indexing
+                # ... by cutting out the first chunk and last chunk then attaching them (surgically)
+                head = self.elements[0:len(self.elements) + args[0]] if is_negative_index else self.elements[0:args[0]]
+                tail = self.elements[len(self.elements) + args[0] + args[1]:] if is_negative_index else self.elements[args[0] + args[1]:]
+
+                self.elements = head + tail
+
+                # return removed array slice
+                return Array().call(self, removed_array)
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.nature = 'native'
+            rocketCallable.signature = 'Array'
+            rocketCallable.toString = "<native method 'splice' of Array>"
+            rocketCallable.slice = True
+            rocketCallable.inc = False
+
         if (name.lexeme == 'append') or (name.lexeme == 'push'):
             rocketCallable = _RocketCallable(self)
 
