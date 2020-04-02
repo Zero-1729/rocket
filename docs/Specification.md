@@ -6,20 +6,44 @@ Language's Specification info.
 
 | No.   | Topic Name            |
 |-------|-----------------------|
-|  0.0  | [Hello World Example](#hello-world-example) :wave:                                   |
-|  1.0  | [Dynamic Typing](#dynamic-typing) :abc:                                              |
-|  2.0  | [Automatic Memory Management](#automated-memory-management) (GC) :articulated_lorry: |
-|  3.0  | [Data Types](#data-types)                                                            |
-|  4.0  | [Expressions](#expressions) :performing_arts:                                        |
-|  5.0  | [Statements](#statements) :speech_balloon:                                           |
-|  6.0  | [Variables](#variables)                                                              |
-|  7.0  | [Control Flow](#control-flow) :ocean:                                                |    
-|  8.0  | [Functions](#functions)                                                              |
-|  9.0  | [Classes](#classes) (Yes there's OOP) :neckbeard:                                    |
-|  10.0  | [Importing](#importing)                                                              |
-|  x.x  | [The Standard Library](#the-standard-library) (or The Core Library) :file_folder:    |
+|  x.x  | [Default Syntax Keywords](#x.x-list-keywords) |
+|  0.0  | [Hello World Example](#0.0-hello-world-example) :wave:                                   |
+|  1.0  | [Dynamic Typing](#1.0-dynamic-typing) :abc:                                              |
+|  2.0  | [Automatic Memory Management](#2.0-automatic-memory-management) (GC) :articulated_lorry: |
+|  3.0  | [Data Types](#3.0-data-types)                                                            |
+|  4.0  | [Expressions](#4.0-expressions) :performing_arts:                                        |
+|  5.0  | [Statements](#5.0-statements) :speech_balloon:                                           |
+|  6.0  | [Variables](#6.0-variables)                                                              |
+|  7.0  | [Control Flow](#7.0-control-flow) :ocean:                                                |    
+|  8.0  | [Functions](#8.0-functions)                                                              |
+|  9.0  | [Classes](#9.0-classes) (Yes there's OOP) :neckbeard:                                    |
+|  10.0  | [Importing](#10.0-importing)                                                              |
+|  11.0  | [The Standard Library](#11.0-the-standard-library) (or The Core Library) :file_folder:    |
 
 ---
+
+### x.x Default Syntax Keywords
+
+- print
+- import
+- class
+- super
+- this
+- if
+- else
+- func
+- return
+- for
+- while
+- break
+- and
+- or
+- const
+- var
+- del
+- true
+- false
+- nin
 
 ### 0.0 Hello World Example
 
@@ -37,7 +61,7 @@ print "Hello, World!";
 
 ---
 
-### 1.0 Dynamic Typing :abc:
+### 1.0 Dynamic Typing
 
 Rocket is Dynamically typed. Which means variables can store values of any type, and a single value of different types at different times. For Example:-
 
@@ -64,7 +88,7 @@ As a final note, Rocket's C compiler (`RLuna`) allocates memory in accordance wi
 
 ---
 
-### 2.0 Automatic Memory Management :articulated_lorry:
+### 2.0 Automatic Memory Management
 
 High-level languages such as `Js`, `Python`, etc all eliminate error-prone, low-level memory management like allocation or precise intervals of memory cleanup. Eliminating the classic "where do i correctly place `free()`" for the C enthusiasts et el.
 
@@ -132,7 +156,7 @@ A little over the board? maybe, nin is Rocket's version of Python's **None**. It
 
 ---
 
-### 4.0 Expressions :performing_arts:
+### 4.0 Expressions
 
 > "If native types and their literals are atoms, then **expressions** must be the Molecules" - Robert Nystrom [Creator of the Lox Language]
 
@@ -204,7 +228,7 @@ var num = low + high / 2; /// Result: low + (high / 2)
 
 ---
 
-### 5.0 Statements :speech_balloon:
+### 5.0 Statements
 
 Statements are just Expressions that produce an effect not necessarily a value. This effect could be modifying a literal's state, reading input, producing output, etc. A good example is our hello world program, because the program is just a statement.
 
@@ -309,7 +333,7 @@ var {
 
 ---
 
-### 7.0 Control Flow :ocean:
+### 7.0 Control Flow
 
 Control flow refers to the manner in which code is executed. Whether a certain block is evaluated only if a certain condition is met. The keywords used for such are:-
 
@@ -420,7 +444,7 @@ fn(); /// Outputs "outside"
 
 ---
 
-### 9.0 Classes :neckbeard:
+### 9.0 Classes
 
 Rocket features Object-Oriented-Programming (**OOP**). Which allows the programmer to define an object and declare instances of that object. A simple analogy is a *Human* being an object and an instance of a *Human* would be a *Woman*. Classes take the form:-
 
@@ -545,7 +569,7 @@ var macBook = Laptop("Mac Os", "x86_64");
 
 ---
 
-### Importing
+### 10.0 Importing
 
 Rocket uses a similar concept of Python's modules, as it is indeed also possible to import rocket code or certain modules fromt the standard library.
 
@@ -601,7 +625,7 @@ import (
 
 Rocket makes semicolons optional for both the `import` and variable keywords (`var` & `const`) statements to make code look less verbose or at at the very least cleaner.
 
-### x.x The Standard Library :file_folder:
+### 11.0 The Standard Library
 
 > Note: At the moment only the math module is available, and is still incomplete
 
