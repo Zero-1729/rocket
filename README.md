@@ -15,7 +15,7 @@ Rocket is a High level Dynamically-typed, Object-Oriented Programming Language t
 
 ## Docs :books:
 [Specification](docs/Specification.md) For Information on The Language Specification.<br>
-[User Guide](docs/Tutorials.md) For Tutorials.
+[Code Samples](https://github.com/Zero-1729/rocket/tree/master/code%20samples) For code samples.
 
 ---
 
