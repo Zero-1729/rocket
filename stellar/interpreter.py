@@ -147,6 +147,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
                 return rocketString.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
 
+            # allow python style array consatenation
+            if (isinstance(left, rocketArray.RocketArray) or isinstance(right, rocketArray.RocketArray)):
+                concat_tok = _Token(_TokenType.STRING, 'concat', 'concat', 0)
+
+                # return new comcatenated array
+                return left.get(concat_tok).call(self, [right])
+
             if (type(left) == type(None)) or (type(right) == type(None)):
                 raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.")
 
