@@ -134,7 +134,7 @@ Feel free to open a PR or issue to discuss any bugs :beetle:, improvements :char
 ## Acknowledgements :pushpin:
 
 
-Rocket's creation was made possible by the insights provided by Robert Nystrom in his [craftinginterpreters series](https://github.com/munificent/craftinginterpreters) and various other works like [byterun](https://github.com/byterun).
+Rocket's creation was made possible by the insights provided by Robert Nystrom in his [craftinginterpreters series](https://github.com/munificent/craftinginterpreters) and various other works like [byterun](https://github.com/nedbat/byterun).
 
 ---
 
