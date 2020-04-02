@@ -1,9 +1,10 @@
-from rocketClass import RocketCallable as _RocketCallable
+from utils.rocketClass import RocketCallable as _RocketCallable
 
 class Locals(_RocketCallable):
     def __init__(self):
         self.callee = "Locals"
         self.nature = "native"
+        self.kind = "<native function type>"
 
     def arity(self):
         return 0
@@ -20,11 +21,8 @@ class Locals(_RocketCallable):
         else:
             return None
 
-    def type(self):
-        return self.__repr__()
-
     def __repr__(self):
-        return "<built-in fn 'Locals'>"
+        return "<native fn 'Locals'>"
 
     def __str__(self):
-        return "<built-in fn 'Locals'>"
+        return "<native fn 'Locals'>"

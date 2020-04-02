@@ -1,0 +1,22 @@
+print Type(2);
+print Type(0.3);
+print Type(nin);
+print Type('33');
+print Type(Array());
+
+class Box {}
+var box = Box();
+
+print Type(Box);
+print Type(Box());
+print Type(box);
+
+var lambda = () => {};
+
+func fn () {}
+
+print Type(lambda);
+
+print Type(fn);
+
+print Type(Type);

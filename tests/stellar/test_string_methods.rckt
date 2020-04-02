@@ -1,0 +1,20 @@
+const name = "Rocket Lang";
+
+Print("Perfroming actions on string '" + name + "'.\n");
+
+print "get(2): " + name.get(2); /// Should return 'c'
+print "slice(0, 3): " + name.slice(0, 3); /// Should return 'Rock'
+print "length(): " + name.length(); /// Should return 12
+print "reverse(): " + name.reverse();
+print "capitalize(): " + name.capitalize();
+print "upper(): " + name.upper();
+print "lower(): " + name.lower();
+print "isupper(): " + name.isupper();
+print "islower(): " + name.islower();
+print "isalpha(): " + name.isalpha();
+print "isnum(): " + name.isnum();
+print "split('R'): " + name.split('R');
+print "endsWith('g'): " + name.endsWith('g');
+print "indexOf('R'): " + name.indexOf('R');
+print "concat(...): " + name.concat(' is awesome!');
+print "center(3): " + name.center(8);

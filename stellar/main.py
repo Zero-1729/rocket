@@ -19,6 +19,11 @@ from tools.custom_syntax import Scanner as Dante, Parser as Virgil
 # For REPL Auto completion
 from tools.autocompleter import AutoComp
 
+
+# Version info
+header = "Rocket 0.2.0-p | Rocket Labs | [Stellar 0.3.0-a]"
+
+
 def find_config(path='.'):
     if os.path.exists(os.path.join(path, 'config.rckt')):
         return True
@@ -86,6 +91,22 @@ def assemble_acmp(KSL):
     return autoCmp
 
 
+def save_and_quit():
+     # Ctrl-D
+    # Save REPL history before exit
+    readline.write_history_file('.rocket_repl_history')
+
+    # to avoid mangled return shell text
+    print()
+    sys.exit(0)
+
+
+def silent_quit():
+    # same reason as discussed above
+    print()
+    sys.exit(0)
+
+
 def UpdateAuto(autoCmp):
     autoCmp.updateEnv(interpreter.environment)
     autoCmp.updateEnv(interpreter.globals)
@@ -126,11 +147,8 @@ def run_prompt(prompt, headerless=False):
 
     interpreter.KSL = KSL
 
-    header = f"""Rocket 0.1.8-p | Rocket Labs | [Stellar 0.2.7-b]\n"""
-
     if not headerless:
-        print(header)
-
+        print(header, end="\n")
 
     readline.set_completer(autoCmp.completer)
     readline.parse_and_bind("tab: complete")
@@ -147,7 +165,13 @@ def run_prompt(prompt, headerless=False):
 
     while True:
 
-        chunk = input(prompt)
+        try:
+            chunk = input(prompt)
+        except EOFError:
+            save_and_quit()
+
+        except KeyboardInterrupt:
+            silent_quit()
 
         if chunk == "exit":
             readline.write_history_file('.rocket_repl_history')
@@ -220,18 +244,10 @@ def main():
             run_prompt(prompt)
 
         except EOFError:
-            # Ctrl-D
-            # Save REPL history before exit
-            readline.write_history_file('.rocket_repl_history')
-
-            # to avoid mangled return shell text
-            print()
-            sys.exit(0)
+            save_and_quit()
 
         except KeyboardInterrupt:
-            # same reason as discussed above
-            print()
-            sys.exit(0)
+            silent_quit()
 
 
     if len(sys.argv) == 2 and (sys.argv[1] not in sca):
@@ -250,13 +266,12 @@ def main():
             run_prompt(prompt, True)
 
         elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
-            print("Rocket v0.1.8-p [Stellar v0.2.7-b]")
+            print(header)
             sys.exit(0)
 
         elif sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
             print(usage())
             sys.exit(0)
-
 
     if len(sys.argv) == 2 and sys.argv[1] == '-c':
         print(usage())

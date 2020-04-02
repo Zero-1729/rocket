@@ -1,8 +1,8 @@
 import copy
 
-from env import Environment as _Environment
-from reporter import runtimeError as _RuntimeError
-from tokens import Token as _Token
+from utils.env import Environment as _Environment
+from utils.reporter import runtimeError as _RuntimeError
+from utils.tokens import Token as _Token
 
 
 class RocketCallable:
@@ -22,6 +22,8 @@ class RocketClass(RocketCallable):
         self.superclass = superclass
         self.methods = methods
         self.merged = False
+        self.nature = 'class'
+        self.kind = f"<class type>"
 
 
     def locateMethod(self, instance: object, name: str):
@@ -147,10 +149,6 @@ class RocketClass(RocketCallable):
         return init_arity
 
 
-    def type(self):
-        return self.__repr__()
-
-
     def __str__(self):
         return f"<class '{self.name}'>"
 
@@ -163,6 +161,8 @@ class RocketInstance:
     def __init__(self, _class: RocketClass):
         self._class = _class
         self.fields = {}
+        self.nature = 'class'
+        self.kind = f"<class type instanceOf>"
 
 
     def get(self, name: _Token):
@@ -186,10 +186,6 @@ class RocketInstance:
         self.fields[name.lexeme] = value
 
 
-    def type(self):
-        return self.__repr__()
-
-
     def __str__(self):
         return f"<class instanceOf '{self._class.name}'>"
 
@@ -209,6 +205,8 @@ class RocketFunction(RocketCallable):
         self.this_lexeme = this_lexeme
         self.isAnon = isAnon
         self.isMethod = True if methodName != '' else False
+        self.nature = 'class'
+        self.kind = f"<fn type>" if self.name != '' else "<anonymous fn type>"
 
     def bind(self, instance: RocketInstance, name):
         env = _Environment(self.closure)

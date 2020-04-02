@@ -3,17 +3,18 @@
 # Rocket Lang (Stellar) Interpreter (C) 2018
 
 import sys
+import os
 
 from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, ExprVisitor as _ExprVisitor, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Conditional as _Conditional, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
 from utils.reporter import runtimeError as _RuntimeError, BreakException as _BreakException, ReturnException as _ReturnException
 from utils.tokens import Token as _Token, TokenType as _TokenType
 from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, Import as _Import, If as _If, While as _While, Break as _Break, Func as _Func, Class as _Class, Block as _Block, Return as _Return, StmtVisitor as _StmtVisitor, Del as _Del, Print as _Print, Expression as _Expression
-from env import Environment as _Environment
+from utils.env import Environment as _Environment
 from utils.rocketClass import RocketCallable as _RocketCallable, RocketFunction as _RocketFunction, RocketClass as _RocketClass, RocketInstance as _RocketInstance
 from scanner import Scanner as _Scanner
 from parser import Parser as _Parser
-from native.functions import locals, clock, copyright, natives, input, random, output
-from native.datatypes import array, string, number
+from native.functions import locals, clock, copyright, natives, input, random, output, kind
+from native.datatypes import rocketArray, rocketString, rocketNumber, rocketBoolean
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -41,12 +42,15 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(copyright.Copyright().callee, copyright.Copyright)
         # 'natives' -> names of nativr functions
         self.globals.define(natives.Natives().callee, natives.Natives)
+        # 'type' -> check datatype
+        self.globals.define(kind.Type().callee, kind.Type)
 
         # Datatypes
-        self.globals.define(array.Array().callee, array.Array)
-        self.globals.define(string.String().callee, string.String)
-        self.globals.define(number.Int().callee, number.Int)
-        self.globals.define(number.Float().callee, number.Float)
+        self.globals.define(rocketArray.Array().callee, rocketArray.Array)
+        self.globals.define(rocketString.String().callee, rocketString.String)
+        self.globals.define(rocketNumber.Int().callee, rocketNumber.Int)
+        self.globals.define(rocketNumber.Float().callee, rocketNumber.Float)
+        self.globals.define(rocketBoolean.Bool().callee, rocketBoolean.Bool)
 
 
     def interpret(self, statements: list):
@@ -67,13 +71,27 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # instead we manually print it.
             # To make it uniform we only print it in 'visitVariableStmt'
             # to avoid duplicates
-            if 'ReferenceError:' not in error.msg:
+
+            # TODO: Find a better way if searching for 'ReferenceError' and datatype errors
+            if not (('ReferenceError:' in error.msg) or ("'Bool'" in error.msg) or ("IndexError" in error.msg) or ("'Int'" in error.msg) or ("'Float'" in error.msg)):
                 self.errors.append(error)
             else:
                 pass
 
 
     def visitLiteralExpr(self, expr: _Literal):
+        if type(expr.value) == int:
+            return rocketNumber.Int().call(self, [expr.value])
+
+        if type(expr.value) == float:
+            return rocketNumber.Float().call(self, [expr.value])
+
+        if type(expr.value) == str:
+            return rocketString.String().call(self, [expr.value])
+
+        if type(expr.value) == bool:
+            return rocketBoolean.Bool().call(self, [expr.value])
+
         return expr.value
 
 
@@ -82,19 +100,18 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitUnaryExpr(self, expr: _Unary):
-        right = self.evaluate(expr.right)
-        right = number.Int().call(self, [right]) if type(right) == int else number.Float().call(self, [right])
+        right = self.sanitizeNum(self.evaluate(expr.right))
 
         # Handle '~' bit shifter
         if (expr.operator.type == _TokenType.TILDE):
             self.checkNumberOperand(expr.operator, right.value)
             sum = -right.value - 1
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.MINUS):
             self.checkNumberOperand(expr.operator, right.value)
             sum = -right.value
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.BANG):
             return not (self.isTruthy(right.value))
@@ -104,114 +121,124 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitBinaryExpr(self, expr: _Binary):
-        left = self.evaluate(expr.left)
-        right = self.evaluate(expr.right)
-
-        left = number.Int().call(self, [left]) if type(left) == int else number.Float().call(self, [left])
-        right = number.Int().call(self, [right]) if type(right) == int else number.Float().call(self, [right])
+        # Sanitize to get nums if avail
+        left = self.sanitizeNum(self.evaluate(expr.left))
+        right = self.sanitizeNum(self.evaluate(expr.right))
 
         # string concatenation and arithmetic operator '+'
         if (expr.operator.type == _TokenType.PLUS):
-            if self.is_number(left.value) and self.is_number(right.value):
+            if self.is_number(left) and self.is_number(right):
                 sum = left.value + right.value
-                return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+                return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
-            if (isinstance(left, str) and isinstance(right, str)):
-                return string.String().call(self, [left + right])
+            # String concatenation
+            if (isinstance(left, rocketString.RocketString) and isinstance(right, rocketString.RocketString)):
+                return rocketString.String().call(self, [str(left.value) + str(right.value)])
 
             # To support implicit string concactination
             # E.g "Hailey" + 4 -> "Hailey4"
+            # We can also add Arrays and strings
+            # E.g. "List: " + "[3, 4, 6]" -> "List: [3, 4, 6]"
             # No need to allow this anymore. We make 'String' compulsory
-            if ((isinstance(left, str)) or (isinstance(right, str))):
+            if ((isinstance(left, rocketString.RocketString)) or (isinstance(right, rocketString.RocketString))):
                 # Concatenation of 'nin' is prohibited!
-                if left.value == None or right.value == None:
+                if (type(left) == type(None)) or (type(right) == type(None)):
                     raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
 
-                return string.String().call(self, [str(left) + str(right)])
+                return rocketString.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
 
-            raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
+            # allow python style array consatenation
+            if (isinstance(left, rocketArray.RocketArray) or isinstance(right, rocketArray.RocketArray)):
+                concat_tok = _Token(_TokenType.STRING, 'concat', 'concat', 0)
+
+                # return new comcatenated array
+                return left.get(concat_tok).call(self, [right])
+
+            if (type(left) == type(None)) or (type(right) == type(None)):
+                raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.")
+
 
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value - right.value
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.DIV):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
             sum = left.value / right.value
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.MOD):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
             sum = left.value % right.value
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.FLOOR):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
                 raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
 
             sum = left.value // right.value
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.MULT):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value * right.value
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.EXP):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value ** right.value
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         # bitshifters "<<", ">>"
         if (expr.operator.type == _TokenType.LESS_LESS):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value * (2 ** right.value)
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         if (expr.operator.type == _TokenType.GREATER_GREATER):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             sum = left.value // (2 ** right.value)
-            return number.Int().call(self, [sum]) if type(sum) == int else number.Float().call(self, [sum])
+            return rocketNumber.Int().call(self, [sum]) if type(sum) == int else rocketNumber.Float().call(self, [sum])
 
         # Comparison operators ">", "<", ">=", "<=", "!=", "=="
         if (expr.operator.type == _TokenType.GREATER):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value > right.value
 
         if (expr.operator.type == _TokenType.LESS):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value < right.value
 
         if (expr.operator.type == _TokenType.GREATER_EQUAL):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value >= right.value
 
         if (expr.operator.type == _TokenType.LESS_EQUAL):
-            self.checkNumberOperands(expr.operator, left.value, right.value)
+            self.checkNumberOperands(expr.operator, left, right)
             return left.value <= right.value
 
         if (expr.operator.type == _TokenType.BANG_EQUAL):
-            self.checkValidOperands(expr.operator, left.value, right.value)
-            return not (self.isEqual(left.value, right.value))
+            self.checkValidOperands(expr.operator, left, right)
+            return not (self.isEqual(left, right))
 
         if (expr.operator.type == _TokenType.EQUAL_EQUAL):
-            if left.value == None or right.value == None:
-                return self.isEqual(left.value, right.value)
+            if left == None or right == None:
+                return self.isEqual(left, right)
 
-            if isinstance(left.value, bool) or isinstance(right.value, bool):
-                return self.isEqual(left.value, right.value)
+            if isinstance(left, boolean.RocketBool) or isinstance(right, boolean.RocketBool):
+                return self.isEqual(left, right)
 
-            self.checkValidOperands(expr.operator, left.value, right.value)
-            return self.isEqual(left.value, right.value)
+            self.checkValidOperands(expr.operator, left, right)
+            return self.isEqual(left, right)
 
         # If can't be matched return None
         return None
@@ -225,11 +252,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Fix passing expr and stmt to 'stdlib' functions
             eval_args.append(self.evaluate(arg))
 
-        # Well, built-in functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
+        # Well, native functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
         isNotNative = True
         isNotDatatype = True
+        overideArity = False # To allow (near) infinite 'arity' for 'Array' elements
+
         try:
             if callee().nature == "native":
+                if isinstance(callee(), rocketArray.Array):
+                    overideArity = True
+
                 isNotNative = False
         except:
             if hasattr(callee, 'nature'):
@@ -247,7 +279,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # We dynamically change 'arity' for Array's 'slice' fn depending on the args
         if not isNotDatatype:
             if hasattr(function, 'signature') and hasattr(function, 'slice'):
-                if function.signature == 'Array' and len(eval_args) == 2:
+                if ((function.signature == 'String') or (function.signature == 'Array')) and (len(eval_args) == 2):
                     function.inc = True
 
         if hasattr(function, 'slice'):
@@ -259,11 +291,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if isinstance(function, output.Print) and len(eval_args) == 0:
                 return function.call(self, [''])
 
-            if len(eval_args) != function.arity():
+            if len(eval_args) != function.arity() and not overideArity:
                 raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+
+            else: pass
 
         if hasattr(function, 'inc'):
             return function.call(self, eval_args, function.inc)
+
+        if overideArity:
+            return function.call(self, eval_args)
 
         else:
             try:
@@ -283,7 +320,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 else:
                     self.fnCallee = expr.callee.name.lexeme
                 
-                return function.call(self, eval_args)
+                return self.sanitizeNum(function.call(self, eval_args))
 
             except Exception as err:
                 self.errors.append(err)
@@ -309,16 +346,16 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def visitSetExpr(self, expr: _Set):
-        object = self.evaluate(expr.object)
+        obj = self.evaluate(expr.object)
 
-        if hasattr(object, 'nature'):
+        if hasattr(obj, 'nature'):
             raise _RuntimeError('Array', f"Cannot assign external attribute to native datatype 'Array'")
 
-        if not isinstance(object, _RocketInstance):
+        if not isinstance(obj, _RocketInstance):
             raise _RuntimeError(expr.name, "Only instances have fields.")
 
         value = self.evaluate(expr.value)
-        object.set(expr.name, value)
+        obj.set(expr.name, value)
 
         return value
 
@@ -451,30 +488,40 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def visitImportStmt(self, stmt: _Import):
         import_lexeme = self.KSL[1][_TokenType.IMPORT.value]
 
+        # TODO: add more native modules
         native_modules = [
-            'math',
-            'time',
-            'crypto',
-            'io',
-            'os',
-            'socket',
-            'web',
-            'chain'
+            'math' # Note: even this module isn't done
         ]
+
+        if len(stmt.modules) == 0:
+            raise _RuntimeError(import_lexeme, f"{import_lexeme} statement requires atleast one module name.")
 
         for module in stmt.modules:
             if module.type == _TokenType.IDENTIFIER and module.lexeme in native_modules:
-                print("Native: ", module)
+                # read and execute sorce file
+                contents = ''
 
-            elif module.type == _TokenType.IDENTIFIER and not (module.lexeme in native_modules):
-                raise _RuntimeError(import_lexeme, f"Module {module.lexeme} not a 'native module'.")
+                # Get exec base home
+                basehome = os.path.dirname(os.path.realpath(__file__))
+
+                # Assemble native module path
+                filename = os.path.join(basehome, "native/modules/" + module.lexeme + '.rckt')
+
+                with open(filename, 'r') as f:
+                    contents = f.read()
+                    f.close()
+
+                    tks = _Scanner(contents, self.KSL[0]).scan()
+                    stmts = _Parser(tks, self.KSL[1]).parse()
+                    self.interpret(stmts)
 
             else:
                 try:
                     # read and execute sorce file
                     contents = ''
 
-                    filename = module.lexeme + '.rckt'
+                    # This way the user can specify both './path/to/module.rckt' and './path/to/module' are valid
+                    filename = (module.lexeme + '.rckt') if module.lexeme.split(os.path.extsep)[-1] != 'rckt' else module.lexeme
 
                     with open(filename, 'r') as f:
                         contents = f.read()
@@ -485,7 +532,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                         self.interpret(stmts)
 
                 except FileNotFoundError:
-                    raise _RuntimeError(import_lexeme, f"Module {module.lexeme} does not exist.")
+                    raise _RuntimeError(import_lexeme, f"No native or local module named '{module.lexeme}'.")
 
         return None
 
@@ -511,43 +558,26 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (stmt.initializer is not None):
             value = self.evaluate(stmt.initializer)
 
-            # Replace it with appropriate datatype
-            if type(value) == int or type(value) == float:
-                value = number.Int().call(self, [value]) if type(value) == int else number.Int().call(self, [value])
-
-            if type(value) == str:
-                value = string.String().call(self, [value])
-
-            if type(value) == list:
-                value = array.Array().call(self, [value])
         else:
             value = None
 
-        # To avoid redifining vars with the same name as functions or classes
-        if stmt.name.lexeme not in self.globals.values.keys():
+        # To avoid redifining vars with the same name as consts, functions, or classes
+        if not (self.globals.isTaken(stmt.name)):
             self.environment.define(stmt.name.lexeme, value)
 
         else:
-            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'variable' or 'class' or 'function'")
+            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'class' or 'function'")
 
 
     def visitConstStmt(self, stmt: _Const):
         value = self.evaluate(stmt.initializer)
 
-        # Replace it with appropriate datatype
-        if type(value) == int or type(value) == float:
-            value = number.Int().call(self, [value]) if type(value) == int else number.Int().call(self, [value])
-
-        if type(value) == str:
-            value = string.String().call(self, [value])
-
-        if type(value) == list:
-            value = array.Array().call(self, [value])
-
-        # NOTE: Fix for #19
         # check for variable before definition to avoid passing in 'const' redefinitions
-        if self.environment.isTaken(stmt.name):
-            raise _RuntimeError(stmt.name.lexeme, "Name already used as 'const'.")
+        if self.environment.constExists(stmt.name):
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as const.")
+
+        if self.environment.varExists(stmt.name):
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as variable.")
 
         # stop 'const' re-decl for 'classes' 'functions'
         elif self.globals.isTaken(stmt.name):
@@ -615,7 +645,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 if type(init_value) == str:
                     raise _RuntimeError(expr.name, "cannot perform arithmetic increment on string.")
 
-                value = number.Int().call(self, [init_value.value + 1]) if type(init_value.value) == int else number.Float().call(self, [init_value.value + 1])
+                value = rocketNumber.Int().call(self, [init_value.value + 1]) if type(init_value.value) == int else rocketNumber.Float().call(self, [init_value.value + 1])
 
                 self.environment.assign(expr.name, value)
 
@@ -629,7 +659,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 if type(init_value) == str:
                     raise _RuntimeError(expr.name, "cannot perform arithmetic decrement on string.")
 
-                value = number.Int().call(self, [init_value.value - 1]) if type(init_value) == int else number.Float().call(self, [init_value.value - 1])
+                value = rocketNumber.Int().call(self, [init_value.value - 1]) if type(init_value) == int else rocketNumber.Float().call(self, [init_value.value - 1])
 
                 self.environment.assign(expr.name, value)
 
@@ -647,7 +677,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # also works in cases were string concatenation is intended 'home += "/Github;"'
             if expr.value[2] == 'add':
                 value = init_value.value + var_value
-                value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
+                value = rocketNumber.Int().call(self, [value]) if type(value) == int else rocketNumber.Float().call(self, [value])
 
                 self.environment.assign(expr.name, value)
 
@@ -659,7 +689,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     raise _RuntimeError(expr.name, "cannot perform subtraction arithmetic assignment on string.")
 
                 value = init_value.value - var_value
-                value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
+                value = rocketNumber.Int().call(self, [value]) if type(value) == int else rocketNumber.Float().call(self, [value])
 
                 self.environment.assign(expr.name, value)
 
@@ -671,7 +701,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     raise _RuntimeError(expr.name, "cannot perform multiplication arithmetic assignment on string.")
 
                 value = init_value.value * var_value
-                value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
+                value = rocketNumber.Int().call(self, [value]) if type(value) == int else rocketNumber.Float().call(self, [value])
 
                 self.environment.assign(expr.name, value)
 
@@ -683,7 +713,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     raise _RuntimeError(expr.name, "cannot perform division arithmetic assignment on string.")
 
                 value = init_value.value / var_value
-                value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
+                value = rocketNumber.Int().call(self, [value]) if type(value) == int else rocketNumber.Float().call(self, [value])
 
                 self.environment.assign(expr.name, value)
 
@@ -695,7 +725,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     raise _RuntimeError(expr.name, "cannot perform floor division arithmetic assignment on string.")
 
                 value = init_value.value // var_value
-                value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
+                value = rocketNumber.Int().call(self, [value]) if type(value) == int else rocketNumber.Float().call(self, [value])
 
                 self.environment.assign(expr.name, value)
 
@@ -707,7 +737,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     raise _RuntimeError(expr.name, "cannot perform modulo arithmetic assignment on string.")
 
                 value = init_value.value % var_value
-                value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
+                value = rocketNumber.Int().call(self, [value]) if type(value) == int else rocketNumber.Float().call(self, [value])
 
                 self.environment.assign(expr.name, value)
 
@@ -719,7 +749,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     raise _RuntimeError(expr.name, "cannot perform exponent arithmetic assignment on string.")
 
                 value = init_value.value ** var_value
-                value = number.Int().call(self, [value]) if type(value) == int else number.Float().call(self, [value])
+                value = rocketNumber.Int().call(self, [value]) if type(value) == int else rocketNumber.Float().call(self, [value])
 
                 self.environment.assign(expr.name, value)
 
@@ -732,9 +762,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             try:
                 self.environment.assign(expr.name, value)
+
             except _RuntimeError as error:
-                if 'ReferenceError:' in error.msg:
+                if ('ReferenceError:' in error.msg) or ('AssignmentError: ' in error.msg):
                     self.errors.append(error)
+
                 else:
                     pass
 
@@ -818,6 +850,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
 
     def isEqual(self, left_obj: object, right_obj: object):
+        # get values
+        if (hasattr(left_obj, 'value')):
+            left_obj = left_obj.value
+
+        if (hasattr(right_obj, 'value')):
+            right_obj = right_obj.value
+
         if ((left_obj == None) and (right_obj == None)):
             return True
 
@@ -827,9 +866,24 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         return left_obj == right_obj
 
+    def sanitizeNum(self, n):
+        # Returns a Rocket num if number received
+        if (self.is_number(n)):
+            if (isinstance(n, int)):
+                return rocketNumber.Int().call(self, [n])
+            
+            if (isinstance(n, rocketNumber.Float)):
+                return rocketNumber.Float().call(self, [n])
+
+        # otherwise it returns it unchanged
+        return n
+
+    def sanitizeString(self, n):
+        # NOTE: All datatypes must have this method
+        return n.raw_string()
 
     def is_number(self, obj: object):
-        if isinstance(obj, int) or isinstance(obj, float):
+        if (type(obj) in [int, float, rocketNumber.RocketInt, rocketNumber.RocketFloat]):
             return True
 
         else:
@@ -868,16 +922,13 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (value == True and type(value) == bool): return "true", "\033[1m"
         if (value == False and type(value) == bool): return "false", "\033[1m"
 
-        if isinstance(value, str):
+        if isinstance(value, rocketString.RocketString):
             if value == '':
-                return value, None
-
-            if value[0] == '[' and value[-1]:
                 return value, None
 
             return value, "\033[32m"
 
-        elif isinstance(value, int) or isinstance(value, float):
+        elif isinstance(value, rocketNumber.RocketInt) or isinstance(value, rocketNumber.RocketFloat):
             return value, "\033[36m"
 
         else:

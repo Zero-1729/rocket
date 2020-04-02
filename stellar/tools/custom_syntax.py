@@ -4,7 +4,7 @@
 
 import sys
 
-from tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
+from utils.tokens import Token as _Token, TokenType as _TokenType, Keywords as _Keywords
 
 
 class Scanner:

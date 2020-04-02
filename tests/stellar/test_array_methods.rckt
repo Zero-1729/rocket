@@ -1,0 +1,27 @@
+const name = Array(9, 76, 66.6, "hello");
+
+func log (n) {
+    print "item: " + n;
+}
+
+Print("Perfroming actions on string '" + name + "'.\n");
+
+print "get(3): " + name.get(3);
+print "slice(2): " + name.slice(2); /// Should return 'c'
+print "slice(0, 3): " + name.slice(0, 3); /// Should return 'Rock'
+print "length(): " + name.length(); /// Should return 12
+print "append(): " + name.append('new');
+
+Print("\n====start");
+name.forEach(log);
+Print("end====\n");
+
+print "includes(): " + name.includes('new');
+print "indexOf(): " + name.indexOf('new');
+print "concat(Array(88)): " + name.concat(Array(88));
+print "reverse(): " + name.reverse();
+print "remove('new'): " + name.remove('new');
+print "pop(): " + name.pop();
+print "clear(): " + name.clear();
+
+print name;

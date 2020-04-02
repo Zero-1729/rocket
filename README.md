@@ -40,22 +40,9 @@ It depends on your needs!
 
 ##### RLuna :full_moon:
 
-If you want to compile Rocket programs and run them faster get **RLuna**. Usually advised for any software project that relies on speed, efficiency and accuracy. This is a perfect fit for any programs that require or perform scientific or intense Computation. Running the `rocket` command without specifying a file path produces info about **RLuna**'s usage:-
-```
-$ rocket
-Rocket-Luna is a tool for managing Rocket source code.
+> Note: RLuna is still in development.
 
-Usage:
-
-	rocket command [arguments] [file]
-
-The commands are:
-
-    build       compile packages and dependencies
-    install     compile and install packages and dependencies
-    test        test packages
-    version     print Luna version
-```
+RLuna is intended to be a compiler for Rocket, and when finished would be used to compile source code into an intermediate "parts" file and executed by the vm.
 
 ##### Stellar :dizzy:
 
@@ -96,38 +83,31 @@ usage: rocket [ <option> | <file> ]
 
 ## Installation :floppy_disk:
 
-If you have made up your mind you can follow the instructions below for your platform to download either **Stellar** or **RLuna**, or both :smiley:
-
-### Download
-
-Get the appropriate install file(s) from [Here](https://github.com/Zero-1729/rocket/releases)
-
 ### Source :scroll:
 
-> You need GNU's **GCC**, **git** and **make**
+> You need **Python** 3.6.x+ installed.
 
 ```sh
 # clone the repo
 $ git clone https://github.com/Zero-1729/rocket/
 
-# Navigate into the repo and install for your platform
-$ cd Rocket/ && make
+# Navigate into the repo and install the necessary packages
+$ cd Rocket/ && python setup.py install
 
-# The above script Makes the neccesarry preperations for your system to be ready to install both Stellar and Luna
-
-# Run command below to install them
-$ make install
+# Run the REPL
+$ python main.py
 ```
 
 ---
 
 ## Contributing :busts_in_silhouette: :wrench:
 
-> Note: You need GNU's **GCC**, **git** and **make**<br>
+> Note: You need **Python** 3.6.x+ and **git** installed.<br>
 
 ```sh
 # clone the repo and Navigate into repo
 $ git clone https://github.com/Zero-1729/rocket/ && cd rocket/
+$ python setup.py install
 ```
 
 > Just hack on it as you wish!
@@ -140,8 +120,8 @@ rocket
 .
 | -docs
 | -logo
-| -rluna
-| -stellar
+| -rluna # Unfinished C compiler
+| -stellar # Python interpreter
 | -tests
 | -tutorials
 .

@@ -46,3 +46,6 @@ config.rckt
 # vim
 *.swp
 *.swo
+
+# Todo
+TODO.txt
