@@ -18,7 +18,15 @@ class String(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        return RocketString(args[0])
+        # Remember we are storing the actual literal values
+        # so we need to turn them to strings
+        # but that is for the Rocket datatypes
+        if (hasattr(args[0], 'nature')):
+            if (args[0].nature == 'datatype'):
+                    return RocketString(str(args[0].value))
+
+        # however, for classes, fns, etc. '___str__' is enough
+        return RocketString(args[0].__str__())
 
     def __repr__(self):
         return self.__str__()
