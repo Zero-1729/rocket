@@ -47,17 +47,41 @@ Language's Specification info.
 
 ### 0.0 Hello World Example
 
-> **Note**: Although a `print` function would br added later on! :wink: <br>
+> **Note**: that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.<br>
+> We support floor division (`//`) hence why we can't use it as a comment delimiter.
 
-*Because we believe language syntax should be clean as simple.*
+We believe language syntax should be clean and simple.
 
 ```rocket
 /// Print is a native command
 print "Hello, World!";
 ```
 
-> **Note**: that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.<br>
-> We support floor division (`//`) hence why we can't use it as a comment delimiter.
+Rocket also has a native 'Print' function which can be used instead of the print keyword, which means the code above can also be written as:
+
+```rocket
+Print("Hello, World!");
+```
+
+There are two important differences between the 'print' keyword and the 'Print' native function:
+
+- 'print' returns the data passed as is, without converting the arguments into a string, unless string concatenation was performed, however, 'Print' does exaclty that, converts all arguments passed to it into strings, and prints them out as such.
+- 'Print' can take nearly an infinite amount of args, while 'print' only takes in a single argument (i.e. expression).
+
+The 'Print' fn also prints newlines and tabs if the '\n' and '\t' characters are passed.
+
+```rocket
+Print('Dear Sir,\n\n\tI am writing from Rocket HQ.\n');
+```
+
+Prints
+
+```
+Dear Sir,
+
+        I am writing from Rocket HQ.
+
+```
 
 ---
 
