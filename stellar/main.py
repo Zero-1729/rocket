@@ -71,18 +71,6 @@ def assemble_ksl(noisy=True):
     return KSL
 
 
-def locate_and_assemble():
-    KSL = fillKSL()
-
-    path = f'{os.path.sep}'.join(sys.argv[1].split(os.path.sep)[0:-1])
-
-    if find_config(path):
-        KSL = load_config(os.path.join(path, 'config.rckt'))
-        print("\033[1m<> Loaded 'config' <>\033[0m")
-
-    return KSL
-
-
 def assemble_acmp(KSL):
     # Create auto completer
     starters = [key.lower() for key in KSL[0]]
@@ -133,19 +121,19 @@ def usage():
     return info
 
 # So that global env is static throughout execution. Especially in REPL
-interpreter = Interpreter()
+# Get and pass KSL
+KSL = assemble_ksl()
+interpreter = Interpreter(KSL)
 
 
-def run_file(path, KSL):
+def run_file(path):
     with open(path, encoding='utf-8') as f:
-        run(f.read(), KSL)
+        run(f.read())
 
 
 def run_prompt(prompt, headerless=False):
-    KSL = assemble_ksl()
+    # Our KSL is global like the Interpreter instance
     autoCmp = assemble_acmp(KSL)
-
-    interpreter.KSL = KSL
 
     if not headerless:
         print(header, end="\n")
@@ -183,7 +171,7 @@ def run_prompt(prompt, headerless=False):
         else:
             # Allow user to SIGINT (^C) a running chunk of code and still be in the REPL
             try:
-                run(chunk, KSL, "REPL") # replace with actual shell interpreter (REPL)
+                run(chunk, "REPL") # replace with actual shell interpreter (REPL)
 
             except KeyboardInterrupt:
                 pass
@@ -191,11 +179,9 @@ def run_prompt(prompt, headerless=False):
         UpdateAuto(autoCmp)
 
 
-def run(source, KSL, mode=None):
+def run(source, mode=None):
     # To avoid running resolver on statements
     hadError = False
-
-    interpreter.KSL = KSL
 
     scanner = Scanner(source, KSL[0])
     tokens = scanner.scan()
@@ -252,9 +238,7 @@ def main():
 
     if len(sys.argv) == 2 and (sys.argv[1] not in sca):
         try:
-            KSL = assemble_ksl()
-
-            run_file(sys.argv[1], KSL)
+            run_file(sys.argv[1])
             sys.exit(0) # Run file and exit
 
         except FileNotFoundError:
@@ -278,8 +262,7 @@ def main():
 
     elif len(sys.argv) == 3:
         if sys.argv[1] == '-c':
-            KSL = assemble_ksl()
-            run(sys.argv[2], KSL)
+            run(sys.argv[2])
 
     else:
         print(usage())
