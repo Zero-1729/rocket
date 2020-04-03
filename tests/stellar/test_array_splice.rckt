@@ -1,0 +1,15 @@
+var array = Array(9, 33, 45, 20, 0, 91, 32, 88, 76, 67);
+
+Print(array, "\n");
+
+print "splice(len): " + array.splice(array.length()); /// []
+
+print "splice(2, 0): " + array.splice(2, 0); /// []
+
+print "splice(3, -2): " + array.splice(3, -2); /// []
+
+print "splice(-2, 2): " + array.splice(-2, 2); /// [76, 67]
+
+print "splice(len-1, 1): " + array.splice(array.length() - 1, 1); /// [88]
+
+print "splice(0, len): " + array.splice(0, array.length()); /// [ 9, 33, 45, 20, 0, 91, 32 ]
