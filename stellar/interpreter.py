@@ -286,11 +286,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         # We dynamically change 'arity' for Array's 'slice' fn depending on the args
         if not isNotDatatype:
-            if hasattr(function, 'signature') and hasattr(function, 'slice'):
+            if hasattr(function, 'signature') and (hasattr(function, 'slice') or hasattr(function, 'splice')):
                 if ((function.signature == 'String') or (function.signature == 'Array')) and (len(eval_args) == 2):
                     function.inc = True
 
-        if hasattr(function, 'slice'):
+        if hasattr(function, 'slice') or hasattr(function, 'splice'):
             if len(eval_args) != function.arity(function.inc):
                 raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity(function.inc)}' args but got '{len(eval_args)}.'")
 
