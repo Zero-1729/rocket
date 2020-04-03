@@ -18,12 +18,12 @@ from native.datatypes import rocketArray, rocketString, rocketNumber, rocketBool
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
-    def __init__(self):
+    def __init__(self, KSL: list):
         self.globals = _Environment() # For the native functions
         self.environment = _Environment() # Functions / classes
         self.locals = {}
         self.errors = []
-        self.KSL = None
+        self.KSL = KSL
         self.stackCount = 0 # tracks stmt repetitions, 'stackoverflow' errs
         self.fnCallee = None # Tracks current fn callee
 
