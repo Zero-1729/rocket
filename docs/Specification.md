@@ -89,7 +89,7 @@ Dear Sir,
 
 Rocket is Dynamically typed. Which means variables can store values of any type, and a single value of different types at different times. For Example:-
 
-```Rocket
+```rocket
 /// Initial value of type int
 var number = 2;
 
@@ -142,7 +142,7 @@ Instilled in Rocket's brain is four fundamental particles - I mean *data types*:
 
 At the heart and soul of every computer is *logic* which is represented as **on** or **off**, **1** or **0**, **True** or **False** and is therefore the foundation for programming. Rocket features two boolean values:-
 
-```Rocket
+```rocket
 True; /// Not False (aka true)
 False; /// Not *not* false (aka false)
 ```
@@ -153,7 +153,7 @@ By default all literals are set to true unless explicitly specified by setting i
 
 Rocket uses the `Number` type for values that can be classified as an **int**, **float**, **scientific** (including `i` or `j`), **hex**, **octal** etc. **Luna** dynamically assigns values that are of the `Number` type their equivalent or close enough to type in the **C** Language. For example:-
 
-```Rocket
+```rocket
 var num = 1024; /// Stored by Rocket as Number type
 ```  
 
@@ -168,7 +168,7 @@ long num;
 
 Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text `"Hello, World!"` is what Rocket considers a string - a series of characters enclosed in **single** (') or **double** (") quote. Like most languages Rocket sees `"Hello World"` and `'Hello World'` as the same thing - a **string**. Here are some sample strings:-
 
-```Rocket
+```rocket
 "Stringy me";
 ""; /// Empty string
 "1024"; /// String, not Number
@@ -186,7 +186,7 @@ A little over the board? maybe, nin is Rocket's version of Python's **None**. It
 
 Basically expressions are just groupings of literals linked together by some operator or just more literals, the same way in English clauses are groups of words put together. E.g:-
 
-```Rocket
+```rocket
 "Hello" + "World!";
 ```
 
@@ -194,7 +194,7 @@ The following are the kinds of expressions that Rocket understands.
 
 ##### Arithmetic Expressions
 
-```Rocket
+```rocket
 2 + 2;
 add + me; /// same meaning as expression above
 1024 * 6;
@@ -209,7 +209,7 @@ add + me; /// same meaning as expression above
 
 Yep the classics!
 
-```Rocket
+```rocket
 less < than;
 lessThan <= orEqual;
 6 > 8;
@@ -218,7 +218,7 @@ lessThan <= orEqual;
 
 Rocket supports type to type comparisons and also comparisons of different types to each other. E.g:-
 
-```Rocket
+```rocket
 1 == 2; /// Evaluates to False
 "Boy" != "Man"; /// Evaluates to True
 314 == "pi"; /// Evaluates to False
@@ -230,14 +230,14 @@ Rocket supports type to type comparisons and also comparisons of different types
 
 In Rocket *prefixing*  the not operator (`!`) to literal returns the opposite of the literal. E.g:-
 
-```Rocket
+```rocket
 !True; /// Returns False
 !False; /// Returns True
 ```
 
 Likewise *prefixing* `and` invokes the and operator while `or` invokes the or operator, logic gate style. The and operator returns True if both literals are True and False otherwise. And the or operator returns True if  either literals if True and False Otherwise.E.g:-
 
-```Rocket
+```rocket
 true and true; /// Returns True
 false or true; /// Returns True
 ```
@@ -246,7 +246,7 @@ false or true; /// Returns True
 
 Rockets operators have the same precedence and associativity as observed in Python or C. However, Rocket does allow you to override the default precedence by using braces `()` to group calculations.E.g:-
 
-```Rocket
+```rocket
 var num = low + high / 2; /// Result: low + (high / 2)
 ```
 
@@ -256,7 +256,7 @@ var num = low + high / 2; /// Result: low + (high / 2)
 
 Statements are just Expressions that produce an effect not necessarily a value. This effect could be modifying a literal's state, reading input, producing output, etc. A good example is our hello world program, because the program is just a statement.
 
-```Rocket
+```rocket
  /// This Statement displays output: 'Hello, world!'
 
 print "Hello, world!";
@@ -266,7 +266,7 @@ There are also **expression statements**, where an expression is basically appen
 
 A block is grouped using braces `{}` as follows in Rocket:-
 
-```Rocket
+```rocket
 // A block simply put is just stack of statements
 
 {
@@ -277,7 +277,7 @@ A block is grouped using braces `{}` as follows in Rocket:-
 
 These blocks can also affect the **scope** of a function or program in general. E.g:-
 
-```Rocket
+```rocket
 func inc() {
     n = 9;
     return n;
@@ -296,7 +296,7 @@ print n /// Results in an Error because 'n' is only defined in the inc function'
 
 variables in Rocket require the keyword `var` or `const` before they are declared. Like:-
 
-```Rocket
+```rocket
 var num = 8;
 const NODE = "127.0.0.1:7545"; /// 'const' variables require an initializer
 ```
@@ -307,7 +307,7 @@ In cases were a variable's value needs to change the following happens:-
 
 > **Note**: This only affects variables declared with the `var` keyword. `const` variables cannot be re-defined.
 
-```Rocket
+```rocket
 var favouriteDrink = "Coke";
 
 /// After you change your mind
@@ -318,7 +318,7 @@ Some variable names are considered **illegal** if they begin with number literal
 
 > **Note**: This affects both `const` and `var` variables.
 
-```Rocket
+```rocket
 /// Wrong
 var 8788L = "woohoo"; /// considered an 'illegal' declaration
 
@@ -367,7 +367,7 @@ Control flow refers to the manner in which code is executed. Whether a certain b
 
 In the case of an `if` it takes the following form:-
 
-```Rocket
+```rocket
 if (condition) {
     print "It was true";
 } else {
@@ -377,7 +377,7 @@ if (condition) {
 
 A `while` loop takes the following form:-
 
-```Rocket
+```rocket
 var n = 1;
 
 // Loops through 100 digits and prints each one
@@ -389,7 +389,7 @@ while (n < 100) {
 
 Lastly a `for` loop has the form:-
 
-```Rocket
+```rocket
 for (var n = 1; a < 50; a++) {
     print n;
 }
@@ -403,7 +403,7 @@ It is worth noting that there is a difference between a `while` loop and a `for`
 
 when the programmer decides that she wants to reuse a block of code later her program a function is declared. A sample function declaration is as follows:-
 
-```Rocket
+```rocket
 func name(args) {
     /// code
 }
@@ -417,7 +417,7 @@ Functions are declared with the keyword `func` followed by the function name and
 
 Functions are *first class* meaning they are actual values that variables can get reference to. Such manipulations are valid:-
 
-```Rocket
+```rocket
 func digit() {
     return 2;
 }
@@ -472,7 +472,7 @@ fn(); /// Outputs "outside"
 
 Rocket features Object-Oriented-Programming (**OOP**). Which allows the programmer to define an object and declare instances of that object. A simple analogy is a *Human* being an object and an instance of a *Human* would be a *Woman*. Classes take the form:-
 
-```Rocket
+```rocket
 class Object {
     init(props) {
         /// Default properties
@@ -492,7 +492,7 @@ class Object {
 
 The body of a class contains its methods. They look like function declarations but without the `func` keyword. When the class declaration is executed, it creates a class object and stores it in a variable named after the class. Just like functions, classes are first class in Rocket:-
 
-```Rocket
+```rocket
 class Person {
     init(name) {
         this.name = name;
@@ -514,7 +514,7 @@ Next, we need a way to create instances. We could add some sort of new keyword, 
 
 New methods or properties can be added to a class on the fly like so:-
 
-```Rocket
+```rocket
 class Drink {
     init(name) {
         this.name = name;
@@ -528,7 +528,7 @@ coke.isFull = True;
 
 If you noticed classes have a method named init(), it is called automatically when the object is constructed. Any parameters passed to the class are forwarded to its initializer.
 
-```Rocket
+```rocket
 class SportsCar {
     init(brand, model) {
         this.brand = model;
@@ -548,7 +548,7 @@ electricCar.topSpeed(250);
 
 Rocket supports (full) class inheritance, where newly defined classes can *inherit* properties of other objects. E.g:-
 
-```Rocket
+```rocket
 class Earth < Planet {
     revolve() {
         print "I just R-evolved"; /// Anyone? Catch that?
@@ -558,7 +558,7 @@ class Earth < Planet {
 
 Your probably wondering why Planet is not just enclosed in the brace like `Earth(Planet)`. I wanted **Ruby** to have a piece of the production and also because it looks cooler. The point of `<` is to show that Earth is a subclass of Planet.
 
-```Rocket
+```rocket
 class Computer {
     init(os) {
         this.os = os;
@@ -580,7 +580,7 @@ var macBook = Laptop("Kali");
 
 Rocket provides a way to overide `init` method of a super class with use of the `super` keyword. Like:-
 
-```Rocket
+```rocket
 class Laptop < Computer {
     init(os, arch) {
         super.init(os);
