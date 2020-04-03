@@ -276,6 +276,14 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         function = callee if isNotNative else callee()
 
+        # Special edge case for 'Print' fn
+        # It allows for near infinite args
+        if (hasattr(function, 'nature')):
+            # We have to be sure its a native fn not some class or something
+            if (function.nature == 'native'):
+                if (function.callee == 'Print'):
+                    overideArity = True
+
         # We dynamically change 'arity' for Array's 'slice' fn depending on the args
         if not isNotDatatype:
             if hasattr(function, 'signature') and hasattr(function, 'slice'):
@@ -287,10 +295,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity(function.inc)}' args but got '{len(eval_args)}.'")
 
         else:
-            # We handle 'Print()' carefully here. so that it print a newline when no args are given
-            if isinstance(function, output.Print) and len(eval_args) == 0:
-                return function.call(self, [''])
-
             if len(eval_args) != function.arity() and not overideArity:
                 raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
 
