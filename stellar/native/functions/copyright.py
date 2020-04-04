@@ -13,7 +13,7 @@ class Copyright(_RocketCallable):
 
     def call(self, obj: object, args: list):
         info = """
-        Copyright (c) Abubakar N K 2018
+        Copyright (c) Abubakar N. K. 2018 - present
         """
 
         return info
