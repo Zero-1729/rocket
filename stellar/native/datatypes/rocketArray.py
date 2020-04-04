@@ -3,6 +3,7 @@ from utils.rocketClass import RocketInstance as _RocketInstance
 from utils.reporter import runtimeError as _RuntimeError
 
 from utils.tokens import Token as _Token
+from utils.misc   import isValNeg as _isValNeg
 
 from native.datatypes import rocketBoolean as _boolean
 from native.datatypes import rocketNumber as _number
@@ -138,31 +139,13 @@ class RocketArray(_RocketInstance):
 
                     # Negative steps return nothing irrespective of the index
                     # ... so we need to perform a negativivty test on the input
-                    # if p is negative then
-                    # (p * -1) - p will be equal to twice the absolute value of p (aka |p| ** 2), where x != 0
-                    #
-                    # Proof:
-                    #   Assume x = -x
-                    #
-                    #   (-x * -1) - (-x)
-                    #   = x - (-x)
-                    #   = x + x
-                    #   2x (hence |x| * 2)
-                    #
-                    # Now assume x = x
-                    #
-                    #       (x * -1) - (x)
-                    #       -x - x
-                    #       -2x (hence -|x| * 2 and not |x| * 2)
-                    #
-                    # QED
-                    if (((args[1].value * -1) - args[1].value) == 2 * abs(args[1].value)) and (not args[1].value == 0):
+                    if _isValNeg(args[1].value):
                         return Array().call(self, [])
 
                     # Handle Positive and negative index
                     # count is always positive
                     # Run positivity test for index to determine behaviour (adapted from test above)
-                    if (((args[0].value) * -1) - args[0].value) != 2 * abs(args[0].value) or (args[0].value == 0):
+                    if not _isValNeg(args[0].value):
                         removed_array = self.elements[args[0].value:args[0].value + args[1].value:]
 
                     else:
