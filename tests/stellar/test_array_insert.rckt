@@ -1,0 +1,18 @@
+var arr =  Array(9,4,5,2);
+
+class Box {}
+
+var box = Box();
+
+func hello() {}
+
+Print("Array: ", arr, "\n");
+
+Print(arr.insert(0, 4));
+
+Print(arr.insert(1, Box));
+Print(arr.insert(2, box));
+
+Print(arr.insert(4, hello));
+
+Print(arr.insert(arr.length(), 'last item'));
