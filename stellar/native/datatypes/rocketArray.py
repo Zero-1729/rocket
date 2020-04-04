@@ -55,6 +55,32 @@ class RocketArray(_RocketInstance):
 
             return rocketCallable
 
+        if name.lexeme == 'insert':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 2
+
+            def call(interpreter, args):
+                # This fn expects input like the standard Python 'insert' list method
+                # 'insert(index, item)'
+                # It requires two args exactly
+                # where if 'index' is -1 it translates to secone to the last not the last
+                # to add an item at the end we need to pass the length of the array as the index
+                # i.e. [array].insert([array].length(), [item]) 
+                self.elements.insert(args[0].value, args[1])
+
+                return Array().call(self, self.elements)
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.nature = 'native'
+            rocketCallable.signature = 'Array'
+            rocketCallable.toString = "<native method 'insert' of Array>"
+            rocketCallable.insert = True
+
+            return rocketCallable
+
         if name.lexeme == 'slice':
             rocketCallable = _RocketCallable(self)
 
