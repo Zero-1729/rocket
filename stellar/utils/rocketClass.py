@@ -194,7 +194,6 @@ class RocketInstance:
         return self.__str__()
 
 
-
 class RocketFunction(RocketCallable):
     def __init__(self, decleration, closure, isInit, this_lexeme, isAnon=False, methodName=''):
         super(RocketCallable)
@@ -248,9 +247,6 @@ class RocketFunction(RocketCallable):
 
         return "nin"
 
-
-    def type(self):
-        return self.__repr__()
 
     def __str__(self):
         if not self.isAnon or self.isMethod:
