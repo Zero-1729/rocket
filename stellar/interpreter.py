@@ -308,22 +308,24 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         else:
             try:
-                # Monitor recursive calls to same function
-                # set current function
-                if (self.stackCount == 66):
-                    # Reset counter
-                    self.stackCount = 0
+                if (hasattr(expr.callee, 'name')):
+                    # fns do not have 'name' so be careful
+                    # Monitor recursive calls to same function
+                    # set current function
+                    if (self.stackCount == 66):
+                        # Reset counter
+                        self.stackCount = 0
 
-                    raise _RuntimeError(expr.callee.name.lexeme, f"Maximum recursion depth reached from calls to '{expr.callee.name.lexeme}' fn.")
+                        raise _RuntimeError(expr.callee.name.lexeme, f"Maximum recursion depth reached from calls to '{expr.callee.name.lexeme}' fn.")
 
-                # We increment our stack counter if same fn called from previous call
-                if (self.fnCallee == expr.callee.name.lexeme):
-                    self.stackCount += 1
+                    # We increment our stack counter if same fn called from previous call
+                    if (self.fnCallee == expr.callee.name.lexeme):
+                        self.stackCount += 1
 
-                # Set new fn callee
-                else:
-                    self.fnCallee = expr.callee.name.lexeme
-                
+                    # Set new fn callee
+                    else:
+                        self.fnCallee = expr.callee.name.lexeme
+
                 return self.sanitizeNum(function.call(self, eval_args))
 
             except Exception as err:
