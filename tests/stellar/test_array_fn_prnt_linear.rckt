@@ -1,0 +1,13 @@
+func hello() {
+	return "Hi, it's Earni from HQ.";
+}
+
+func salutation() {
+	return "Asta la Fuego!";
+}
+
+var msgs = Array(hello, salutation);
+
+for (var i = 0;i < msgs.length();i++) {
+	Print("msg (", i, "): ", msgs.get(i)()); /// calls ith fn in array
+}
