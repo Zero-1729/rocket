@@ -139,4 +139,4 @@ Rocket's creation was made possible by the insights provided by Robert Nystrom i
 ---
 
 > Copyright &copy; Abubakar N K (@Zero-1729) :neckbeard:<br>
-[**Rocket Labs**](https://github.com/Zero-1729) RLOL &copy; 2018 - 20
+[RLOL](https://github.com/Zero-1729/rocket/blob/master/LICENSE.md) &copy; 2018 - present
