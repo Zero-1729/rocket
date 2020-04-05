@@ -1,4 +1,4 @@
-# Author: Abubakar N K (Zero-1729)
+# Author: Abubakar N. K. (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Scanner (C) 2018
 
