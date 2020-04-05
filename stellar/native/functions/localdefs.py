@@ -1,5 +1,6 @@
 from utils.rocketClass import RocketCallable as _RocketCallable
 
+
 class Locals(_RocketCallable):
     def __init__(self):
         self.callee = "Locals"
