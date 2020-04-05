@@ -1,11 +1,41 @@
-# Author: Abubakar N K (Zero-1729)
+# Author: Abubakar N. K. (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Parser (C) 2018
 
-from utils.expr import Variable as _Variable, Assign as _Assign, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, Conditional as _Conditional, Super as _Super, This as _This, Unary as _Unary, Logical as _Logical, Grouping as _Grouping, Literal as _Literal
-from utils.tokens import Token as _Token, TokenType as _TokenType
-from utils.reporter import ParseError as _ParseError
-from utils.stmt import If as _If, Func as _Func, Class as _Class, Block as _Block, Import as _Import, Print as _Print, Expression as _Expression, Var as _Var, Const as _Const, While as _While, Break as _Break, Return as _Return, Del as _Del
+from utils.expr import Variable      as _Variable
+from utils.expr import Assign        as _Assign
+from utils.expr import Binary        as _Binary
+from utils.expr import Call          as _Call
+from utils.expr import Get           as _Get
+from utils.expr import Set           as _Set
+from utils.expr import Function      as _Function
+from utils.expr import Conditional   as _Conditional
+from utils.expr import Super         as _Super
+from utils.expr import This          as _This
+from utils.expr import Unary         as _Unary
+from utils.expr import Logical       as _Logical
+from utils.expr import Grouping      as _Grouping
+from utils.expr import Literal       as _Literal
+
+from utils.tokens import Token       as _Token
+from utils.tokens import TokenType   as _TokenType
+
+from utils.reporter import ParseError  as _ParseError
+
+from utils.stmt import If            as _If
+from utils.stmt import Func          as _Func
+from utils.stmt import Class         as _Class
+from utils.stmt import Block         as _Block
+from utils.stmt import Import        as _Import
+from utils.stmt import Print         as _Print
+from utils.stmt import Expression    as _Expression
+from utils.stmt import Var           as _Var
+from utils.stmt import Const         as _Const
+from utils.stmt import While         as _While
+from utils.stmt import Break         as _Break
+from utils.stmt import Return        as _Return
+from utils.stmt import Del           as _Del
+
 
 class Parser:
     def __init__(self, tokens, vw_Dict):
@@ -15,7 +45,6 @@ class Parser:
         self.errors = []
         self.loopDepth = 0
 
-
     def parse(self):
         statements = []
         while not (self.isAtEnd()):
@@ -23,10 +52,8 @@ class Parser:
 
         return statements
 
-
     def expression(self):
         return self.assignment()
-
 
     def declaration(self):
         try:
@@ -44,7 +71,6 @@ class Parser:
         except _ParseError:
             self.synchronize()
             return None
-
 
     def statement(self):
         if (self.match(_TokenType.IF)):
@@ -92,7 +118,6 @@ class Parser:
 
         return self.expressionStmt()
 
-
     def conditional(self):
         expr = self.equality()
 
@@ -105,7 +130,6 @@ class Parser:
 
         return expr
 
-
     def equality(self):
         expr = self.comparison() # Type: Expr
 
@@ -116,7 +140,6 @@ class Parser:
             expr = _Binary(expr, operator, right)
 
         return expr
-
 
     def comparison(self):
         expr = self.addition()
@@ -129,7 +152,6 @@ class Parser:
 
         return expr
 
-
     def addition(self):
         expr = self.mult()
 
@@ -140,7 +162,6 @@ class Parser:
             expr = _Binary(expr, operator, right)
 
         return expr
-
 
     def mult(self):
         expr = self.unary()
@@ -153,7 +174,6 @@ class Parser:
 
         return expr
 
-
     def unary(self):
         if (self.match(_TokenType.BANG, _TokenType.MINUS, _TokenType.TILDE)):
             operator = self.previous()
@@ -163,7 +183,6 @@ class Parser:
             return _Unary(operator, right)
 
         return self.call()
-
 
     def call(self):
         expr = self.primary()
@@ -195,7 +214,6 @@ class Parser:
                 break
 
         return expr
-
 
     def primary(self):
         if (self.match(_TokenType.FALSE)): return _Literal(False)
@@ -294,7 +312,6 @@ class Parser:
         # This is what was causing problems
         raise self.error(self.peek(), "Expected expression.")
 
-
     def OR(self):
         expr = self.AND()
 
@@ -304,7 +321,6 @@ class Parser:
             expr = _Logical(expr, operator, right)
 
         return expr
-
 
     def AND(self):
         expr = self.conditional() # self.equality()
@@ -316,7 +332,6 @@ class Parser:
             expr = _Logical(expr, operator, right)
 
         return expr
-
 
     def ifStmt(self):
         if_lexeme = self.vw_Dict[_TokenType.IF.value]
@@ -334,7 +349,6 @@ class Parser:
 
         return _If(condition, thenBranch, elseBranch)
 
-
     def whileStmt(self):
         while_lexeme = self.vw_Dict[_TokenType.WHILE.value]
         self.consume(_TokenType.LEFT_PAREN, f"Expected '(' after '{while_lexeme}'")
@@ -349,7 +363,6 @@ class Parser:
 
         finally:
             self.loopDepth = self.loopDepth - 1
-
 
     def forStmt(self):
         for_lexeme = self.vw_Dict[_TokenType.FOR.value]
@@ -397,7 +410,6 @@ class Parser:
         finally:
             self.loopDepth = self.loopDepth - 1
 
-
     def breakStmt(self):
         break_lexeme = self.vw_Dict[_TokenType.BREAK.value]
         if self.loopDepth == 0:
@@ -405,7 +417,6 @@ class Parser:
 
         self.consume(_TokenType.SEMICOLON, f"Expected ';' after '{break_lexeme}'")
         return _Break()
-
 
     def returnStmt(self):
         return_lexeme = self.vw_Dict[_TokenType.RETURN.value]
@@ -419,7 +430,6 @@ class Parser:
         self.consume(_TokenType.SEMICOLON, f"Expected ';' after {return_lexeme} value")
 
         return _Return(keyword, value)
-
 
     def delStmt(self):
         del_lexeme = self.vw_Dict[_TokenType.DEL.value]
@@ -457,7 +467,6 @@ class Parser:
             self.error(_TokenType.DEL, f"'{del_lexeme}' requires atleast one identifier")
 
         return _Del(names)
-
 
     def importStmt(self):
         import_lexeme = self.vw_Dict[_TokenType.IMPORT.value]
@@ -508,14 +517,12 @@ class Parser:
 
         return _Import(modules)
 
-
     def printStmt(self):
         print_lexeme = self.vw_Dict[_TokenType.PRINT.value]
         value = self.expression()
 
         self.consume(_TokenType.SEMICOLON, f"'{print_lexeme}' expected ';' after expression.")
         return _Print(value)
-
 
     def parseVarDecl(self, var_lexeme):
         initializer = None
@@ -538,7 +545,6 @@ class Parser:
         self.consume(_TokenType.SEMICOLON, f"'{var_lexeme}' expected ';' after declaration.")
 
         return _Var(name, initializer)
-
 
     def parseConstDecl(self, const_lexeme):
         name = None
@@ -565,7 +571,6 @@ class Parser:
         # Maybe leaving bug is good??
 
         return _Const(name, initializer)
-
 
     def varDeclaration(self):
         var_lexeme = self.vw_Dict[_TokenType.VAR.value]
@@ -599,7 +604,6 @@ class Parser:
             # We simply return a single parsed variable
             return self.parseVarDecl(var_lexeme)
 
-
     def constDeclaration(self):
         const_lexeme = self.vw_Dict[_TokenType.CONST.value]
         consts = []
@@ -623,7 +627,6 @@ class Parser:
         # Returns a list of 'vars' if we indeed detected multi-variable declaration (i.e var {...})
         return consts
 
-
     def classDeclaration(self):
         class_lexeme = self.vw_Dict[_TokenType.CLASS.value]
         name = self.consume(_TokenType.IDENTIFIER, f"Expected '{class_lexeme}' name.")
@@ -644,14 +647,12 @@ class Parser:
 
         return _Class(name, superclass, methods)
 
-
     def expressionStmt(self):
         value = self.expression()
 
         self.consume(_TokenType.SEMICOLON, "Expected ';' after expression.")
 
         return _Expression(value)
-
 
     def assignment(self):
         # Short circuit
@@ -757,7 +758,6 @@ class Parser:
 
         return expr
 
-
     def block(self):
         statements = []
 
@@ -768,7 +768,6 @@ class Parser:
         self.consume(_TokenType.RIGHT_BRACE, "Expected matching '}' after block")
 
         return statements
-
 
     def finishCall(self, callee: _Call):
         # Rocket should be able to parse unlimited args
@@ -782,7 +781,6 @@ class Parser:
         paren = self.consume(_TokenType.RIGHT_PAREN, "Expected ')' after function arguments")
 
         return _Call(callee, paren, args)
-
 
     def arrowFunc(self, kind):
         func_lexeme = self.vw_Dict[_TokenType.FUNC.value]
@@ -818,7 +816,6 @@ class Parser:
 
         return _Function(params, body)
 
-
     def anonFunction(self, kind):
         func_lexeme = self.vw_Dict[_TokenType.FUNC.value]
 
@@ -843,7 +840,6 @@ class Parser:
 
         return _Function(params, body)
 
-
     def function(self, kind):
         func_lexeme = self.vw_Dict[_TokenType.FUNC.value]
 
@@ -851,10 +847,8 @@ class Parser:
 
         return _Func(name, self.anonFunction(kind))
 
-
     def peek(self):
         return self.tokens[self.current]
-
 
     def peekNext(self):
         if not self.isAtEnd():
@@ -862,21 +856,17 @@ class Parser:
 
         return "\0"
 
-
     def previous(self):
         return self.tokens[self.current - 1]
 
-
     def isAtEnd(self):
         return self.peek().type == _TokenType.EOF
-
 
     def advance(self):
         if not self.isAtEnd():
             self.current += 1
 
         return self.previous()
-
 
     def match(self, *types: _TokenType):
         for type in types:
@@ -886,7 +876,6 @@ class Parser:
 
         return False
 
-
     def check(self, type: _TokenType):
         if self.isAtEnd():
             return False
@@ -895,7 +884,6 @@ class Parser:
         # Should still be consostent since the fake 'Enum's are uniquely identified with numbers
         return self.peek().type.value == type.value
 
-
     def checkNext(self, type: _TokenType):
         if self.isAtEnd(): return False
 
@@ -903,7 +891,6 @@ class Parser:
             return False
 
         return self.peekNext().type.value == type.value
-
 
     def consume(self, toke_type, err, form='loud'):
         if (self.check(toke_type)): return self.advance()
@@ -918,7 +905,6 @@ class Parser:
         self.errors.append(err)
 
         return err
-
 
     def synchronize(self):
         self.advance()

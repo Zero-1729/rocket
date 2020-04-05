@@ -1,10 +1,14 @@
-# Author: Abubakar N K (Zero-1729)
+# Author: Abubakar N. K. (Zero-1729)
 # LICENSE: RLOL
 # Rocket Lang (Stellar) Scanner (C) 2018
 
-import re
-from utils.reporter import ScanError as _ScanError
-from utils.tokens import Token as _Token, TokenType as _TokenType
+import re as _re
+
+from utils.reporter import ScanError    as _ScanError
+
+from utils.tokens import Token          as _Token
+from utils.tokens import TokenType      as _TokenType
+
 
 class Scanner:
     def __init__(self, source, wk_Dict):
