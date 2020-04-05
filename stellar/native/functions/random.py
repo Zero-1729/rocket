@@ -2,6 +2,7 @@ import random as _random
 
 from utils.rocketClass import RocketCallable as _RocketCallable
 
+
 class Random(_RocketCallable):
     def __init__(self):
         self.callee = "Random"

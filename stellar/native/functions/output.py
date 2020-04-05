@@ -1,5 +1,7 @@
+import codecs as _codecs
+
 from utils.rocketClass import RocketCallable as _RocketCallable
-import codecs
+
 
 class Print(_RocketCallable):
     def __init__(self):
@@ -25,7 +27,7 @@ class Print(_RocketCallable):
             # the strings are separated by a space
             string += ' ' if should_space(stringify(args[i]), i, (len(args) - 1)) else ''
 
-        encoded_input = codecs.escape_decode(string, "utf-8")[0]
+        encoded_input = _codecs.escape_decode(string, "utf-8")[0]
         print("\033[32m" + encoded_input.decode("utf-8") + "\033[0m")
 
     def __repr__(self):

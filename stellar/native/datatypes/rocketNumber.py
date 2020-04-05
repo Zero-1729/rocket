@@ -1,8 +1,9 @@
 from utils.rocketClass import RocketCallable as _RocketCallable
 from utils.rocketClass import RocketInstance as _RocketInstance
-from utils.reporter import runtimeError as _RuntimeError
+from utils.reporter    import runtimeError   as _RuntimeError
 
-from native.datatypes import rocketString as _string
+from native.datatypes  import rocketString   as _string
+
 
 class Int(_RocketCallable):
     def __init__(self):

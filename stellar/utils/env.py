@@ -1,5 +1,6 @@
-from utils.tokens import Token as _Token
+from utils.tokens   import Token        as _Token
 from utils.reporter import runtimeError as _RuntimeError
+
 
 class Environment:
     def __init__(self, enclosing=None):
@@ -7,10 +8,8 @@ class Environment:
         self.statics = {} # To store all constant values
         self.enclosing = enclosing
 
-
     def decl(self, name: str, val: object):
         self.statics[name] = val
-
 
     def define(self, name: str, val: object):
         # Variables declared 'var' don't get checks because they are redifined
@@ -20,27 +19,23 @@ class Environment:
 
         self.values[name] = val
 
-
     def varExists(self, name: _Token):
         if name.lexeme in self.values.keys():
             return True
 
         return False
 
-    
     def constExists(self, name: _Token):
         if name.lexeme in self.statics.keys():
             return True
 
         return False
 
-
     def isTaken(self, name: _Token):
         if name.lexeme in self.statics.keys() or name.lexeme in self.values.keys():
             return True;
 
         return False
-
 
     def get(self, name: _Token):
         # Recursively check for variable in the blocks scope(s) and global scope
@@ -58,14 +53,11 @@ class Environment:
         # So we raise them instead and catch it back in the 'expr' call
         raise _RuntimeError(name, f"ReferenceError: Undefined variable '{name.lexeme}'")
 
-
     def getAt(self, dist: int, name: str):
         return self.ancestor(dist).values.get(name)
 
-
     def assignAt(self, dist: int, name: _Token, value: object):
         self.ancestor(dist).values[name.lexeme] = value
-
 
     def ancestor(self, dist: int):
         env = self
@@ -80,7 +72,6 @@ class Environment:
                 env = env.enclosing
 
         return env
-
 
     def assign(self, name: _Token, val: object):
         if (name.lexeme in self.statics.keys()):

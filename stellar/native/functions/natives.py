@@ -1,5 +1,6 @@
 from utils.rocketClass import RocketCallable as _RocketCallable
 
+
 class Natives(_RocketCallable):
     def __init__(self):
         self.callee = "Natives"

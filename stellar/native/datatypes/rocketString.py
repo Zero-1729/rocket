@@ -1,12 +1,13 @@
-from utils.tokens import Token as _Token
+from utils.tokens import Token     as _Token
 from utils.tokens import TokenType as _TokenType
 
 from   utils.rocketClass import RocketCallable as _RocketCallable
 from   utils.rocketClass import RocketInstance as _RocketInstance
-from   utils.reporter import runtimeError as _RuntimeError
-import native.datatypes.rocketArray as _array
-import native.datatypes.rocketBoolean as _boolean
-import native.datatypes.rocketNumber as _number
+from   utils.reporter    import runtimeError   as _RuntimeError
+
+import native.datatypes.rocketArray    as _array
+import native.datatypes.rocketBoolean  as _boolean
+import native.datatypes.rocketNumber   as _number
 
 
 class String(_RocketCallable):

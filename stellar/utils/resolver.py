@@ -1,14 +1,44 @@
-from utils.tokens import Token as _Token, TokenType as _TokenType
-
-from utils.expr import ExprVisitor as _ExprVisitor
-from utils.stmt import StmtVisitor as _StmtVisitor
-
-from utils.expr import Expr as _Expr, Assign as _Assign, Variable as _Variable, Binary as _Binary, Call as _Call, Get as _Get, Set as _Set, Function as _Function, This as _This, Super as _Super, Conditional as _Conditional, Logical as _Logical, Grouping as _Grouping, Unary as _Unary, Literal as _Literal
-from utils.stmt import Stmt as _Stmt, Var as _Var, Const as _Const, If as _If, While as _While, Import as _Import, Func as _Func, Class as _Class,  Block as _Block, Return as _Return, Del as _Del, Print as _Print, Expression as _Expression
-
-from utils.reporter import  ResolutionError as _ResolutionError
-
 import enum as _enum
+
+from utils.reporter import ResolutionError as _ResolutionError
+
+from utils.tokens   import Token           as _Token
+from utils.tokens   import TokenType       as _TokenType
+
+from utils.expr     import ExprVisitor     as _ExprVisitor
+
+from utils.expr import Expr          as _Expr
+from utils.expr import Assign        as _Assign
+from utils.expr import Variable      as _Variable
+from utils.expr import Binary        as _Binary
+from utils.expr import Call          as _Call
+from utils.expr import Get           as _Get
+from utils.expr import Set           as _Set
+from utils.expr import Function      as _Function
+from utils.expr import This          as _This
+from utils.expr import Super         as _Super
+from utils.expr import Conditional   as _Conditional
+from utils.expr import Logical       as _Logical
+from utils.expr import Grouping      as _Grouping
+from utils.expr import Unary         as _Unary
+from utils.expr import Literal       as _Literal
+
+from utils.stmt import StmtVisitor   as _StmtVisitor
+
+from utils.stmt import Stmt          as _Stmt
+from utils.stmt import Var           as _Var
+from utils.stmt import Const         as _Const
+from utils.stmt import If            as _If
+from utils.stmt import While         as _While
+from utils.stmt import Import        as _Import
+from utils.stmt import Func          as _Func
+from utils.stmt import Class         as _Class
+from utils.stmt import Block         as _Block
+from utils.stmt import Return        as _Return
+from utils.stmt import Del           as _Del
+from utils.stmt import Print         as _Print
+from utils.stmt import Expression    as _Expression
+
 
 # Fake C enum type for function type
 @_enum.unique
@@ -32,6 +62,7 @@ class ClassType(_enum.Enum):
     CLASS = 45
     SUB = 46
 
+
 class Variable:
     def __init__(self, name, state):
         self.name = name
@@ -44,10 +75,8 @@ class Stack(list):
         self.stack = [{}]
         self.lines = [{}]
 
-
     def push(self, item):
         self.stack.append(item)
-
 
     def pop(self):
         # return and remove last elm
@@ -62,27 +91,22 @@ class Stack(list):
             del self.lines[-1]
             return last
 
-
     def peek(self):
         if not self.isEmpty(): return self.stack[-1]
 
     def peekLine(self):
         if not self.isEmptyLines(): return self.lines[-1]
 
-
     def isEmpty(self):
         if len(self.stack) == 0: return True
         return False
-
 
     def isEmptyLines(self):
         if len(self.lines) == 0: return True
         return False
 
-
     def __str__(self):
         return str(self.stack)
-
 
     def __repr__(self):
         return str(self.stack)
@@ -97,10 +121,8 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         self.vw_Dict = vw_Dict
         self.errors = []
 
-
     def visitImportStmt(Self, stmt: _Import):
         return None
-
 
     def visitBlockStmt(self, stmt: _Block):
         self.beginScope()
@@ -108,7 +130,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         self.endScope()
 
         return None
-
 
     def visitVarStmt(self, stmt: _Var):
         self.declare(stmt.name)
@@ -120,14 +141,12 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     def visitConstStmt(self, stmt: _Const):
         self.declare(stmt.name)
         self.resolveStmt(stmt.initializer)
         self.define(stmt.name)
 
         return None
-
 
     def visitClassStmt(self, stmt: _Class):
         super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
@@ -167,7 +186,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     def visitFuncStmt(self, stmt: _Func):
         self.declare(stmt.name)
         self.define(stmt.name)
@@ -176,11 +194,9 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     def visitExpressionStmt(self, stmt: _Expression):
         self.resolveStmt(stmt.expression)
         return None
-
 
     def visitIfStmt(self, stmt: _If):
         self.resolveStmt(stmt.condition)
@@ -191,12 +207,10 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     def visitPrintStmt(self, stmt: _Print):
         self.resolveStmt(stmt.expression)
 
         return None
-
 
     def visitWhileStmt(self, stmt: _While):
         self.resolveStmt(stmt.condition)
@@ -204,11 +218,9 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     def visitDelStmt(self, stmt: _Del):
         # No checks here yet!
         return None
-
 
     def visitReturnStmt(self, stmt: _Return):
         return_lexeme = self.vw_Dict[_TokenType.RETURN.value]
@@ -225,7 +237,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     def visitVariableExpr(self, expr: _Variable):
         if (self.scopes.isEmpty()) and (self.scopes.peek()[expr.name.lexeme] == False) and (self.scopes.peek()[expr.name.lexeme].state == VariableState.DECLARED):
             err = _ResolutionError(expr.name, "Cannot read local variable in its own initializer. I.e 'Can't var a = a;'")
@@ -235,7 +246,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         self.resolveLocal(expr, expr.name, True)
 
         return None
-
 
     def visitAssignExpr(self, expr: _Assign):
         if type(expr.value) != list:
@@ -248,16 +258,13 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         else:
             return None
 
-
     def visitBinaryExpr(self, expr: _Binary):
         self.resolveExpr(expr.left)
         self.resolveExpr(expr.right)
 
         return None
 
-
     def visitCallExpr(self, expr: _Call):
-        #print("visiting call")
         self.resolveExpr(expr.callee)
 
         for arg in expr.args:
@@ -265,18 +272,15 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     def visitGetExpr(self, expr: _Get):
         self.resolveExpr(expr.object)
         return None
-
 
     def visitSetExpr(self, expr: _Set):
         self.resolveExpr(expr.value)
         self.resolveExpr(expr.value)
 
         return None
-
 
     def visitThisExpr(self, expr: _This):
         this_lexeme = self.vw_Dict[_TokenType.THIS.value]
@@ -289,7 +293,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         self.resolveLocal(expr, expr.keyword, True)
         return None
-
 
     def visitSuperExpr(self, expr: _Super):
         super_lexeme = self.vw_Dict[_TokenType.SUPER.value]
@@ -305,15 +308,12 @@ class Resolver(_ExprVisitor, _StmtVisitor):
         self.resolveLocal(expr, expr.keyword, True)
         return None
 
-
     def visitFunctionExpr(self, expr: _Function):
         return None
-
 
     def visitGroupingExpr(self, expr: _Grouping):
         self.resolveExpr(expr.expression)
         return None
-
 
     def visitLiteralExpr(self, expr: _Literal):
         return None
@@ -321,27 +321,21 @@ class Resolver(_ExprVisitor, _StmtVisitor):
     def visitConditionalExpr(self, expr: _Conditional):
         return None
 
-
     def visitLogicalExpr(self, expr: _Logical):
         self.resolveExpr(expr.left)
         self.resolveExpr(expr.right)
 
         return None
 
-
     def visitUnaryExpr(self, expr: _Unary):
         self.resolveExpr(expr.right)
 
         return None
 
-
     def beginScope(self):
         self.scopes.push(dict())
-        #print("Scope at begin: ", self.scopes.peek())
-
 
     def endScope(self):
-        #print("Scope at end: ", self.scopes.peek())
         scope = self.scopes.pop()
         lines = self.scopes.popLine()
 
@@ -351,7 +345,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
                 line = lines[entry]
                 err = _ResolutionError(line, f"Local variable '{entry}' is declared but unused.")
                 self.errors.append(err)
-
 
     # Similar to evaluate
     def resolveStmts(self, stmts: list):
@@ -367,19 +360,14 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         return None
 
-
     # Similar to execute in interpreter
     def resolveStmt(self, stmt: _Stmt):
-        #print("state of scopes in res stmt: ", self.scopes)
         stmt.accept(self)
-
 
     def resolveExpr(self, expr: _Expr):
         expr.accept(self)
 
-
     def resolveLocal(self, expr: _Expr, name: _Token, isRead: bool):
-        #print(f"inside resolveLocal with params expr: '{expr}', Name: '{name}', IsRead: '{isRead}'")
         for i in range(len(self.scopes.stack), 0, -1):
             if (name.lexeme in self.scopes.stack[i - 1]):
                 self.interpreter.resolve(expr, (len(self.scopes.stack) - 1 - i))
@@ -390,9 +378,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         # Pretend its global if its not found
 
-
     def resolveFunc(self, func: _Func, functype: FunctionType):
-        #print("in func resolve")
         enclosingFunction = self.currentFunction
         self.currentFunction = functype
 
@@ -408,9 +394,7 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         self.currentFunction = enclosingFunction
 
-
     def declare(self, name: _Token):
-        #print("State of scopes in decl: ", self.scopes)
         if (self.scopes.isEmpty()): return
 
         scope = self.scopes.peek()
@@ -425,8 +409,6 @@ class Resolver(_ExprVisitor, _StmtVisitor):
 
         # Mark shadow var as not ready yet
         scope[name.lexeme] = Variable(name, VariableState.DECLARED)
-        #print("State of scopes in decl end: ", self.scopes)
-
 
     def define(self, name: _Token):
         if (self.scopes.isEmpty()): return

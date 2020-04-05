@@ -1,30 +1,29 @@
-from utils.expr import Expr as Expr, Visitor as __Visitor, Binary as Binary, Grouping, Literal, Unary
+from utils.expr import Expr     as _Expr
+from utils.expr import Visitor  as __Visitor
+from utils.expr import Binary   as _Binary
+from utils.expr import Grouping as _Literal
+from utils.expr import Unary    as _Unary
 
 
 class LispAstPrinter(__Visitor):
-    def printAst(self, expr: Expr):
+    def printAst(self, expr: _Expr):
         return expr.accept(self)
 
-
-    def visitBinaryExpr(self, expr: Binary):
+    def visitBinaryExpr(self, expr: _Binary):
         return self.parenthesize(expr.operator.lexeme, expr.left, expr.right)
 
-
-    def visitGroupingExpr(self, expr: Grouping):
+    def visitGroupingExpr(self, expr: _Grouping):
         return self.parenthesize("group", expr.expression)
 
-
-    def visitLiteralExpr(self, expr:Literal):
+    def visitLiteralExpr(self, expr: _Literal):
         if (expr.value == None):
             return "nin"
 
         # variables that not instatiated with a value default to 'nin'
         return str(expr.value)
 
-
-    def visitUnaryExpr(self, expr: Unary):
+    def visitUnaryExpr(self, expr: _Unary):
         return self.parenthesize(expr.operator.lexeme, expr.right)
-
 
     def parenthesize(self, name, *exprs):
         result = f"({name}"
@@ -39,29 +38,24 @@ class LispAstPrinter(__Visitor):
 
 
 class RPNAstPrinter(__Visitor):
-    def printAst(self, expr: Expr):
+    def printAst(self, expr: _Expr):
         return expr.accept(self)
 
-
-    def visitBinaryExpr(self, expr: Binary):
+    def visitBinaryExpr(self, expr: _Binary):
         return self.parenthesize(expr.operator.lexeme, expr.left, expr.right)
 
-
-    def visitGroupingExpr(self, expr: Grouping):
+    def visitGroupingExpr(self, expr: _Grouping):
         return self.parenthesize("group", expr.expression)
 
-
-    def visitLiteralExpr(self, expr: Literal):
+    def visitLiteralExpr(self, expr: _Literal):
         if (expr.value == None):
             return "nin"
 
         # variables that not instatiated with a value default to 'nin'
         return str(expr.value)
 
-
-    def visitUnaryExpr(self, expr: Unary):
+    def visitUnaryExpr(self, expr: _Unary):
         return self.parenthesize(expr.operator.lexeme, expr.right)
-
 
     def parenthesize(self, name, *exprs):
         result = ""

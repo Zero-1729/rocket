@@ -3,21 +3,22 @@
 # Rocket Lang (Stellar) (C) 2018
 #!/usr/bin/python
 
-import sys
-import os
-import readline
+import sys       as _sys
+import os        as _os
+import readline  as _readline
 
-from utils.resolver import Resolver
+from utils.resolver import Resolver     as _Resolver
 
-from scanner import Scanner
-from parser import Parser
-from interpreter import Interpreter
+from core.scanner import Scanner             as _Scanner
+from core.parser  import Parser              as _Parser
+from core.interpreter import Interpreter     as _Interpreter
 
 # to scan for 'config.rckt' file
-from tools.custom_syntax import Scanner as Dante, Parser as Virgil
+from tools.custom_syntax import Scanner  as _Dante
+from tools.custom_syntax import Parser   as _Virgil
 
 # For REPL Auto completion
-from tools.autocompleter import AutoComp
+from tools.autocompleter import AutoComp as _AutoComp
 
 
 # Version info
@@ -25,7 +26,7 @@ header = "Rocket 0.6.1 | Rocket Labs | [Stellar 0.4.0]"
 
 
 def find_config(path='.'):
-    if os.path.exists(os.path.join(path, 'config.rckt')):
+    if _os.path.exists(_os.path.join(path, 'config.rckt')):
         return True
 
     return False
@@ -39,21 +40,21 @@ def load_config(filename):
         source = f.read()
         f.close()
 
-    tks = Dante(source).scan()
-    wk_Dict, vk_Dict = Virgil(tks).parse()
+    tks = _Dante(source).scan()
+    wk_Dict, vk_Dict = _Virgil(tks).parse()
     return [wk_Dict, vk_Dict]
 
 
 def fillKSL():
     # Passing an empty fake 'config.rckt' will return th default KSL
-    tks = Dante("").scan()
-    wk_Dict, vk_Dict = Virgil(tks).parse()
+    tks = _Dante("").scan()
+    wk_Dict, vk_Dict = _Virgil(tks).parse()
 
     return [wk_Dict, vk_Dict]
 
 
 def get_env():
-    env = os.environ
+    env = _os.environ
     prompt = env.get("RCKTPROMPT")
 
     if prompt:
@@ -74,7 +75,7 @@ def assemble_ksl(noisy=True):
 def assemble_acmp(KSL):
     # Create auto completer
     starters = [key.lower() for key in KSL[0]]
-    autoCmp = AutoComp(starters)
+    autoCmp = _AutoComp(starters)
 
     return autoCmp
 
@@ -82,17 +83,17 @@ def assemble_acmp(KSL):
 def save_and_quit():
      # Ctrl-D
     # Save REPL history before exit
-    readline.write_history_file('.rocket_repl_history')
+    _readline.write_history_file('.rocket_repl_history')
 
     # to avoid mangled return shell text
     print()
-    sys.exit(0)
+    _sys.exit(0)
 
 
 def silent_quit():
     # same reason as discussed above
     print()
-    sys.exit(0)
+    _sys.exit(0)
 
 
 def UpdateAuto(autoCmp):
@@ -100,7 +101,7 @@ def UpdateAuto(autoCmp):
     autoCmp.updateEnv(interpreter.globals)
     autoCmp.update(interpreter.locals)
 
-    readline.set_completer(autoCmp.completer)
+    _readline.set_completer(autoCmp.completer)
 
 
 def usage():
@@ -123,7 +124,7 @@ def usage():
 # So that global env is static throughout execution. Especially in REPL
 # Get and pass KSL
 KSL = assemble_ksl()
-interpreter = Interpreter(KSL)
+interpreter = _Interpreter(KSL)
 
 
 def run_file(path):
@@ -132,24 +133,24 @@ def run_file(path):
 
 
 def run_prompt(prompt, headerless=False):
-    # Our KSL is global like the Interpreter instance
+    # Our KSL is global like the _Interpreter instance
     autoCmp = assemble_acmp(KSL)
 
     if not headerless:
         print(header, end="\n")
 
-    readline.set_completer(autoCmp.completer)
-    readline.parse_and_bind("tab: complete")
+    _readline.set_completer(autoCmp.completer)
+    _readline.parse_and_bind("tab: complete")
 
     # Load repl history file
     try:
-        readline.read_history_file('.rocket_repl_history')
+        _readline.read_history_file('.rocket_repl_history')
 
     except FileNotFoundError:
         # Just leave it till user finishes session to create the file
         pass
 
-    readline.set_auto_history('enabled')
+    _readline.set_auto_history('enabled')
 
     while True:
 
@@ -162,8 +163,8 @@ def run_prompt(prompt, headerless=False):
             silent_quit()
 
         if chunk == "exit":
-            readline.write_history_file('.rocket_repl_history')
-            sys.exit(0)
+            _readline.write_history_file('.rocket_repl_history')
+            _sys.exit(0)
 
         elif chunk == "":
             pass
@@ -183,15 +184,15 @@ def run(source, mode=None):
     # To avoid running resolver on statements
     hadError = False
 
-    scanner = Scanner(source, KSL[0])
+    scanner = _Scanner(source, KSL[0])
     tokens = scanner.scan()
 
-    parser = Parser(tokens, KSL[1])
+    parser = _Parser(tokens, KSL[1])
     statements = parser.parse()
 
     errors = scanner.errors + parser.errors
     for error in errors:
-        print(error, file=sys.stderr)
+        print(error, file=_sys.stderr)
 
     if errors:
         hadError = True
@@ -199,7 +200,7 @@ def run(source, mode=None):
         # We don't bother resolving already 'error'ful code
         return
 
-    resolver = Resolver(interpreter, KSL[1])
+    resolver = _Resolver(interpreter, KSL[1])
     resolver.resolveStmts(statements)
     resolution_errs = resolver.errors
 
@@ -213,7 +214,7 @@ def run(source, mode=None):
         pass
 
     runtime_errs = interpreter.errors + resolution_errs
-    for err in runtime_errs: print(err, file=sys.stderr)
+    for err in runtime_errs: print(err, file=_sys.stderr)
 
     if mode == "REPL":
         # If running REPL session clear err logs for interpreter
@@ -222,10 +223,10 @@ def run(source, mode=None):
 
 
 def main():
-    sca = ['-q', '--quite', '-v', '--version', '-h', '--help', '-c']
+    valids = ['-q', '--quite', '-v', '--version', '-h', '--help', '-c']
     prompt = get_env() if get_env() != None else "><> "
 
-    if len(sys.argv) == 1:
+    if len(_sys.argv) == 1:
         try:
             run_prompt(prompt)
 
@@ -236,37 +237,37 @@ def main():
             silent_quit()
 
 
-    if len(sys.argv) == 2 and (sys.argv[1] not in sca):
+    if len(_sys.argv) == 2 and (_sys.argv[1] not in valids):
         try:
-            run_file(sys.argv[1])
-            sys.exit(0) # Run file and exit
+            run_file(_sys.argv[1])
+            _sys.exit(0) # Run file and exit
 
         except FileNotFoundError:
-            print(f"Error: file '{sys.argv[1]}' not found")
+            print(f"Error: file '{_sys.argv[1]}' not found")
             exit(1)
 
-    elif len(sys.argv) == 2:
-        if sys.argv[-1] == '-q' or sys.argv[1] == '--quite':
+    elif len(_sys.argv) == 2:
+        if _sys.argv[-1] == '-q' or _sys.argv[1] == '--quite':
             run_prompt(prompt, True)
 
-        elif sys.argv[-1] == '-v' or sys.argv[-1] == '--version':
+        elif _sys.argv[-1] == '-v' or _sys.argv[-1] == '--version':
             print(header)
-            sys.exit(0)
+            _sys.exit(0)
 
-        elif sys.argv[-1] == '-h' or sys.argv[-1] == '--help':
+        elif _sys.argv[-1] == '-h' or _sys.argv[-1] == '--help':
             print(usage())
-            sys.exit(0)
+            _sys.exit(0)
 
-    if len(sys.argv) == 2 and sys.argv[1] == '-c':
+    if len(_sys.argv) == 2 and _sys.argv[1] == '-c':
         print(usage())
 
-    elif len(sys.argv) == 3:
-        if sys.argv[1] == '-c':
-            run(sys.argv[2])
+    elif len(_sys.argv) == 3:
+        if _sys.argv[1] == '-c':
+            run(_sys.argv[2])
 
     else:
         print(usage())
-        sys.exit(1)
+        _sys.exit(1)
 
 
 

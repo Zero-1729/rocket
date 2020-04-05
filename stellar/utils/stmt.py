@@ -1,4 +1,4 @@
-from utils.expr import Expr as _Expr
+from utils.expr   import Expr  as _Expr
 from utils.tokens import Token as _Token
 
 
@@ -140,7 +140,6 @@ class Import(Stmt):
 
 
 class Break(Stmt):
-
 	def accept(self, visitor: StmtVisitor):
 		return visitor.visitBreakStmt(self)
 

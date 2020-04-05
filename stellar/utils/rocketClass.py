@@ -1,8 +1,8 @@
-import copy
+import copy as _copy
 
-from utils.env import Environment as _Environment
+from utils.env      import Environment  as _Environment
 from utils.reporter import runtimeError as _RuntimeError
-from utils.tokens import Token as _Token
+from utils.tokens   import Token        as _Token
 
 
 class RocketCallable:
@@ -25,7 +25,6 @@ class RocketClass(RocketCallable):
         self.nature = 'class'
         self.kind = f"<class type>"
 
-
     def locateMethod(self, instance: object, name: str):
         if self.methods.get(name):
             return self.methods.get(name).bind(instance, name)
@@ -35,15 +34,14 @@ class RocketClass(RocketCallable):
 
         return None
 
-
     def merge_inits(self, sub, sup, short_sup_init=False):
         # store copy, to be manipulated and used
-        tmp = copy.deepcopy(sup)
+        tmp = _copy.deepcopy(sup)
 
         # So, we loop through sub checking the names declared in the inits
         # if we find a name that appears in both the sub-class 'init' and the super-clas 'init' we just shadow the super-class with the sub-class decl.
         # At the end unmatched decls are simply added to the sub's decls. Forming a fully merged (inherited and shadow ready) list of decls on the sub-class's 'init' method
-        # TODO: In the future, use this loop to 'loop-n-merge' all the super-classes of a subclass. That0is if we want to add support for multi-class inheritance.
+        # TODO: In the future, use this loop to 'loop-n-merge' all the super-classes of a subclass. That is if we want to add support for multi-class inheritance.
 
         # We loop through using this sub's decls body IF and ONLY if sup decls body is longer than sub's ELSE we use sup's decls body len
         # 'lim' is the number we use to loop with
@@ -84,7 +82,6 @@ class RocketClass(RocketCallable):
 
         return sub
 
-
     def call(self, interpreter: object, args: list):
         instance = RocketInstance(self)
 
@@ -116,7 +113,6 @@ class RocketClass(RocketCallable):
 
         return instance
 
-
     def arity(self):
         # Fix so tha KSL still applies here and in 'self.call()'
         # Add dynamic superclass res for params and iinit. Maybe we call a function who knows
@@ -145,13 +141,10 @@ class RocketClass(RocketCallable):
         if sub_init and not sup_init:
             init_arity = self.methods.get("init").arity()
 
-
         return init_arity
-
 
     def __str__(self):
         return f"<class '{self.name}'>"
-
 
     def __repr__(self):
         return self.__str__()
@@ -163,7 +156,6 @@ class RocketInstance:
         self.fields = {}
         self.nature = 'class'
         self.kind = f"<class type instanceOf>"
-
 
     def get(self, name: _Token):
         # Not exactly sure why accessing a value stored as '0' causes regular 'if something' check to be jumped. So we explicitly check to see if it is not 'None'
@@ -181,14 +173,11 @@ class RocketInstance:
 
         raise _RuntimeError(name, f"Undefined property '{name.lexeme}.")
 
-
     def set(self, name: _Token, value: object):
         self.fields[name.lexeme] = value
 
-
     def __str__(self):
         return f"<class instanceOf '{self._class.name}'>"
-
 
     def __repr__(self):
         return self.__str__()
@@ -214,14 +203,12 @@ class RocketFunction(RocketCallable):
         bounded = RocketFunction(self.decleration, env, self.isInit, self.this_lexeme, True, name)
         return bounded
 
-
     def arity(self, confs=[]):
         # Suppose our classes have conflicting names in their init 'params'. We would have to detect these conflicts and reduce the arity for our subclass accordingly
         if not confs:
             return len(self.decleration.params)
         else:
             return len(self.decleration.params) - len(confs)
-
 
     def call(self, interpreter: object, args: list):
         env = _Environment(self.closure)
@@ -246,7 +233,6 @@ class RocketFunction(RocketCallable):
             return self.closure.getAt(0, self.this_lexeme)
 
         return "nin"
-
 
     def __str__(self):
         if not self.isAnon or self.isMethod:

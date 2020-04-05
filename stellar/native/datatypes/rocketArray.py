@@ -1,12 +1,12 @@
 from utils.rocketClass import RocketCallable as _RocketCallable
 from utils.rocketClass import RocketInstance as _RocketInstance
-from utils.reporter import runtimeError as _RuntimeError
+from utils.reporter    import runtimeError   as _RuntimeError
 
-from utils.tokens import Token as _Token
+from utils.tokens import Token    as _Token
 from utils.misc   import isValNeg as _isValNeg
 
 from native.datatypes import rocketBoolean as _boolean
-from native.datatypes import rocketNumber as _number
+from native.datatypes import rocketNumber  as _number
 
 
 class Array(_RocketCallable):
