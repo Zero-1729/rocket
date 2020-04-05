@@ -1,4 +1,8 @@
 # Utilities fns to reduce code redundancy
+from core.scanner import Scanner as _Scanner
+from core.parser  import Parser  as _Parser
+
+
 # Integer Negativity test
 def isValNeg(x):
     # Preamble:
@@ -24,3 +28,17 @@ def isValNeg(x):
     # QED
     return (((x * -1) - x) == 2 * abs(x)) and (not x == 0)
 
+
+# Used for code importing
+def importCodeStmts(filename, KSL):
+    # Reads the contents of a module and returns the stmts (parser output)
+    module_contents = None
+
+    with open(filename, 'r') as module:
+        module_contents = module.read()
+        module.close()
+
+    tks = _Scanner(module_contents, KSL[0]).scan()
+    stmts = _Parser(tks, KSL[1]).parse()
+
+    return stmts
