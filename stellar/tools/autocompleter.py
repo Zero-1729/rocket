@@ -1,5 +1,3 @@
-import readline
-
 class AutoComp:
     def __init__(self, starters: list):
         """
