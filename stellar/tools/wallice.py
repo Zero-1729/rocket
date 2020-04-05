@@ -1,6 +1,6 @@
 # Author: Abubakar N. K. (Zero-1729)
 # LICENSE: RLOL
-# Rocket Lang (Stellar) Scanner (C) 2018
+# Rocket Lang (Stellar) Prog checker (C) 2018
 
 import sys as _sys
 import os as _os
