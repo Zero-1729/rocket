@@ -110,7 +110,7 @@ Keywords = {
         "true": TokenType.TRUE,
         "false": TokenType.FALSE
 
-        # Rocket v0.2.0+
+        # Rocket v0.8.0+
         # Like Python's Try Except
         # LAUNCH
         # ABORT
