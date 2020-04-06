@@ -348,8 +348,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if len(eval_args) != function.arity() and not overideArity:
                 raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
 
-            else: pass
-
         if hasattr(function, 'inc'):
             return function.call(self, eval_args, function.inc)
 
