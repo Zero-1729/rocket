@@ -35,6 +35,8 @@ nosetests.xml
 
 # Rocket repl file
 .rocket_repl_history 
+
+# rocket KSL config file
 config.rckt
 
 # Mac
@@ -46,4 +48,4 @@ config.rckt
 *.swo
 
 # Todo
-TODO.txt
+*.txt

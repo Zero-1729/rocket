@@ -1,0 +1,7 @@
+class Box {}
+
+var box = Box();
+
+box.x = 9;
+
+print box.x;

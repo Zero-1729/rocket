@@ -1,6 +1,5 @@
-import time
+from native.datatypes.rocketClass import RocketCallable as _RocketCallable
 
-from utils.rocketClass import RocketCallable as _RocketCallable
 
 class Copyright(_RocketCallable):
     def __init__(self):
@@ -13,7 +12,7 @@ class Copyright(_RocketCallable):
 
     def call(self, obj: object, args: list):
         info = """
-        Copyright (c) Abubakar N K 2018
+        Copyright (c) Abubakar Nur Khalil 2018 - present
         """
 
         return info

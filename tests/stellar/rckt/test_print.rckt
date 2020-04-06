@@ -1,0 +1,6 @@
+class Box {}
+
+var box = Box();
+var fn = () => {};
+
+Print("Passed the following args: ", Box, box, fn);

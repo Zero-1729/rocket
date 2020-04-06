@@ -1,12 +1,14 @@
-from utils.tokens import Token as _Token
+from utils.tokens import Token     as _Token
 from utils.tokens import TokenType as _TokenType
 
-from   utils.rocketClass import RocketCallable as _RocketCallable
-from   utils.rocketClass import RocketInstance as _RocketInstance
-from   utils.reporter import runtimeError as _RuntimeError
-import native.datatypes.rocketArray as _array
-import native.datatypes.rocketBoolean as _boolean
-import native.datatypes.rocketNumber as _number
+from   utils.reporter    import runtimeError   as _RuntimeError
+
+from   native.datatypes.rocketClass import RocketCallable as _RocketCallable
+from   native.datatypes.rocketClass import RocketInstance as _RocketInstance
+
+import native.datatypes.rocketArray    as _array
+import native.datatypes.rocketBoolean  as _boolean
+import native.datatypes.rocketNumber   as _number
 
 
 class String(_RocketCallable):
@@ -18,7 +20,15 @@ class String(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        return RocketString(args[0])
+        # Remember we are storing the actual literal values
+        # so we need to turn them to strings
+        # but that is for the Rocket datatypes
+        if (hasattr(args[0], 'nature')):
+            if (args[0].nature == 'datatype'):
+                    return RocketString(str(args[0].value))
+
+        # however, for classes, fns, etc. '___str__' is enough
+        return RocketString(args[0].__str__())
 
     def __repr__(self):
         return self.__str__()

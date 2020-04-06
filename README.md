@@ -92,10 +92,13 @@ usage: rocket [ <option> | <file> ]
 $ git clone https://github.com/Zero-1729/rocket/
 
 # Navigate into the repo and install the necessary packages
-$ cd Rocket/ && python setup.py install
+$ cd rocket/stellar
 
 # Run the REPL
 $ python main.py
+
+# Install stellar to use in Python
+$ python setup.py install
 ```
 
 ---
@@ -106,7 +109,9 @@ $ python main.py
 
 ```sh
 # clone the repo and Navigate into repo
-$ git clone https://github.com/Zero-1729/rocket/ && cd rocket/
+$ git clone https://github.com/Zero-1729/rocket/ && cd rocket/stellar
+
+# install stellar package
 $ python setup.py install
 ```
 
@@ -138,5 +143,5 @@ Rocket's creation was made possible by the insights provided by Robert Nystrom i
 
 ---
 
-> Copyright &copy; Abubakar N K (@Zero-1729) :neckbeard:<br>
-[**Rocket Labs**](https://github.com/Zero-1729) RLOL &copy; 2018 - 20
+> Copyright &copy; [Abubakar Nur Khalil](https://github.com/Zero-1729) :neckbeard:<br>
+[RLOL](https://github.com/Zero-1729/rocket/tree/master/LICENSE.md) &copy; 2018 - present

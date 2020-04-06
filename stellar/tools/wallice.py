@@ -1,13 +1,13 @@
-# Author: Abubakar N K (Zero-1729)
+# Author: Abubakar N. K. (Zero-1729)
 # LICENSE: RLOL
-# Rocket Lang (Stellar) Scanner (C) 2018
+# Rocket Lang (Stellar) Prog checker (C) 2018
 
-import sys as _sys
-import os as _os
+import sys        as _sys
+import os         as _os
+import time       as _time
 import subprocess as _subprocess
-import time as _time
 
-from pathlib import Path
+from pathlib import Path as _Path
 
 # Runs set of scripts
 # Compares output of the script(s) with a predefined one
@@ -61,7 +61,7 @@ def record(cmd, script, folder, timeout):
     # Lets check if the folder tree sturcture exists
     if not _os.path.lexists(outfile):
         folder = '/'.join(outfile.split('/')[0:-1])
-        path = Path(folder)
+        path = _Path(folder)
 
         try: path.mkdir(parents=True)
         except FileExistsError: pass
@@ -117,7 +117,7 @@ def check(cmd, script, outfile, timeout):
     # Lets check if the folder tree sturcture exists
     if not _os.path.lexists(outfile):
         folder = '/'.join(outfile.split('/')[0:-1])
-        path = Path(folder)
+        path = _Path(folder)
 
         try: path.mkdir(parents=True)
         except FileExistsError: pass

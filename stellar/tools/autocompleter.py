@@ -1,5 +1,3 @@
-import readline
-
 class AutoComp:
     def __init__(self, starters: list):
         """
@@ -8,7 +6,6 @@ class AutoComp:
         """
 
         self.keywords = starters
-
 
     def updateEnv(self, env: object):
         envs = [env.values, env.statics]
@@ -19,7 +16,6 @@ class AutoComp:
         for word in env:
             self.keywords.append(word)
 
-
     def completer(self, text, state):
         options = [x for x in self.keywords if x.startswith(text)]
 
@@ -29,9 +25,12 @@ class AutoComp:
         except IndexError:
             return None
 
+
 def completer(text, state):
     options = [x for x in Keywords if x.startswith(text)]
+
     try:
         return options[state]
+
     except IndexError:
         return None

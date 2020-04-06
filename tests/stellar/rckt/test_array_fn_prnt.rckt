@@ -1,0 +1,15 @@
+func hello() {
+	Print("Hi, it's Earni from HQ.");
+}
+
+func salutation() {
+	Print("Asta la Fuego!");
+}
+
+var msgs = Array(hello, salutation);
+
+/// Note: messages below would be logged weirdly; the msg is printed first then
+/// the 'msg ...' bit receives 'nin' because fns that return nothing return 'nin'
+for (var i = 0;i < msgs.length();i++) {
+	Print("msg (", i, "): ", msgs.get(i)()); /// calls ith fn in array
+}

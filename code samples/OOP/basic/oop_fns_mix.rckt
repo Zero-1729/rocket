@@ -1,0 +1,34 @@
+var id = 0;
+
+class Person {
+	init(name, show, age, role, id) {
+		this.name = name;
+		this.age  = age;
+		this.show = show;
+		this.role = role;
+		this.id = id;
+	}
+
+	display() {
+		Print("Customer ", this.id, "\n");
+		print "Name: " + this.name;
+		print "Age: "  + this.age;
+		print "Show: " + this.show;
+		print "Role: " + this.role;
+	}
+}
+
+const createPerson = (name, show, age, role) => {
+	return Person(name, show, age, role, id+1);
+};
+
+const expandInfo = (person) => {
+	return person.display();
+};
+
+
+/// Create customer #1
+const Hailey = createPerson("Hailey Clark", "HCF", "14", "Software Engineer");
+
+/// Display customer #1's info
+expandInfo(Hailey);

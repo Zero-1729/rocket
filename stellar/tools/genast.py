@@ -1,9 +1,10 @@
-import os
-import sys
+import os  as _os
+import sys as _sys
 
 
 def usage():
     print("genast <out directory>")
+
 
 def format_fields(fields):
     tmp = fields.split(', ')
@@ -35,7 +36,7 @@ def getNames(fields):
 
 def defineAst(out, baseName, types):
     filename = (baseName[0].lower() + baseName[1:])  + '.py'
-    filename = os.path.join(out, filename)
+    filename = _os.path.join(out, filename)
 
     className = baseName
     exprClassNames = [t for t in types]
@@ -87,7 +88,7 @@ def defineAst(out, baseName, types):
 
 def main():
     if len(sys.argv) == 2:
-        out = os.path.join(sys.argv[1])
+        out = _os.path.join(sys.argv[1])
 
         types = {
                 "Assign": "_Token name, Expr value",

@@ -5,7 +5,7 @@ const inf = 'inf';
 const tau = 6.283185307179586;
 const pi = 3.141592653589793;
 
-/// Enginerring funcs
+/// Engineering funcs
 func sin () {}
 func cos () {}
 func tan () {}

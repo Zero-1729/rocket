@@ -1,11 +1,13 @@
-from utils.rocketClass import RocketCallable as _RocketCallable
-from utils.rocketClass import RocketInstance as _RocketInstance
-from utils.reporter import runtimeError as _RuntimeError
+from utils.reporter    import runtimeError   as _RuntimeError
 
-from utils.tokens import Token as _Token
+from utils.tokens import Token    as _Token
+from utils.misc   import isValNeg as _isValNeg
+
+from native.datatypes.rocketClass import RocketCallable as _RocketCallable
+from native.datatypes.rocketClass import RocketInstance as _RocketInstance
 
 from native.datatypes import rocketBoolean as _boolean
-from native.datatypes import rocketNumber as _number
+from native.datatypes import rocketNumber  as _number
 
 
 class Array(_RocketCallable):
@@ -55,6 +57,32 @@ class RocketArray(_RocketInstance):
 
             return rocketCallable
 
+        if name.lexeme == 'insert':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 2
+
+            def call(interpreter, args):
+                # This fn expects input like the standard Python 'insert' list method
+                # 'insert(index, item)'
+                # It requires two args exactly
+                # where if 'index' is -1 it translates to secone to the last not the last
+                # to add an item at the end we need to pass the length of the array as the index
+                # i.e. [array].insert([array].length(), [item]) 
+                self.elements.insert(args[0].value, args[1])
+
+                return Array().call(self, self.elements)
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.nature = 'native'
+            rocketCallable.signature = 'Array'
+            rocketCallable.toString = "<native method 'insert' of Array>"
+            rocketCallable.insert = True
+
+            return rocketCallable
+
         if name.lexeme == 'slice':
             rocketCallable = _RocketCallable(self)
 
@@ -100,61 +128,45 @@ class RocketArray(_RocketInstance):
             def call(interpreter, args, inc=False):
                 # If initial index is beyond the limit then nothing is returned
                 if args[0].value >= len(self.elements):
-                        return Array().call(self, [])
+                    return Array().call(self, [])
 
                 removed_array = []
                 is_negative_index = False
 
                 if inc:
-                    if args[1].value >= len(self.elements):
-                        raise _RuntimeError('Array', "IndexError: list index out of range")
-
-                    # Please note, if the item count is zer then nothing is returned
-                    if args[1] == 0:
+                    # Please note, if the item count is zero then nothing is returned
+                    if args[1].value == 0:
                         return Array().call(self, [])
 
                     # Negative steps return nothing irrespective of the index
                     # ... so we need to perform a negativivty test on the input
-                    # if p is negative then
-                    # (p * -1) - p will be equal to twice the absolute value of p (aka |p| ** 2), where x != 0
-                    #
-                    # Proof:
-                    #   Assume x = -x
-                    #
-                    #   (-x * -1) - (-x)
-                    #   = x - (-x)
-                    #   = x + x
-                    #   2x (hence |x| * 2)
-                    #
-                    # Now assume x = x
-                    #
-                    #       (x * -1) - (x)
-                    #       -x - x
-                    #       -2x (hence -|x| * 2 and not |x| * 2)
-                    #
-                    # QED
-                    if (((args[1] * -1) - args[1]) == 2 * abs(args[1])) and (not args[1] == 0):
+                    if _isValNeg(args[1].value):
                         return Array().call(self, [])
 
                     # Handle Positive and negative index
                     # count is always positive
                     # Run positivity test for index to determine behaviour (adapted from test above)
-                    if (((args[0]) * -1) - args[0]) != 2 * abs(args[0]):
-                        removed_array = self.elements[args[0]:args[0] + args[1]:]
+                    if not _isValNeg(args[0].value):
+                        removed_array = self.elements[args[0].value:args[0].value + args[1].value:]
 
                     else:
                         # I.e. when index is negative
-                        removed_array = self.elements[args[0]:(args[0] * -1) + args[1]:]
+                        idx = args[0].value
+                        # step is the index of the starting elm to the next subseq. 'n' (args[1]) elms
+                        step = (len(self.elements) + args[0].value) + args[1].value
+
+                        removed_array = self.elements[idx:step:]
                         is_negative_index = True
 
-                # if only index provided then the entire list from the index to end is returned
-                removed_array = Array().call(self, self.elements[args[0]:])
+                else:
+                    # if only index provided then the entire list from the index to end is returned
+                    removed_array = Array().call(self, self.elements[args[0].value:])
 
                 # Remove array items
                 # Remember the slices are contiguously stored so we can safely use indexing
                 # ... by cutting out the first chunk and last chunk then attaching them (surgically)
-                head = self.elements[0:len(self.elements) + args[0]] if is_negative_index else self.elements[0:args[0]]
-                tail = self.elements[len(self.elements) + args[0] + args[1]:] if is_negative_index else self.elements[args[0] + args[1]:]
+                head = self.elements[0:len(self.elements) + args[0].value] if is_negative_index else self.elements[0:args[0].value]
+                tail = self.elements[len(self.elements) + args[0].value + args[1].value:] if is_negative_index else self.elements[args[0].value + args[1].value:]
 
                 self.elements = head + tail
 
@@ -166,8 +178,10 @@ class RocketArray(_RocketInstance):
             rocketCallable.nature = 'native'
             rocketCallable.signature = 'Array'
             rocketCallable.toString = "<native method 'splice' of Array>"
-            rocketCallable.slice = True
+            rocketCallable.splice = True
             rocketCallable.inc = False
+
+            return rocketCallable
 
         if (name.lexeme == 'append') or (name.lexeme == 'push'):
             rocketCallable = _RocketCallable(self)
