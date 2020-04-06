@@ -1,6 +1,7 @@
 import codecs as _codecs
 
 from native.datatypes.rocketClass import RocketCallable as _RocketCallable
+from native.datatypes.rocketString import String as _String
 
 
 class Input(_RocketCallable):
@@ -16,7 +17,9 @@ class Input(_RocketCallable):
         # We will permit escsaped characters on user inputs, like '\n', '\t', etc
         # wrap it in 'utf-8' to decode escapes
         encoded_input = _codecs.escape_decode(bytes(input(args[0]), "utf-8"))[0]
-        return encoded_input.decode("utf-8")
+
+        # All calls to 'Input' return a rocketString
+        return _String.call(self, None, [encoded_input.decode("utf-8")])
 
     def __repr__(self):
         return "<native fn 'Input'>"
