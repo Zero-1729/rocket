@@ -92,10 +92,13 @@ usage: rocket [ <option> | <file> ]
 $ git clone https://github.com/Zero-1729/rocket/
 
 # Navigate into the repo and install the necessary packages
-$ cd Rocket/ && python setup.py install
+$ cd rocket/stellar
 
 # Run the REPL
 $ python main.py
+
+# Install stellar to use in Python
+$ python setup.py install
 ```
 
 ---
@@ -106,7 +109,9 @@ $ python main.py
 
 ```sh
 # clone the repo and Navigate into repo
-$ git clone https://github.com/Zero-1729/rocket/ && cd rocket/
+$ git clone https://github.com/Zero-1729/rocket/ && cd rocket/stellar
+
+# install stellar package
 $ python setup.py install
 ```
 
