@@ -335,7 +335,7 @@ Below is an example using both the `var` and `const` declarations:
 ```
 /// Const multi-variable declaration
 const {
-    author = 'Abubakar N. K.',;
+    author = 'Abubakar Nur Kahlil';
     email = 'zero1729@protonmail.com';
 }
 
