@@ -1,0 +1,9 @@
+class Box {
+    init() {
+        this.name = 'shoe box';
+    }
+}
+
+var box = Box();
+
+print box.name;
