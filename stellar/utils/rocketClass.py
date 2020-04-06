@@ -149,6 +149,9 @@ class RocketClass(RocketCallable):
     def __repr__(self):
         return self.__str__()
 
+    def raw_string(self):
+        return self.__repr__()
+
 
 class RocketInstance:
     def __init__(self, _class: RocketClass):
@@ -182,6 +185,9 @@ class RocketInstance:
     def __repr__(self):
         return self.__str__()
 
+    def raw_string(self):
+        return self.__repr__()
+
 
 class RocketFunction(RocketCallable):
     def __init__(self, decleration, closure, isInit, this_lexeme, isAnon=False, methodName=''):
@@ -201,6 +207,7 @@ class RocketFunction(RocketCallable):
         env.define(self.this_lexeme, instance)
 
         bounded = RocketFunction(self.decleration, env, self.isInit, self.this_lexeme, True, name)
+
         return bounded
 
     def arity(self, confs=[]):
@@ -242,3 +249,6 @@ class RocketFunction(RocketCallable):
 
     def __repr__(self):
         return self.__str__()
+
+    def raw_string(self):
+        return self.__repr__()
