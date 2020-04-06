@@ -65,7 +65,7 @@ from native.functions import random      as _random
 from native.functions import output      as _output
 from native.functions import kind        as _kind
 
-from native.datatypes import rocketArray     as _rocketArray
+from native.datatypes import rocketList     as _rocketList
 from native.datatypes import rocketString    as _rocketString
 from native.datatypes import rocketNumber    as _rocketNumber
 from native.datatypes import rocketBoolean    as _rocketBoolean
@@ -102,7 +102,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(_kind.Type().callee,                     _kind.Type)
 
         # Datatypes
-        self.globals.define(_rocketArray.Array().callee,     _rocketArray.Array)
+        self.globals.define(_rocketList.List().callee,     _rocketList.List)
         self.globals.define(_rocketString.String().callee, _rocketString.String)
         self.globals.define(_rocketNumber.Int().callee,       _rocketNumber.Int)
         self.globals.define(_rocketNumber.Float().callee,   _rocketNumber.Float)
@@ -188,7 +188,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             # To support implicit string concactination
             # E.g "Hailey" + 4 -> "Hailey4"
-            # We can also add Arrays and strings
+            # We can also add Lists and strings
             # E.g. "List: " + "[3, 4, 6]" -> "List: [3, 4, 6]"
             # No need to allow this anymore. We make 'String' compulsory
             if ((isinstance(left, _rocketString.RocketString)) or (isinstance(right, _rocketString.RocketString))):
@@ -198,11 +198,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
                 return _rocketString.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
 
-            # allow python style array consatenation
-            if (isinstance(left, _rocketArray.RocketArray) or isinstance(right, _rocketArray.RocketArray)):
+            # allow python style list consatenation
+            if (isinstance(left, _rocketList.RocketList) or isinstance(right, _rocketList.RocketList)):
                 concat_tok = _Token(_TokenType.STRING, 'concat', 'concat', 0)
 
-                # return new comcatenated array
+                # return new comcatenated list
                 return left.get(concat_tok).call(self, [right])
 
             if (type(left) == type(None)) or (type(right) == type(None)):
@@ -305,11 +305,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # Well, native functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
         isNotNative = True
         isNotDatatype = True
-        overideArity = False # To allow (near) infinite 'arity' for 'Array' elements
+        overideArity = False # To allow (near) infinite 'arity' for 'List' elements
 
         try:
             if callee().nature == "native":
-                if isinstance(callee(), _rocketArray.Array):
+                if isinstance(callee(), _rocketList.List):
                     overideArity = True
 
                 isNotNative = False
@@ -334,10 +334,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 if (function.callee == 'Print'):
                     overideArity = True
 
-        # We dynamically change 'arity' for Array's 'slice' fn depending on the args
+        # We dynamically change 'arity' for List's 'slice' fn depending on the args
         if not isNotDatatype:
             if hasattr(function, 'signature') and (hasattr(function, 'slice') or hasattr(function, 'splice')):
-                if ((function.signature == 'String') or (function.signature == 'Array')) and (len(eval_args) == 2):
+                if ((function.signature == 'String') or (function.signature == 'List')) and (len(eval_args) == 2):
                     function.inc = True
 
         if hasattr(function, 'slice') or hasattr(function, 'splice'):
@@ -401,8 +401,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         obj = self.evaluate(expr.object)
 
         if hasattr(obj, 'kind'):
-            if ('Array' in obj.kind):
-                raise _RuntimeError('Array', f"Cannot assign external attribute to native datatype 'Array'")
+            if ('List' in obj.kind):
+                raise _RuntimeError('List', f"Cannot assign external attribute to native datatype 'List'")
 
         if not isinstance(obj, _RocketInstance):
             raise _RuntimeError(expr.name, "Only instances have fields.")
