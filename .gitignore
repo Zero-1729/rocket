@@ -48,4 +48,4 @@ config.rckt
 *.swo
 
 # Todo
-TODO.txt
+*.txt
