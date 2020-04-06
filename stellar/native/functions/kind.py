@@ -1,4 +1,4 @@
-from utils.rocketClass import RocketCallable as _RocketCallable
+from native.datatypes.rocketClass import RocketCallable as _RocketCallable
 
 
 class Type(_RocketCallable):

@@ -1,6 +1,6 @@
 import codecs as _codecs
 
-from utils.rocketClass import RocketCallable as _RocketCallable
+from native.datatypes.rocketClass import RocketCallable as _RocketCallable
 
 
 class Print(_RocketCallable):

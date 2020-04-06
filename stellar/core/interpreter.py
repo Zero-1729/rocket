@@ -47,10 +47,10 @@ from utils.stmt import Expression     as _Expression
 
 from utils.env import Environment     as _Environment
 
-from utils.rocketClass import RocketCallable  as _RocketCallable
-from utils.rocketClass import RocketFunction  as _RocketFunction
-from utils.rocketClass import RocketClass     as _RocketClass
-from utils.rocketClass import RocketInstance  as _RocketInstance
+from native.datatypes.rocketClass import RocketCallable  as _RocketCallable
+from native.datatypes.rocketClass import RocketFunction  as _RocketFunction
+from native.datatypes.rocketClass import RocketClass     as _RocketClass
+from native.datatypes.rocketClass import RocketInstance  as _RocketInstance
 
 from core.scanner import Scanner as _Scanner
 
