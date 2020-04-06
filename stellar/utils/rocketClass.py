@@ -108,7 +108,7 @@ class RocketClass(RocketCallable):
                 self.merged = True
 
         if init != None:
-            binded_init = init.bind(instance, 'init')
+            binded_init = init.bind(instance, init.name)
             binded_init.call(interpreter, args)
 
         return instance
