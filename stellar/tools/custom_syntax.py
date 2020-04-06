@@ -20,24 +20,6 @@ class Scanner:
         while (not self.isAtEnd()):
             c = self.advance()
 
-            if c == "?":
-                self.addSingleToken(_TokenType.Q_MARK)
-                continue
-
-            if c == "/":
-                if self.match("/"):
-                    if self.match("/"):
-                        while self.peek() != "\n" and not self.isAtEnd(): self.advance()
-
-                    else:
-                        while self.peek() != "\n" and not self.isAtEnd():
-                            self.advance()
-                continue
-
-            if c == "#":
-                while self.peek() != "\n" and not self.isAtEnd(): self.advance()
-                continue
-
             if c == "\n":
                 self.line += 1
 
@@ -126,7 +108,7 @@ class Parser:
         while not self.isAtEnd():
             tok = self.advance()
 
-            if tok.lexeme in ['', '?']:
+            if tok.lexeme in ['']:
                 continue
 
             elif tok.type in list(_Keywords.values()):
