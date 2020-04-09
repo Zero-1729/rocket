@@ -21,9 +21,9 @@ Rocket is a High level Dynamically-typed, Object-Oriented Programming Language t
 
 ## Rocket's Compiler & Interpreter
 
-> The Rocket Repo comes with Rocket's C VM (**Luna**) as well as the Python Interpreter (**Stellar**).
+> The Rocket Repo comes with Rocket's C VM (**Rluna**) as well as the Python Interpreter (**Stellar**).
 
-#### Which am I running?
+### Which am I running?
 
 Just type in `rocket -v` or `rocket --version`. You would see the Rocket version aswell as the name of the interpreter and its associated version. E.g:-
 
@@ -34,17 +34,14 @@ Rocket v0.1.8-p [Stellar v0.2.7-b]
 
 From the output above, we can see that we are running `stellar` v0.2.7-b.
 
-##### Which One should I get?
 
-It depends on your needs!
+#### Rluna :full_moon:
 
-##### RLuna :full_moon:
+> Note: Rluna is still in development.
 
-> Note: RLuna is still in development.
+Rluna is intended to be a compiler for Rocket, and when finished would be used to compile source code into an intermediate "parts" file and executed by the vm.
 
-RLuna is intended to be a compiler for Rocket, and when finished would be used to compile source code into an intermediate "parts" file and executed by the vm.
-
-##### Stellar :dizzy:
+#### Stellar :dizzy:
 
 This is recommended for Beginners and Users who prefer to use the interactive shell or run their code without compiling. Like the Python interpreter, **Stellar** can be run as an interactive shell by invoking the `rocket` command which would start the interactive shell:-
 
