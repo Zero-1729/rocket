@@ -671,8 +671,6 @@ Rocket comes shipped with a standard library which includes the following packag
 
 + **web**:- For *http*, *https*, *server*, etc related functions.
 
-+ **blockchain**:- For Blockchain related functions. E.g `blockchain.chain`
-
 As the language continues to mature more packages would be added. Probably demanding that a centralized package repo store to be set up. Just think **Python**'s pypi.
 
 > **Food For Thought**: How would a `decentralized` *distributed* (like hosted on **IPFS**) package repo host do compared to a `centralized` one like a CDN?
