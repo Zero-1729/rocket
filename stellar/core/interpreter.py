@@ -69,7 +69,7 @@ from native.datatypes import rocketList      as _rocketList
 from native.datatypes import rocketArray     as _rocketArray
 from native.datatypes import rocketString    as _rocketString
 from native.datatypes import rocketNumber    as _rocketNumber
-from native.datatypes import rocketBoolean    as _rocketBoolean
+from native.datatypes import rocketBoolean   as _rocketBoolean
 
 from utils.misc import importCodeStmts   as _importCodeStmts 
 
