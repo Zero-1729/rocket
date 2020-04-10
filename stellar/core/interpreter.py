@@ -65,7 +65,8 @@ from native.functions import random      as _random
 from native.functions import output      as _output
 from native.functions import kind        as _kind
 
-from native.datatypes import rocketList     as _rocketList
+from native.datatypes import rocketList      as _rocketList
+from native.datatypes import rocketArray     as _rocketArray
 from native.datatypes import rocketString    as _rocketString
 from native.datatypes import rocketNumber    as _rocketNumber
 from native.datatypes import rocketBoolean    as _rocketBoolean
@@ -102,7 +103,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(_kind.Type().callee,                     _kind.Type)
 
         # Datatypes
-        self.globals.define(_rocketList.List().callee,     _rocketList.List)
+        self.globals.define(_rocketList.List().callee,         _rocketList.List)
+        self.globals.define(_rocketArray.Array().callee,     _rocketArray.Array)
         self.globals.define(_rocketString.String().callee, _rocketString.String)
         self.globals.define(_rocketNumber.Int().callee,       _rocketNumber.Int)
         self.globals.define(_rocketNumber.Float().callee,   _rocketNumber.Float)
