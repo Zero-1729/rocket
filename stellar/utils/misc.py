@@ -42,3 +42,20 @@ def importCodeStmts(filename, KSL):
     stmts = _Parser(tks, KSL[1]).parse()
 
     return stmts
+
+
+# Datatype assert fns
+# master fn
+def isType(obj, kind):
+    return isinstance(obj, kind)
+
+
+# check if a list of args are all of the same type
+def isAllSameType(objs, kind):
+    result = True
+
+    for i in range(len(objs)):
+        if not (isType(objs[i], kind) or (type(objs[i]) == type(None))):
+            result = False
+
+    return result
