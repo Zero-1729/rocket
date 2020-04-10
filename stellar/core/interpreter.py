@@ -898,7 +898,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if (isinstance(n, int)):
                 return _rocketNumber.Int().call(self, [n])
             
-            if (isinstance(n, _rocketNumber.Float)):
+            if (isinstance(n, float)):
                 return _rocketNumber.Float().call(self, [n])
 
         # otherwise it returns it unchanged
