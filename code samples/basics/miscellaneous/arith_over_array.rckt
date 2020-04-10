@@ -1,0 +1,11 @@
+var arr = Array(7,12,30);
+
+print "Array: " + arr;
+
+Print("arr + 5: ", arr + 5);
+Print("arr - 2: ", arr - 2);
+Print("arr * 2: ", arr * 2);
+Print("arr / 4: ", arr / 4);
+Print("arr // 4: ", arr // 4);
+Print("arr ** 3: ", arr ** 3);
+Print("arr % 2: ", arr % 2);

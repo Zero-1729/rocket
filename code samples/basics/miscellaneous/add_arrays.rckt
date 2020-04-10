@@ -1,0 +1,7 @@
+var a = Array(1, 2, 3);
+var b = Array(3, 2, 1);
+
+print "a: " + a;
+print "b: " + b;
+
+Print("a + b: ", a + b);
