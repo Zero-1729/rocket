@@ -1,13 +1,18 @@
 from utils.reporter    import runtimeError   as _RuntimeError
 
 from utils.tokens import Token    as _Token
-from utils.misc   import isValNeg as _isValNeg
+
+from utils.misc   import isValNeg       as _isValNeg
+from utils.misc   import isType         as _isType
+from utils.misc   import isAllSameType  as _isAllSameType
 
 from native.datatypes.rocketClass import RocketCallable as _RocketCallable
 from native.datatypes.rocketClass import RocketInstance as _RocketInstance
 
 from native.datatypes import rocketBoolean as _boolean
+from native.datatypes import rocketString  as _string
 from native.datatypes import rocketNumber  as _number
+from native.datatypes import rocketList    as _list
 
 
 class Array(_RocketCallable):
@@ -19,7 +24,31 @@ class Array(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        return RocketArray(args)
+        arrayType = type(None)
+        isArgArray = _isType(args, RocketArray)
+
+        if isArgArray:
+            arrayType = args.arrayType
+
+        else:
+            arrayType = type(args[0])
+
+        # if a single arg is given we assume it to be the size of the Array
+        if len(args) == 1 and not (isArgArray):
+            if _isType(args[0], _number.RocketInt):
+                arrayType = type(None)
+
+                return RocketArray([None for i in range(args[0].value)], arrayType)
+
+            else:
+                raise _RuntimeError('Array', 'Array size must be Int.')
+
+        if len(args) > 1 and not (isArgArray):
+            # Check that all elms are of the same type
+            if not _isAllSameType(args, arrayType):
+                raise _RuntimeError('Array', 'Array elements must be adjacent types.')
+
+        return RocketArray(args, arrayType) if not isArgArray else args
 
     def __repr__(self):
         return self.__str__()
@@ -29,8 +58,10 @@ class Array(_RocketCallable):
 
 
 class RocketArray(_RocketInstance):
-    def __init__(self, elms):
+    def __init__(self, elms, arrayType):
         self.elements = elms
+        self.arrayType = arrayType
+        self.isEmpty = arrayType == type(None)
         self.nature = 'datatype'
         self.kind = "<native type 'Array'>"
 
@@ -70,9 +101,9 @@ class RocketArray(_RocketInstance):
                 # where if 'index' is -1 it translates to secone to the last not the last
                 # to add an item at the end we need to pass the length of the array as the index
                 # i.e. [array].insert([array].length(), [item]) 
-                self.elements.insert(args[0].value, args[1])
+                self.elements[args[0].value] = args[1]
 
-                return Array().call(self, self.elements)
+                return self
 
             rocketCallable.arity = arity
             rocketCallable.call = call
@@ -342,6 +373,9 @@ class RocketArray(_RocketInstance):
                 return 1
 
             def call(interpreter, args):
+                if (type(args[0]) != self.arrayType):
+                    raise _RuntimeError('Array', 'Array elm must be of type ' + str(self.arrayType) + '.')
+
                 if isinstance(args[0], RocketArray):
                     # we return the mutation
                     return Array().call(self, self.elements + args[0].elements)
@@ -426,10 +460,8 @@ class RocketArray(_RocketInstance):
         else:
             raise _RuntimeError(name, f"'Array' has no method '{name.lexeme}'.")
 
-
     def set(self, name, value):
         raise _RuntimeError(name, "Cannot mutate an Array's props")
-
 
     def notEmpty(self):
         if len(self.elements) == 0:
@@ -438,34 +470,20 @@ class RocketArray(_RocketInstance):
         return True
 
     def stringify(self, elm, uncoloured=False):
-        try:
-            elm = elm.value
-
-        except:
-            # If detected 'Array'
+        if (_isType(elm, RocketArray) or _isType(elm, _list.RocketList)):
             return elm.__str__()
 
-        if uncoloured:
-            return elm.__str__() if elm != None else 'nin'
+        if (_isType(elm, _number.RocketInt) or _isType(elm, _number.RocketFloat)):
+            return f'\033[36m{elm}\033[0m' if not uncoloured else str(elm.value)
 
-        if type(elm) == int or type(elm) == float:
-            return f'\033[36m{elm}\033[0m' if not uncoloured else elm
+        if _isType(elm, _string.RocketString):
+            return f'\033[32m{elm}\033[0m' if not uncoloured else elm.value
 
-        if type(elm) == str:
-            if elm == 'nin':
-                return '\033[1mnin\033[0m' if not uncoloured else 'nin'
+        if _isType(elm, _boolean.Bool):
+            return f'\033[1m{elm}\033[0m' if not uncoloured else str(elm.value)
 
-            else:
-                return f'\033[32m{elm}\033[0m' if not uncoloured else elm
-
-        if type(elm) == bool and (type(elm) == True or type(elm) == False):
-            return f'\033[1m{elm}\033[0m' if not uncoloured else elm
-
-        if type(elm) == None:
+        if type(elm) == type(None):
             return '\033[1mnin\033[0m' if not uncoloured else 'nin'
-
-        return elm
-
 
     def stringifyList(self, array, uncoloured=False):
         result = '[ '
@@ -501,3 +519,6 @@ class RocketArray(_RocketInstance):
 
     def __str__(self):
         return self.__repr__()
+
+    def __len__(self):
+        return len(self.elements)
