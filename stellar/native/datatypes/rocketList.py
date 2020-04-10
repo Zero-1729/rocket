@@ -438,33 +438,20 @@ class RocketList(_RocketInstance):
         return True
 
     def stringify(self, elm, uncoloured=False):
-        try:
-            elm = elm.value
-
-        except:
-            # If detected 'List'
+        if (_isType(elm, RocketArray) or _isType(elm, _list.RocketList)):
             return elm.__str__()
 
-        if uncoloured:
-            return elm.__str__() if elm != None else 'nin'
+        if (_isType(elm, _number.RocketInt) or _isType(elm, _number.RocketFloat)):
+            return f'\033[36m{elm}\033[0m' if not uncoloured else str(elm.value)
 
-        if type(elm) == int or type(elm) == float:
-            return f'\033[36m{elm}\033[0m' if not uncoloured else elm
+        if _isType(elm, _string.RocketString):
+            return f'\033[32m{elm}\033[0m' if not uncoloured else elm.value
 
-        if type(elm) == str:
-            if elm == 'nin':
-                return '\033[1mnin\033[0m' if not uncoloured else 'nin'
+        if _isType(elm, _boolean.Bool):
+            return f'\033[1m{elm}\033[0m' if not uncoloured else str(elm.value)
 
-            else:
-                return f'\033[32m{elm}\033[0m' if not uncoloured else elm
-
-        if type(elm) == bool and (type(elm) == True or type(elm) == False):
-            return f'\033[1m{elm}\033[0m' if not uncoloured else elm
-
-        if type(elm) == None:
+        if type(elm) == type(None):
             return '\033[1mnin\033[0m' if not uncoloured else 'nin'
-
-        return elm
 
 
     def stringifyList(self, list, uncoloured=False):
