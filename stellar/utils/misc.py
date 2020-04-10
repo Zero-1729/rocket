@@ -59,3 +59,26 @@ def isAllSameType(objs, kind):
             result = False
 
     return result
+
+
+# array addition fn
+def addArrays(left, right, sanitize):
+    result = []
+
+    # What about uneven array heights?
+    for i in range(len(left.elements)):
+        result.append(sanitize(left.elements[i].value + right.elements[i].value))
+
+    return result
+
+def doMath(left, right, op):
+    return eval(f"{left} {op} {right}")
+
+def opOverArray(arr, num, sanitize, op):
+    result = []
+
+    for i in range(len(arr.elements)):
+        if type(arr.elements[i]) != type(None):
+            result.append(sanitize(doMath(arr.elements[i].value, num.value, op)))
+
+    return result
