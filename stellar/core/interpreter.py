@@ -217,7 +217,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if (type(left) == type(None)) or (type(right) == type(None)):
                 raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.")
 
-
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
             self.checkNumberOperands(expr.operator, left, right)
@@ -318,7 +317,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         try:
             if callee().nature == "native":
-                if isinstance(callee(), _rocketList.List):
+                if self.isRocketFlatList(callee()):
                     overideArity = True
 
                 isNotNative = False
@@ -327,8 +326,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 isNotDatatype = False
 
         # Specially inject check for 'rocketClass' and 'rocketCallable'
-        isNotCallable = not isinstance(callee, _RocketCallable)
-        isNotClass = not isinstance(callee, _RocketClass)
+        isNotCallable = not self.isRocketCallable(callee) #isinstance(callee, _RocketCallable)
+        isNotClass = not self.isRocketClass(callee) # isinstance(callee, _RocketClass)
 
         if isNotCallable and isNotClass and isNotNative and isNotDatatype:
             raise _RuntimeError(expr.paren, "Can only call functions and classes")
