@@ -73,6 +73,13 @@ from native.datatypes import rocketBoolean   as _rocketBoolean
 
 from utils.misc import importCodeStmts   as _importCodeStmts 
 
+# to assert rocket datatypes
+from utils.misc import isType              as _isType
+
+# Array arithmetic fns
+from utils.misc import opOverArray        as _opOverArray
+from utils.misc import addArrays          as _addArrays
+
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
     def __init__(self, KSL: list):
@@ -954,3 +961,41 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             except:
                 return value, None
+
+        # Child fns
+
+    def isRocketArray(self, obj):
+        return _isType(obj, _rocketArray.RocketArray)
+
+    def isRocketList(self, obj):
+        return _isType(obj, _rocketList.RocketList)
+
+    def isRocketFlatList(self, obj):
+        return _isType(obj, _rocketArray.Array) or _isType(obj, _rocketList.List)
+
+    def isRocketClass(self, obj):
+        return _isType(obj, _RocketClass)
+
+    def isRocketClassInst(self, obj):
+        return _isType(obj, _RocketInstance)
+
+    def isRocketCallable(self, obj):
+        return _isType(obj, _RocketCallable)
+
+    def isRocketString(self, obj):
+        return _isType(obj, _rocketString.RocketString)
+
+    def isRocketInt(self, obj):
+        return _isType(obj, _rocketNumber.RocketInt)
+
+    def isRocketFloat(self, obj):
+        return _isType(obj, _rocketNumber.RocketFloat)
+
+    def isNumberArray(self, obj):
+        return (obj.arrayType == _rocketNumber.RocketFloat) or (obj.arrayType == _rocketNumber.RocketInt)
+
+    def isRocketNumber(self, obj):
+        return _isType(obj, _rocketNumber.RocketFloat) or _isType(obj, _rocketNumber.RocketInt)
+
+    def isRocketBool(self, obj):
+        return _isType(obj, _rocketBoolean.RocketBool)
