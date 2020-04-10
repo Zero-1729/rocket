@@ -185,8 +185,30 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         left = self.sanitizeNum(self.evaluate(expr.left))
         right = self.sanitizeNum(self.evaluate(expr.right))
 
-        # string concatenation and arithmetic operator '+'
+        # Catches all ops over an Array with a num
+        # That is '+', '-', '*', '/', '//', '%', '**'
+        if (expr.operator.lexeme in ['+', '-', '*', '/', '//', '%', '**']):
+            if (self.isRocketArray(left)) and (self.isRocketNumber(right)):
+                if (self.isNumberArray(left)) and not left.isEmpty:
+                    return _rocketArray.Array().call(self, _opOverArray(left, right, self.sanitizeNum, expr.operator.lexeme))
+
+                else:
+                    raise _RuntimeError(expr.operator, "Array must contain Number elements.")
+
+            if (self.isRocketArray(right)) and (self.isRocketNumber(left)):
+                if (self.isNumberArray(right)) and not right.isEmpty:
+                    return _rocketArray.Array().call(self, _opOverArray(right, left, self.sanitizeNum, expr.operator.lexeme))
+
+                else:
+                    raise _RuntimeError(expr.operator, "Array must contain Number elements.")
+
+        # overloaded operator '+' that performs:
+        # basic arithmetic addition (between numbers)
+        # string and implicit concatenation, i.e. String + [other type] = String
+        # list concatenation, i.e. [4,2,1] + [4,6] = [4,2,1,4,6]
+        # Array addition, i.e. [4,3,5] + [3,1,0] = [7,4,5]
         if (expr.operator.type == _TokenType.PLUS):
+            # basic arithmetic addition
             if self.is_number(left) and self.is_number(right):
                 sum = left.value + right.value
                 return _rocketNumber.Int().call(self, [sum]) if type(sum) == int else _rocketNumber.Float().call(self, [sum])
@@ -197,8 +219,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             # To support implicit string concactination
             # E.g "Hailey" + 4 -> "Hailey4"
-            # We can also add Lists and strings
-            # E.g. "List: " + "[3, 4, 6]" -> "List: [3, 4, 6]"
             # No need to allow this anymore. We make 'String' compulsory
             if ((isinstance(left, _rocketString.RocketString)) or (isinstance(right, _rocketString.RocketString))):
                 # Concatenation of 'nin' is prohibited!
@@ -207,12 +227,19 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
                 return _rocketString.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
 
-            # allow python style list consatenation
+            # allow python style list concatenation
             if (isinstance(left, _rocketList.RocketList) or isinstance(right, _rocketList.RocketList)):
                 concat_tok = _Token(_TokenType.STRING, 'concat', 'concat', 0)
 
-                # return new comcatenated list
+                # return new concatenated list
                 return left.get(concat_tok).call(self, [right])
+
+            if (self.isRocketArray(left)) and (self.isRocketArray(right)):
+                if (self.isNumberArray(left) and self.isNumberArray(right)) and not (left.isEmpty or right.isEmpty):
+                    return _rocketArray.Array().call(self, _addArrays(left, right, self.sanitizeNum))
+
+                else:
+                    raise _RuntimeError(expr.operator, "Cannot concat empty Array(s).")
 
             if (type(left) == type(None)) or (type(right) == type(None)):
                 raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.")
