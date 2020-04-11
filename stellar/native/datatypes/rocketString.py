@@ -3,10 +3,11 @@ from utils.tokens import TokenType as _TokenType
 
 from   utils.reporter    import runtimeError   as _RuntimeError
 
-from   native.datatypes.rocketClass import RocketCallable as _RocketCallable
-from   native.datatypes.rocketClass import RocketInstance as _RocketInstance
+from   native.datastructs.rocketClass import RocketCallable as _RocketCallable
+from   native.datastructs.rocketClass import RocketInstance as _RocketInstance
 
-import native.datatypes.rocketList    as _list
+import native.datastructs.rocketList   as _list
+
 import native.datatypes.rocketBoolean  as _boolean
 import native.datatypes.rocketNumber   as _number
 

@@ -1,4 +1,4 @@
-from native.datatypes.rocketClass import RocketCallable as _RocketCallable
+from native.datastructs.rocketClass import RocketCallable as _RocketCallable
 
 from utils.tokens import TokenType as _TokenType
 

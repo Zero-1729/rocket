@@ -1,7 +1,7 @@
 from utils.reporter    import runtimeError   as _RuntimeError
 
-from native.datatypes.rocketClass import RocketCallable as _RocketCallable
-from native.datatypes.rocketClass import RocketInstance as _RocketInstance
+from native.datastructs.rocketClass import RocketCallable as _RocketCallable
+from native.datastructs.rocketClass import RocketInstance as _RocketInstance
 
 from native.datatypes  import rocketString   as _string
 

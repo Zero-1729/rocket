@@ -1,6 +1,6 @@
 import random as _random
 
-from native.datatypes.rocketClass import RocketCallable as _RocketCallable
+from native.datastructs.rocketClass import RocketCallable as _RocketCallable
 
 
 class Random(_RocketCallable):

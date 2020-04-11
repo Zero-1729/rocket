@@ -47,10 +47,10 @@ from utils.stmt import Expression     as _Expression
 
 from utils.env import Environment     as _Environment
 
-from native.datatypes.rocketClass import RocketCallable  as _RocketCallable
-from native.datatypes.rocketClass import RocketFunction  as _RocketFunction
-from native.datatypes.rocketClass import RocketClass     as _RocketClass
-from native.datatypes.rocketClass import RocketInstance  as _RocketInstance
+from native.datastructs.rocketClass import RocketCallable  as _RocketCallable
+from native.datastructs.rocketClass import RocketFunction  as _RocketFunction
+from native.datastructs.rocketClass import RocketClass     as _RocketClass
+from native.datastructs.rocketClass import RocketInstance  as _RocketInstance
 
 from core.scanner import Scanner as _Scanner
 
@@ -65,8 +65,9 @@ from native.functions import random      as _random
 from native.functions import output      as _output
 from native.functions import kind        as _kind
 
-from native.datatypes import rocketList      as _rocketList
-from native.datatypes import rocketArray     as _rocketArray
+from native.datastructs import rocketList    as _rocketList
+from native.datastructs import rocketArray   as _rocketArray
+
 from native.datatypes import rocketString    as _rocketString
 from native.datatypes import rocketNumber    as _rocketNumber
 from native.datatypes import rocketBoolean   as _rocketBoolean
