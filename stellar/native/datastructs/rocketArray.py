@@ -3,41 +3,71 @@ from utils.reporter    import runtimeError   as _RuntimeError
 from utils.tokens import Token     as _Token
 from utils.tokens import TokenType as _TokenType
 
-from utils.misc   import isValNeg as _isValNeg
+from utils.misc   import isValNeg       as _isValNeg
+from utils.misc   import isType         as _isType
+from utils.misc   import isAllSameType  as _isAllSameType
 
-from native.datatypes.rocketClass import RocketCallable as _RocketCallable
-from native.datatypes.rocketClass import RocketInstance as _RocketInstance
+from native.datastructs.rocketClass import RocketCallable as _RocketCallable
+from native.datastructs.rocketClass import RocketInstance as _RocketInstance
 
 from native.datatypes import rocketBoolean as _boolean
+from native.datatypes import rocketString  as _string
 from native.datatypes import rocketNumber  as _number
 
+from native.datastructs import rocketList  as _list
 
-class List(_RocketCallable):
+
+class Array(_RocketCallable):
     def __init__(self):
-        self.callee = 'List'
+        self.callee = 'Array'
         self.nature = 'native'
 
     def arity(self):
         return 1
 
     def call(self, obj, args):
+        arrayType = type(None)
+        isArgArray = _isType(args, RocketArray)
         nin_lexeme = obj.KSL[1][_TokenType.NIN.value]
 
-        return RocketList(args, nin_lexeme)
+        if isArgArray:
+            arrayType = args.arrayType
+
+        else:
+            arrayType = type(args[0])
+
+        # if a single arg is given we assume it to be the size of the Array
+        if len(args) == 1 and not (isArgArray):
+            if _isType(args[0], _number.RocketInt):
+                arrayType = type(None)
+
+                return RocketArray([None for i in range(args[0].value)], arrayType, nin_lexeme)
+
+            else:
+                raise _RuntimeError('Array', 'Array size must be Int.')
+
+        if len(args) > 1 and not (isArgArray):
+            # Check that all elms are of the same type
+            if not _isAllSameType(args, arrayType):
+                raise _RuntimeError('Array', 'Array elements must be adjacent types.')
+
+        return RocketArray(args, arrayType, nin_lexeme) if not isArgArray else args
 
     def __repr__(self):
         return self.__str__()
 
     def __str__(self):
-        return "<native type 'List'>"
+        return "<native type 'Array'>"
 
 
-class RocketList(_RocketInstance):
-    def __init__(self, elms, nin_lexeme):
+class RocketArray(_RocketInstance):
+    def __init__(self, elms, arrayType, nin_lexeme):
         self.elements = elms
-        self.nature = 'datatype'
-        self.kind = "<native type 'List'>"
+        self.arrayType = arrayType
+        self.isEmpty = arrayType == type(None)
         self.nin_lexeme = nin_lexeme
+        self.nature = 'datatype'
+        self.kind = "<native type 'Array'>"
 
     def get(self, name: _Token):
         # Note: 'edna' is what we use to manipulate arity for 'slice' function from '1' to '2'
@@ -51,13 +81,13 @@ class RocketList(_RocketInstance):
                 index = args[0].value
 
                 if index >= len(self.elements):
-                    raise _RuntimeError('List', "IndexError: list index out of range")
+                    raise _RuntimeError('Array', "IndexError: list index out of range")
 
                 return self.elements[index]
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'get' of list>"
+            rocketCallable.toString = "<native method 'get' of array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -73,17 +103,17 @@ class RocketList(_RocketInstance):
                 # 'insert(index, item)'
                 # It requires two args exactly
                 # where if 'index' is -1 it translates to secone to the last not the last
-                # to add an item at the end we need to pass the length of the list as the index
-                # i.e. [list].insert([list].length(), [item]) 
-                self.elements.insert(args[0].value, args[1])
+                # to add an item at the end we need to pass the length of the array as the index
+                # i.e. [array].insert([array].length(), [item]) 
+                self.elements[args[0].value] = args[1]
 
-                return List().call(self, self.elements)
+                return self
 
             rocketCallable.arity = arity
             rocketCallable.call = call
             rocketCallable.nature = 'native'
-            rocketCallable.signature = 'List'
-            rocketCallable.toString = "<native method 'insert' of List>"
+            rocketCallable.signature = 'Array'
+            rocketCallable.toString = "<native method 'insert' of Array>"
             rocketCallable.insert = True
 
             return rocketCallable
@@ -100,22 +130,22 @@ class RocketList(_RocketInstance):
             def call(interpreter, args, inc=False):
                 if inc:
                     if args[0].value >= len(self.elements) or args[1].value >= len(self.elements):
-                        raise _RuntimeError('List', "IndexError: list index out of range")
+                        raise _RuntimeError('Array', "IndexError: list index out of range")
 
                     # Special case
                     if (args[0].value >= args[1].value):
-                        return List().call(self, [])
+                        return Array().call(self, [])
 
                     else:
-                        return List().call(self, self.elements[args[0].value:args[1].value])
+                        return Array().call(self, self.elements[args[0].value:args[1].value])
 
-                return List().call(self, self.elements[args[0].value:])
+                return Array().call(self, self.elements[args[0].value:])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
             rocketCallable.nature = 'native'
-            rocketCallable.signature = 'List'
-            rocketCallable.toString = "<native method 'slice' of List>"
+            rocketCallable.signature = 'Array'
+            rocketCallable.toString = "<native method 'slice' of Array>"
             rocketCallable.slice = True
             rocketCallable.inc = False
 
@@ -133,26 +163,26 @@ class RocketList(_RocketInstance):
             def call(interpreter, args, inc=False):
                 # If initial index is beyond the limit then nothing is returned
                 if args[0].value >= len(self.elements):
-                    return List().call(self, [])
+                    return Array().call(self, [])
 
-                removed_list = []
+                removed_array = []
                 is_negative_index = False
 
                 if inc:
                     # Please note, if the item count is zero then nothing is returned
                     if args[1].value == 0:
-                        return List().call(self, [])
+                        return Array().call(self, [])
 
                     # Negative steps return nothing irrespective of the index
                     # ... so we need to perform a negativivty test on the input
                     if _isValNeg(args[1].value):
-                        return List().call(self, [])
+                        return Array().call(self, [])
 
                     # Handle Positive and negative index
                     # count is always positive
                     # Run positivity test for index to determine behaviour (adapted from test above)
                     if not _isValNeg(args[0].value):
-                        removed_list = self.elements[args[0].value:args[0].value + args[1].value:]
+                        removed_array = self.elements[args[0].value:args[0].value + args[1].value:]
 
                     else:
                         # I.e. when index is negative
@@ -160,14 +190,14 @@ class RocketList(_RocketInstance):
                         # step is the index of the starting elm to the next subseq. 'n' (args[1]) elms
                         step = (len(self.elements) + args[0].value) + args[1].value
 
-                        removed_list = self.elements[idx:step:]
+                        removed_array = self.elements[idx:step:]
                         is_negative_index = True
 
                 else:
                     # if only index provided then the entire list from the index to end is returned
-                    removed_list = List().call(self, self.elements[args[0].value:])
+                    removed_array = Array().call(self, self.elements[args[0].value:])
 
-                # Remove list items
+                # Remove array items
                 # Remember the slices are contiguously stored so we can safely use indexing
                 # ... by cutting out the first chunk and last chunk then attaching them (surgically)
                 head = self.elements[0:len(self.elements) + args[0].value] if is_negative_index else self.elements[0:args[0].value]
@@ -175,14 +205,14 @@ class RocketList(_RocketInstance):
 
                 self.elements = head + tail
 
-                # return removed list slice
-                return List().call(self, removed_list)
+                # return removed array slice
+                return Array().call(self, removed_array)
 
             rocketCallable.arity = arity
             rocketCallable.call = call
             rocketCallable.nature = 'native'
-            rocketCallable.signature = 'List'
-            rocketCallable.toString = "<native method 'splice' of List>"
+            rocketCallable.signature = 'Array'
+            rocketCallable.toString = "<native method 'splice' of Array>"
             rocketCallable.splice = True
             rocketCallable.inc = False
 
@@ -198,12 +228,12 @@ class RocketList(_RocketInstance):
                 # Internally add new elm
                 self.elements.append(args[0])
 
-                # we return the appended list
+                # we return the appended array
                 return self
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'append' of List>"
+            rocketCallable.toString = "<native method 'append' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -217,12 +247,12 @@ class RocketList(_RocketInstance):
             def call(interpreter, args):
                 self.elements = []
 
-                # return the newly cleared list
+                # return the newly cleared array
                 return self
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'clear' of List>"
+            rocketCallable.toString = "<native method 'clear' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -241,7 +271,7 @@ class RocketList(_RocketInstance):
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'length' of List>"
+            rocketCallable.toString = "<native method 'length' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -258,11 +288,11 @@ class RocketList(_RocketInstance):
                     self.elements.remove(last)
                     return last
                 else:
-                    raise _RuntimeError('List', "IndexError: cannot pop empty list")
+                    raise _RuntimeError('Array', "IndexError: cannot pop empty list")
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'pop' of List>"
+            rocketCallable.toString = "<native method 'pop' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -283,17 +313,17 @@ class RocketList(_RocketInstance):
                             removed_index = i
 
                     if removed_index == -1:
-                        raise _RuntimeError('List', "IndexError: Item not in list")
+                        raise _RuntimeError('Array', "IndexError: Item not in list")
                 
                     else:
                         return _number.Int().call(self, [removed_index])
 
                 else:
-                    raise _RuntimeError('List', "IndexError: cannot remove items from an empty list")
+                    raise _RuntimeError('Array', "IndexError: cannot remove items from an empty list")
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'remove' of List>"
+            rocketCallable.toString = "<native method 'remove' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -313,7 +343,7 @@ class RocketList(_RocketInstance):
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'sort' of List>"
+            rocketCallable.toString = "<native method 'sort' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -331,11 +361,11 @@ class RocketList(_RocketInstance):
                     return self
 
                 else:
-                    return List().call(self, [])
+                    return Array().call(self, [])
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'reverse' of List>"
+            rocketCallable.toString = "<native method 'reverse' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -347,16 +377,19 @@ class RocketList(_RocketInstance):
                 return 1
 
             def call(interpreter, args):
-                if isinstance(args[0], RocketList):
+                if (type(args[0]) != self.arrayType):
+                    raise _RuntimeError('Array', 'Array elm must be of type ' + str(self.arrayType) + '.')
+
+                if isinstance(args[0], RocketArray):
                     # we return the mutation
-                    return List().call(self, self.elements + args[0].elements)
+                    return Array().call(self, self.elements + args[0].elements)
 
                 else:
-                    raise _RuntimeError('List', "IndexError: can only concatenate 'List' native type with another 'List'.")
+                    raise _RuntimeError('Array', "IndexError: can only concatenate 'Array' native type with another 'Array'.")
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'concat' of List>"
+            rocketCallable.toString = "<native method 'concat' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -373,14 +406,14 @@ class RocketList(_RocketInstance):
                         if args[0].value == self.elements[i].value:
                             return _number.Int().call(self, [i])
 
-                    raise _RuntimeError('List', "IndexError: Item not in list")
+                    raise _RuntimeError('Array', "IndexError: Item not in list")
 
                 else:
-                    raise _RuntimeError('List', "IndexError: cannot index from an empty list")
+                    raise _RuntimeError('Array', "IndexError: cannot index from an empty list")
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'indexOf' of List>"
+            rocketCallable.toString = "<native method 'indexOf' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -400,11 +433,11 @@ class RocketList(_RocketInstance):
                     return _boolean.Bool().call(self, [False])
 
                 else:
-                    raise _RuntimeError('List', "IndexError: cannot index from an empty list")
+                    raise _RuntimeError('Array', "IndexError: cannot index from an empty list")
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'includes' of List>"
+            rocketCallable.toString = "<native method 'includes' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
@@ -419,22 +452,20 @@ class RocketList(_RocketInstance):
                 if self.notEmpty():
                     for item in self.elements: args[0].call(interpreter, [item])
                 else:
-                    raise _RuntimeError('List', "IndexError: cannot run function on an empty list")
+                    raise _RuntimeError('Array', "IndexError: cannot run function on an empty list")
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'forEach' of List>"
+            rocketCallable.toString = "<native method 'forEach' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
 
         else:
-            raise _RuntimeError(name, f"'List' has no method '{name.lexeme}'.")
-
+            raise _RuntimeError(name, f"'Array' has no method '{name.lexeme}'.")
 
     def set(self, name, value):
-        raise _RuntimeError(name, "Cannot mutate an List's props")
-
+        raise _RuntimeError(name, "Cannot mutate an Array's props")
 
     def notEmpty(self):
         if len(self.elements) == 0:
@@ -458,22 +489,21 @@ class RocketList(_RocketInstance):
         if type(elm) == type(None):
             return '\033[1m' + self.nin_lexeme + '\033[0m' if not uncoloured else self.nin_lexeme
 
-
-    def stringifyList(self, list, uncoloured=False):
+    def stringifyList(self, array, uncoloured=False):
         result = '[ '
 
-        # if called to display and empty List
-        if len(list) == 0:
+        # if called to display and empty Array
+        if len(array) == 0:
             return []
 
-        if len(list) >= 1:
-            for elm in list[0:-1]:
+        if len(array) >= 1:
+            for elm in array[0:-1]:
                 result += self.stringify(elm, uncoloured) + ", "
 
-            result += f"{self.stringify(list[-1], uncoloured)} ]"
+            result += f"{self.stringify(array[-1], uncoloured)} ]"
 
         else:
-            result += self.stringify(list[0], uncoloured) + ' ]'
+            result += self.stringify(array[0], uncoloured) + ' ]'
 
         return result
 
