@@ -554,7 +554,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         raise _BreakException()
 
     def visitReturnStmt(self, stmt: _Return):
-        value = "nin"
+        value = self.KSL[1][_TokenType.NIN.value] # Grab nin lexeme from the KSL
 
         if stmt.value != None:
             value = self.evaluate(stmt.value)
@@ -965,7 +965,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def stringify(self, value: object):
         # Customize literals
-        if (value == None) or value == "nin": return "nin", "\033[1m"
+        nin_lexeme = self.KSL[1][_TokenType.NIN.value]
+
+        if (value == None) or value == nin_lexeme: return nin_lexeme, "\033[1m"
 
         # HACK: Against bug #28 'print 0;' -> false && 'print 1;' -> true
         if (value == True and type(value) == bool): return "true", "\033[1m"
