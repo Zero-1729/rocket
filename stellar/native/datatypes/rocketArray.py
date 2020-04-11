@@ -1,6 +1,7 @@
 from utils.reporter    import runtimeError   as _RuntimeError
 
-from utils.tokens import Token    as _Token
+from utils.tokens import Token     as _Token
+from utils.tokens import TokenType as _TokenType
 
 from utils.misc   import isValNeg       as _isValNeg
 from utils.misc   import isType         as _isType
@@ -26,6 +27,7 @@ class Array(_RocketCallable):
     def call(self, obj, args):
         arrayType = type(None)
         isArgArray = _isType(args, RocketArray)
+        nin_lexeme = obj.KSL[1][_TokenType.NIN.value]
 
         if isArgArray:
             arrayType = args.arrayType
@@ -38,7 +40,7 @@ class Array(_RocketCallable):
             if _isType(args[0], _number.RocketInt):
                 arrayType = type(None)
 
-                return RocketArray([None for i in range(args[0].value)], arrayType)
+                return RocketArray([None for i in range(args[0].value)], arrayType, nin_lexeme)
 
             else:
                 raise _RuntimeError('Array', 'Array size must be Int.')
@@ -48,7 +50,7 @@ class Array(_RocketCallable):
             if not _isAllSameType(args, arrayType):
                 raise _RuntimeError('Array', 'Array elements must be adjacent types.')
 
-        return RocketArray(args, arrayType) if not isArgArray else args
+        return RocketArray(args, arrayType, nin_lexeme) if not isArgArray else args
 
     def __repr__(self):
         return self.__str__()
@@ -58,10 +60,11 @@ class Array(_RocketCallable):
 
 
 class RocketArray(_RocketInstance):
-    def __init__(self, elms, arrayType):
+    def __init__(self, elms, arrayType, nin_lexeme):
         self.elements = elms
         self.arrayType = arrayType
         self.isEmpty = arrayType == type(None)
+        self.nin_lexeme = nin_lexeme
         self.nature = 'datatype'
         self.kind = "<native type 'Array'>"
 
@@ -483,7 +486,7 @@ class RocketArray(_RocketInstance):
             return f'\033[1m{elm}\033[0m' if not uncoloured else str(elm.value)
 
         if type(elm) == type(None):
-            return '\033[1mnin\033[0m' if not uncoloured else 'nin'
+            return '\033[1m' + self.nin_lexeme + '\033[0m' if not uncoloured else self.nin_lexeme
 
     def stringifyList(self, array, uncoloured=False):
         result = '[ '

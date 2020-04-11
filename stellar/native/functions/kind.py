@@ -1,5 +1,7 @@
 from native.datatypes.rocketClass import RocketCallable as _RocketCallable
 
+from utils.tokens import TokenType as _TokenType
+
 
 class Type(_RocketCallable):
     def __init__(self):
@@ -12,8 +14,10 @@ class Type(_RocketCallable):
 
     def call(self, obj: object, args: list):
         # We directly check for 'None'
+        nin_lexeme = obj.KSL[1][_TokenType.NIN.value]
+
         if args[0] == None:
-            return "<nin type>"
+            return f"<{nin_lexeme} type>"
 
         # For datatypes, classes, and functions
         if hasattr(args[0], 'nature'):

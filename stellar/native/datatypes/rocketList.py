@@ -1,6 +1,8 @@
 from utils.reporter    import runtimeError   as _RuntimeError
 
-from utils.tokens import Token    as _Token
+from utils.tokens import Token     as _Token
+from utils.tokens import TokenType as _TokenType
+
 from utils.misc   import isValNeg as _isValNeg
 
 from native.datatypes.rocketClass import RocketCallable as _RocketCallable
@@ -19,7 +21,9 @@ class List(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        return RocketList(args)
+        nin_lexeme = obj.KSL[1][_TokenType.NIN.value]
+
+        return RocketList(args, nin_lexeme)
 
     def __repr__(self):
         return self.__str__()
@@ -29,10 +33,11 @@ class List(_RocketCallable):
 
 
 class RocketList(_RocketInstance):
-    def __init__(self, elms):
+    def __init__(self, elms, nin_lexeme):
         self.elements = elms
         self.nature = 'datatype'
         self.kind = "<native type 'List'>"
+        self.nin_lexeme = nin_lexeme
 
     def get(self, name: _Token):
         # Note: 'edna' is what we use to manipulate arity for 'slice' function from '1' to '2'
@@ -451,7 +456,7 @@ class RocketList(_RocketInstance):
             return f'\033[1m{elm}\033[0m' if not uncoloured else str(elm.value)
 
         if type(elm) == type(None):
-            return '\033[1mnin\033[0m' if not uncoloured else 'nin'
+            return '\033[1m' + self.nin_lexeme + '\033[0m' if not uncoloured else self.nin_lexeme
 
 
     def stringifyList(self, list, uncoloured=False):

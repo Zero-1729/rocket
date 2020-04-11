@@ -3,6 +3,7 @@ import copy as _copy
 from utils.env      import Environment  as _Environment
 from utils.reporter import runtimeError as _RuntimeError
 from utils.tokens   import Token        as _Token
+from utils.tokens   import TokenType    as _TokenType
 
 
 class RocketCallable:
@@ -239,7 +240,7 @@ class RocketFunction(RocketCallable):
         if (self.isInit):
             return self.closure.getAt(0, self.this_lexeme)
 
-        return "nin"
+        return interpreter.KSL[1][_TokenType.NIN.value] # "nin"
 
     def __str__(self):
         if not self.isAnon or self.isMethod:
