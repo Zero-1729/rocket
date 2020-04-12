@@ -5,6 +5,8 @@ from native.datastructs.rocketClass import RocketInstance as _RocketInstance
 
 from native.datatypes  import rocketString   as _string
 
+from utils.misc import isType as _isType
+
 
 class Int(_RocketCallable):
     def __init__(self):
@@ -15,9 +17,15 @@ class Int(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        size = int(args[0]) if not (type(args[0]) in [RocketInt, RocketFloat]) else int(args[0].value)
+        if isNumber(args[0]):
+            value = args[0]
 
-        return RocketInt(size)
+            if (hasattr(args[0], 'value')):
+                value = args[0].value
+
+            return RocketInt(int(float(value)) if _isType(args[0], _string.RocketString) else int(value))
+
+        raise _RuntimeError(obj, f"Type Mismatch: Cannot convert {args[0].kind} to Int.")
 
     def __repr__(self):
         return self.__str__()
@@ -57,11 +65,13 @@ class Float(_RocketCallable):
         return 1
 
     def call(self, obj, args):
-        if (isinstance(args[0], RocketFloat) or isinstance(args[0], RocketInt)):
-            return RocketFloat(float(args[0].value))
-            
-        if (type(args[0]) == int) or (type(args[0]) == float):
-            return RocketFloat(float(args[0]))
+        if isNumber(args[0]):
+            value = args[0]
+
+            if hasattr(args[0], 'value'):
+                value = args[0].value
+
+            return RocketFloat(float(value))
 
         else:
             raise _RuntimeError(obj, f"'Float' accepts either Int or Float as an argument.")
@@ -114,3 +124,13 @@ class RocketFloat(_RocketInstance):
 
     def __str__(self):
         return self.__repr__()
+
+
+def isNumber(n):
+    if hasattr(n, 'value'):
+        if (_isType(n, _string.RocketString)):
+            return not (n.value.isalnum() and n.value.isalpha())
+
+        return _isType(n, RocketInt) or _isType(n, RocketFloat)
+
+    return _isType(n, int) or _isType(n, float)
