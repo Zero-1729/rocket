@@ -41,6 +41,7 @@ class runtimeError(RuntimeError):
     def __init__(self, token: _Token, msg: str):
         self.token = token
         self.msg = msg
+        self.willDup = True
 
     def returnable(self):
         return False
