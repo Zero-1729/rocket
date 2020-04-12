@@ -1,6 +1,6 @@
 # The Rocket Language Specification
 
-Language's Specification info.
+> TODO: add info about Arrays and Lists
 
 ## Table of Content
 
@@ -9,11 +9,11 @@ Language's Specification info.
 |  x.x  | [Default Syntax Keywords](#x.x-list-keywords) |
 |  0.0  | [Hello World Example](#0.0-hello-world-example) :wave:                                   |
 |  1.0  | [Dynamic Typing](#1.0-dynamic-typing) :abc:                                              |
-|  2.0  | [Automatic Memory Management](#2.0-automatic-memory-management) (GC) :articulated_lorry: |
-|  3.0  | [Data Types](#3.0-data-types)                                                            |
+|  2.0  | [Data Types and nin](#2.0-data-types-and-nin)                                                            |
+|  3.0  | [Data Structures](#3.0-data-structures)
 |  4.0  | [Expressions](#4.0-expressions) :performing_arts:                                        |
 |  5.0  | [Statements](#5.0-statements) :speech_balloon:                                           |
-|  6.0  | [Variables](#6.0-variables)                                                              |
+|  6.0  | [Variables and Constants](#6.0-variables-and-constants)                                                              |
 |  7.0  | [Control Flow](#7.0-control-flow) :ocean:                                                |    
 |  8.0  | [Functions](#8.0-functions)                                                              |
 |  9.0  | [Classes](#9.0-classes) (Yes there's OOP) :neckbeard:                                    |
@@ -22,7 +22,7 @@ Language's Specification info.
 
 ---
 
-### x.x Default Syntax Keywords
+## x.x Default Syntax Keywords
 
 - print
 - import
@@ -45,7 +45,7 @@ Language's Specification info.
 - false
 - nin
 
-### 0.0 Hello World Example
+## 0.0 Hello World Example
 
 > **Note**: that in Rocket single line comments begin with `///` or `#` and multi-line comments are contained in `/**/` just like in C.<br>
 > We support floor division (`//`) hence why we can't use it as a comment delimiter.
@@ -83,9 +83,7 @@ Dear Sir,
 
 ```
 
----
-
-### 1.0 Dynamic Typing
+## 1.0 Dynamic Typing
 
 Rocket is Dynamically typed. Which means variables can store values of any type, and a single value of different types at different times. For Example:-
 
@@ -102,43 +100,17 @@ var stuff = ["string", 87, 2334.72, ["empty"], {"message": "hi"}];
 
 However, if an operation on values of the wrong (incompatible) type is performed - like, Dividing a value of the type `Number` by a `String` i.e. `2 / "2";` - then a runtime error is reported.
 
-Deciding whether the language should be statically typed like `C/C++`,`Java`,etc was a bit of a tough one. Mainly because dynamically typed languages tend to waste valuable memory space, due to how memory is allocated - in unneccesary abundance. While in a Statically typed language memory is allocated in a more efficient manner. Making the language dynamically typed was as a direct result of the following:-
 
-+ A lot of load is taken off the programmers shoulders.
-+ Allows for the Programmer to focus on the Design/Structure and not so much the implementation.
-+ Fewer Obscure errors.   
-
-As a final note, Rocket's C compiler (`RLuna`) allocates memory in accordance with the length of a value. Where a number like `1024` is considered as a `16bit` value. This atleast tries to make up for any unnecessary and inefficient memory allocation.
-
----
-
-### 2.0 Automatic Memory Management
-
-High-level languages such as `Js`, `Python`, etc all eliminate error-prone, low-level memory management like allocation or precise intervals of memory cleanup. Eliminating the classic "where do i correctly place `free()`" for the C enthusiasts et el.
-
-In these High-level languages there are two main techniques that are implemented for managing memory:-
-
-+ Reference Counting (not commonly known as **RC**)
-+ And Trace Garbage Collection (commonly referred to as **Garbage Collection** or **GC** for short).
-
-While Reference counters are much simpler to implement hence why many initial iterations of languages e.g. **PHP**, **Python**, **Perl**, etc start off using them. Along the way they discover that dealing with the [many limitations]() of Reference counting is harder than just swapping it out for GC. Reference Counting is a good proof of concept and GC is just better at the big picture level.
-
-Granted that GC is [notorious]() for causing programmers attempting to debug it with [hex dump]() dreams (That was a stolen Joke). But it has still proven to be robust, and good at what it does - *Picking up the trash for programs*.
-
-Rocket's `rluna` also implements its own Automated GC. Which takes charge of freeing up the previously used either by a program or calculation (in the interactive shell).
-
----
-
-### 3.0 Data Types
+## 2.0 Data Types and nin
 
 Instilled in Rocket's brain is four fundamental particles - I mean *data types*:-
 
 + **Boleans**. I.e. **True** or **False**.
-+ **Numbers**. I.e. `2048`, `0.4546`, etc.
++ **Numbers**. I.e. Ints and Floats: `2048`, `0.4546`, etc.
 + **Strings**. I.e. "Rocket is awesome".
 + And **nin**, as in "*nin is None*".
 
-#### Booleans
+### 2.1 Booleans
 
 At the heart and soul of every computer is *logic* which is represented as **on** or **off**, **1** or **0**, **True** or **False** and is therefore the foundation for programming. Rocket features two boolean values:-
 
@@ -149,24 +121,19 @@ False; /// Not *not* false (aka false)
 
 By default all literals are set to true unless explicitly specified by setting it to **False** or **nin**. Meaning everything except for **False** and **nin** are  *truthy* like in **Ruby**.
 
-#### Numbers
+### 2.2 Numbers
 
-Rocket uses the `Number` type for values that can be classified as an **int**, **float**, **scientific** (including `i` or `j`), **hex**, **octal** etc. **Luna** dynamically assigns values that are of the `Number` type their equivalent or close enough to type in the **C** Language. For example:-
+Rocket uses the `rocketInt` and `rocketFloat` type for values that can be classified as an **int** and  **float** respectively. For example:-
 
 ```rocket
-var num = 1024; /// Stored by Rocket as Number type
+var num = 1024; /// Stored as rocketInt type
+
+var num1 = 23.4; /// Stored as rocketFloat
 ```  
 
-But for example **RLuna** does
+### 2.3 Strings
 
-```c
-long num;
-
-```
-
-#### Strings
-
-Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text `"Hello, World!"` is what Rocket considers a string - a series of characters enclosed in **single** (') or **double** (") quote. Like most languages Rocket sees `"Hello World"` and `'Hello World'` as the same thing - a **string**. Here are some sample strings:-
+Remember the code snippet in the [beginnig](#0.0-hello-world-example)? The text `"Hello, World!"` is what Rocket considers a string - a series of characters enclosed in **single** (') or **double** (") quote. Like most languages Rocket sees `"Hello World"` and `'Hello World'` as the same thing - a **string**. Here are some sample strings:-
 
 ```rocket
 "Stringy me";
@@ -174,13 +141,17 @@ Remember the code snippet in `0.0`? No? Just scroll up. Seen it? Good. The text 
 "1024"; /// String, not Number
 ```
 
-#### nin
+## nin
 
-A little over the board? maybe, nin is Rocket's version of Python's **None**. It stands for **n**in **I**s **N**one. It basically represents *no value*. The point of nin is just to avoid any *null point errors*, since **RLuna** is written in C.
+This is our version of Python's `None`, or Javascript's `null`. It stands for **n**in **i**s **n**one. Unlike, strings and numbers, **nin** is native keyword, which means it can be changed to `none` or `null` through the `config.rckt` file.
 
----
+## 3.0 Data Structures
 
-### 4.0 Expressions
+### 3.1 Lists
+
+### 3.2 Arrays
+
+## 4.0 Expressions
 
 > "If native types and their literals are atoms, then **expressions** must be the Molecules" - Robert Nystrom [Creator of the Lox Language]
 
@@ -192,7 +163,7 @@ Basically expressions are just groupings of literals linked together by some ope
 
 The following are the kinds of expressions that Rocket understands.
 
-##### Arithmetic Expressions
+### 4.1 Arithmetic Expressions
 
 ```rocket
 2 + 2;
@@ -202,10 +173,10 @@ add + me; /// same meaning as expression above
 33 // 3; /// Yes even we reserved '//' for floor division instead of comments. hence why single line comments begin with '///' in Rocket
 12 % 2;
 
--333; // Also considered an expression. I.e Negate '333'
+-333; /// Also considered an expression. I.e Negate '333'
 ```
 
-##### Comaprisons/Equality
+### 4.2 Comaprisons/Equality
 
 Yep the classics!
 
@@ -226,7 +197,7 @@ Rocket supports type to type comparisons and also comparisons of different types
 
 > Note: Values of different types are never equal by default. Rocket doesn't Support Javascript's coersion.
 
-#### Logical Oprators
+### 4.3 Logical Oprators
 
 In Rocket *prefixing*  the not operator (`!`) to literal returns the opposite of the literal. E.g:-
 
@@ -242,7 +213,7 @@ true and true; /// Returns True
 false or true; /// Returns True
 ```
 
-##### Operation Precedence
+### 4.4 Operation Precedence
 
 Rockets operators have the same precedence and associativity as observed in Python or C. However, Rocket does allow you to override the default precedence by using braces `()` to group calculations.E.g:-
 
@@ -250,9 +221,7 @@ Rockets operators have the same precedence and associativity as observed in Pyth
 var num = low + high / 2; /// Result: low + (high / 2)
 ```
 
----
-
-### 5.0 Statements
+## 5.0 Statements
 
 Statements are just Expressions that produce an effect not necessarily a value. This effect could be modifying a literal's state, reading input, producing output, etc. A good example is our hello world program, because the program is just a statement.
 
@@ -267,7 +236,7 @@ There are also **expression statements**, where an expression is basically appen
 A block is grouped using braces `{}` as follows in Rocket:-
 
 ```rocket
-// A block simply put is just stack of statements
+/// A block simply put is just stack of statements
 
 {
     print "I am shown first!";
@@ -288,9 +257,7 @@ inc();
 print n /// Results in an Error because 'n' is only defined in the inc function's block    
 ```
 
----
-
-### 6.0 variables
+## 6.0 Variables and Constants
 
 > Note: Rocket encourages use of camel case for variable names
 
@@ -326,7 +293,7 @@ var 8788L = "woohoo"; /// considered an 'illegal' declaration
 var validVar = "Uhuhh";
 ```
 
-#### Multi-variable declaration
+### 6.1 Multi-variable declaration
 
 Rocket supports multi-variable declaration for both variables that are declared with either `const` or `var`. This enables us to make multiple declarations at a time using a single `const` or `var`.
 
@@ -355,15 +322,15 @@ var {
 }
 ```
 
----
-
-### 7.0 Control Flow
+## 7.0 Control Flow
 
 Control flow refers to the manner in which code is executed. Whether a certain block is evaluated only if a certain condition is met. The keywords used for such are:-
 
 + if, else
 + while
 + and for
+
+### 7.1 For loops
 
 In the case of an `if` it takes the following form:-
 
@@ -375,17 +342,21 @@ if (condition) {
 }
 ```
 
+### 7.2 While loops
+
 A `while` loop takes the following form:-
 
 ```rocket
 var n = 1;
 
-// Loops through 100 digits and prints each one
+/// Loops through 100 digits and prints each one
 while (n < 100) {
     print n
     n = n + 1;
 }
 ```
+
+### 7.3 For loops
 
 Lastly a `for` loop has the form:-
 
@@ -397,9 +368,7 @@ for (var n = 1; a < 50; a++) {
 
 It is worth noting that there is a difference between a `while` loop and a `for` loop.
 
----
-
-### 8.0 Functions
+## 8.0 Functions
 
 when the programmer decides that she wants to reuse a block of code later her program a function is declared. A sample function declaration is as follows:-
 
@@ -413,7 +382,7 @@ Functions are declared with the keyword `func` followed by the function name and
 
 > If a function is invoked without the parenthesis its reference is what is returned.
 
-#### Closures
+### 8.1 Closures
 
 Functions are *first class* meaning they are actual values that variables can get reference to. Such manipulations are valid:-
 
@@ -466,9 +435,7 @@ var fn = returnFunction();
 fn(); /// Outputs "outside"
 ```
 
----
-
-### 9.0 Classes
+## 9.0 Classes
 
 Rocket features Object-Oriented-Programming (**OOP**). Which allows the programmer to define an object and declare instances of that object. A simple analogy is a *Human* being an object and an instance of a *Human* would be a *Woman*. Classes take the form:-
 
@@ -544,7 +511,7 @@ var electricCar = SportsCar("tesla", "roadstar");
 electricCar.topSpeed(250);
 ```
 
-#### Inheritance
+### 9.1 Inheritance
 
 Rocket supports (full) class inheritance, where newly defined classes can *inherit* properties of other objects. E.g:-
 
@@ -591,9 +558,7 @@ class Laptop < Computer {
 var macBook = Laptop("Mac Os", "x86_64");
 ```
 
----
-
-### 10.0 Importing
+## 10.0 Importing
 
 Rocket uses a similar concept of Python's modules, as it is indeed also possible to import rocket code or certain modules fromt the standard library.
 
@@ -649,7 +614,7 @@ import (
 
 Rocket makes semicolons optional for both the `import` and variable keywords (`var` & `const`) statements to make code look less verbose or at at the very least cleaner.
 
-### 11.0 The Standard Library
+## 11.0 The Standard Library
 
 > Note: At the moment only the math module is available, and is still incomplete
 
@@ -670,8 +635,6 @@ Rocket comes shipped with a standard library which includes the following packag
 + **socket**:- For close to low level Networking. E.g **Python**'s `socket` module.
 
 + **web**:- For *http*, *https*, *server*, etc related functions.
-
-+ **blockchain**:- For Blockchain related functions. E.g `blockchain.chain`
 
 As the language continues to mature more packages would be added. Probably demanding that a centralized package repo store to be set up. Just think **Python**'s pypi.
 

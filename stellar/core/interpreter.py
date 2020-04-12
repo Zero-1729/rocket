@@ -47,10 +47,10 @@ from utils.stmt import Expression     as _Expression
 
 from utils.env import Environment     as _Environment
 
-from native.datatypes.rocketClass import RocketCallable  as _RocketCallable
-from native.datatypes.rocketClass import RocketFunction  as _RocketFunction
-from native.datatypes.rocketClass import RocketClass     as _RocketClass
-from native.datatypes.rocketClass import RocketInstance  as _RocketInstance
+from native.datastructs.rocketClass import RocketCallable  as _RocketCallable
+from native.datastructs.rocketClass import RocketFunction  as _RocketFunction
+from native.datastructs.rocketClass import RocketClass     as _RocketClass
+from native.datastructs.rocketClass import RocketInstance  as _RocketInstance
 
 from core.scanner import Scanner as _Scanner
 
@@ -65,12 +65,21 @@ from native.functions import random      as _random
 from native.functions import output      as _output
 from native.functions import kind        as _kind
 
-from native.datatypes import rocketArray     as _rocketArray
+from native.datastructs import rocketList    as _rocketList
+from native.datastructs import rocketArray   as _rocketArray
+
 from native.datatypes import rocketString    as _rocketString
 from native.datatypes import rocketNumber    as _rocketNumber
-from native.datatypes import rocketBoolean    as _rocketBoolean
+from native.datatypes import rocketBoolean   as _rocketBoolean
 
 from utils.misc import importCodeStmts   as _importCodeStmts 
+
+# to assert rocket datatypes
+from utils.misc import isType              as _isType
+
+# Array arithmetic fns
+from utils.misc import opOverArray        as _opOverArray
+from utils.misc import addArrays          as _addArrays
 
 
 class Interpreter(_ExprVisitor, _StmtVisitor):
@@ -102,6 +111,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         self.globals.define(_kind.Type().callee,                     _kind.Type)
 
         # Datatypes
+        self.globals.define(_rocketList.List().callee,         _rocketList.List)
         self.globals.define(_rocketArray.Array().callee,     _rocketArray.Array)
         self.globals.define(_rocketString.String().callee, _rocketString.String)
         self.globals.define(_rocketNumber.Int().callee,       _rocketNumber.Int)
@@ -127,9 +137,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # To make it uniform we only print it in 'visitVariableStmt'
             # to avoid duplicates
 
-            # TODO: Find a better way if searching for 'ReferenceError' and datatype errors
-            if not (('ReferenceError:' in error.msg) or ("'Bool'" in error.msg) or ("IndexError" in error.msg) or ("'Int'" in error.msg) or ("'Float'" in error.msg)):
+            if not (hasattr(error, 'willDup')):
                 self.errors.append(error)
+
             else:
                 pass
 
@@ -176,8 +186,30 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         left = self.sanitizeNum(self.evaluate(expr.left))
         right = self.sanitizeNum(self.evaluate(expr.right))
 
-        # string concatenation and arithmetic operator '+'
+        # Catches all ops over an Array with a num
+        # That is '+', '-', '*', '/', '//', '%', '**'
+        if (expr.operator.lexeme in ['+', '-', '*', '/', '//', '%', '**']):
+            if (self.isRocketArray(left)) and (self.isRocketNumber(right)):
+                if (self.isNumberArray(left)) and not left.isEmpty:
+                    return _rocketArray.Array().call(self, _opOverArray(left, right, self.sanitizeNum, expr.operator.lexeme))
+
+                else:
+                    raise _RuntimeError(expr.operator, "Array must contain Number elements.")
+
+            if (self.isRocketArray(right)) and (self.isRocketNumber(left)):
+                if (self.isNumberArray(right)) and not right.isEmpty:
+                    return _rocketArray.Array().call(self, _opOverArray(right, left, self.sanitizeNum, expr.operator.lexeme))
+
+                else:
+                    raise _RuntimeError(expr.operator, "Array must contain Number elements.")
+
+        # overloaded operator '+' that performs:
+        # basic arithmetic addition (between numbers)
+        # string and implicit concatenation, i.e. String + [other type] = String
+        # list concatenation, i.e. [4,2,1] + [4,6] = [4,2,1,4,6]
+        # Array addition, i.e. [4,3,5] + [3,1,0] = [7,4,5]
         if (expr.operator.type == _TokenType.PLUS):
+            # basic arithmetic addition
             if self.is_number(left) and self.is_number(right):
                 sum = left.value + right.value
                 return _rocketNumber.Int().call(self, [sum]) if type(sum) == int else _rocketNumber.Float().call(self, [sum])
@@ -188,8 +220,6 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             # To support implicit string concactination
             # E.g "Hailey" + 4 -> "Hailey4"
-            # We can also add Arrays and strings
-            # E.g. "List: " + "[3, 4, 6]" -> "List: [3, 4, 6]"
             # No need to allow this anymore. We make 'String' compulsory
             if ((isinstance(left, _rocketString.RocketString)) or (isinstance(right, _rocketString.RocketString))):
                 # Concatenation of 'nin' is prohibited!
@@ -198,16 +228,22 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
                 return _rocketString.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
 
-            # allow python style array consatenation
-            if (isinstance(left, _rocketArray.RocketArray) or isinstance(right, _rocketArray.RocketArray)):
+            # allow python style list concatenation
+            if (isinstance(left, _rocketList.RocketList) or isinstance(right, _rocketList.RocketList)):
                 concat_tok = _Token(_TokenType.STRING, 'concat', 'concat', 0)
 
-                # return new comcatenated array
+                # return new concatenated list
                 return left.get(concat_tok).call(self, [right])
+
+            if (self.isRocketArray(left)) and (self.isRocketArray(right)):
+                if (self.isNumberArray(left) and self.isNumberArray(right)) and not (left.isEmpty or right.isEmpty):
+                    return _rocketArray.Array().call(self, _addArrays(left, right, self.sanitizeNum))
+
+                else:
+                    raise _RuntimeError(expr.operator, "Cannot concat empty Array(s).")
 
             if (type(left) == type(None)) or (type(right) == type(None)):
                 raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.")
-
 
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
@@ -305,11 +341,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         # Well, native functions in 'native/' have a special 'nature' field to distinguish them from user defined funcs.
         isNotNative = True
         isNotDatatype = True
-        overideArity = False # To allow (near) infinite 'arity' for 'Array' elements
+        overideArity = False # To allow (near) infinite 'arity' for 'List' elements
 
         try:
             if callee().nature == "native":
-                if isinstance(callee(), _rocketArray.Array):
+                if self.isRocketFlatList(callee()):
                     overideArity = True
 
                 isNotNative = False
@@ -318,8 +354,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 isNotDatatype = False
 
         # Specially inject check for 'rocketClass' and 'rocketCallable'
-        isNotCallable = not isinstance(callee, _RocketCallable)
-        isNotClass = not isinstance(callee, _RocketClass)
+        isNotCallable = not self.isRocketCallable(callee) #isinstance(callee, _RocketCallable)
+        isNotClass = not self.isRocketClass(callee) # isinstance(callee, _RocketClass)
 
         if isNotCallable and isNotClass and isNotNative and isNotDatatype:
             raise _RuntimeError(expr.paren, "Can only call functions and classes")
@@ -334,10 +370,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 if (function.callee == 'Print'):
                     overideArity = True
 
-        # We dynamically change 'arity' for Array's 'slice' fn depending on the args
+        # We dynamically change 'arity' for List's 'slice' fn depending on the args
         if not isNotDatatype:
             if hasattr(function, 'signature') and (hasattr(function, 'slice') or hasattr(function, 'splice')):
-                if ((function.signature == 'String') or (function.signature == 'Array')) and (len(eval_args) == 2):
+                if ((function.signature == 'String') or (function.signature == 'List')) and (len(eval_args) == 2):
                     function.inc = True
 
         if hasattr(function, 'slice') or hasattr(function, 'splice'):
@@ -401,8 +437,8 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         obj = self.evaluate(expr.object)
 
         if hasattr(obj, 'kind'):
-            if ('Array' in obj.kind):
-                raise _RuntimeError('Array', f"Cannot assign external attribute to native datatype 'Array'")
+            if ('List' in obj.kind):
+                raise _RuntimeError('List', f"Cannot assign external attribute to native datatype 'List'")
 
         if not isinstance(obj, _RocketInstance):
             raise _RuntimeError(expr.name, "Only instances have fields.")
@@ -519,7 +555,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         raise _BreakException()
 
     def visitReturnStmt(self, stmt: _Return):
-        value = "nin"
+        value = self.KSL[1][_TokenType.NIN.value] # Grab nin lexeme from the KSL
 
         if stmt.value != None:
             value = self.evaluate(stmt.value)
@@ -890,7 +926,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if (isinstance(n, int)):
                 return _rocketNumber.Int().call(self, [n])
             
-            if (isinstance(n, _rocketNumber.Float)):
+            if (isinstance(n, float)):
                 return _rocketNumber.Float().call(self, [n])
 
         # otherwise it returns it unchanged
@@ -930,7 +966,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
     def stringify(self, value: object):
         # Customize literals
-        if (value == None) or value == "nin": return "nin", "\033[1m"
+        nin_lexeme = self.KSL[1][_TokenType.NIN.value]
+
+        if (value == None) or value == nin_lexeme: return nin_lexeme, "\033[1m"
 
         # HACK: Against bug #28 'print 0;' -> false && 'print 1;' -> true
         if (value == True and type(value) == bool): return "true", "\033[1m"
@@ -952,3 +990,41 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
             except:
                 return value, None
+
+        # Child fns
+
+    def isRocketArray(self, obj):
+        return _isType(obj, _rocketArray.RocketArray)
+
+    def isRocketList(self, obj):
+        return _isType(obj, _rocketList.RocketList)
+
+    def isRocketFlatList(self, obj):
+        return _isType(obj, _rocketArray.Array) or _isType(obj, _rocketList.List)
+
+    def isRocketClass(self, obj):
+        return _isType(obj, _RocketClass)
+
+    def isRocketClassInst(self, obj):
+        return _isType(obj, _RocketInstance)
+
+    def isRocketCallable(self, obj):
+        return _isType(obj, _RocketCallable)
+
+    def isRocketString(self, obj):
+        return _isType(obj, _rocketString.RocketString)
+
+    def isRocketInt(self, obj):
+        return _isType(obj, _rocketNumber.RocketInt)
+
+    def isRocketFloat(self, obj):
+        return _isType(obj, _rocketNumber.RocketFloat)
+
+    def isNumberArray(self, obj):
+        return (obj.arrayType == _rocketNumber.RocketFloat) or (obj.arrayType == _rocketNumber.RocketInt)
+
+    def isRocketNumber(self, obj):
+        return _isType(obj, _rocketNumber.RocketFloat) or _isType(obj, _rocketNumber.RocketInt)
+
+    def isRocketBool(self, obj):
+        return _isType(obj, _rocketBoolean.RocketBool)

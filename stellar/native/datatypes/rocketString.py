@@ -3,10 +3,11 @@ from utils.tokens import TokenType as _TokenType
 
 from   utils.reporter    import runtimeError   as _RuntimeError
 
-from   native.datatypes.rocketClass import RocketCallable as _RocketCallable
-from   native.datatypes.rocketClass import RocketInstance as _RocketInstance
+from   native.datastructs.rocketClass import RocketCallable as _RocketCallable
+from   native.datastructs.rocketClass import RocketInstance as _RocketInstance
 
-import native.datatypes.rocketArray    as _array
+import native.datastructs.rocketList   as _list
+
 import native.datatypes.rocketBoolean  as _boolean
 import native.datatypes.rocketNumber   as _number
 
@@ -404,23 +405,23 @@ class RocketString(_RocketInstance):
                 if self.notEmpty():
                     if args[0].value in self.value:
                         # split it Python style
-                        splitted_array = self.value.split(args[0].value)
+                        splitted_list = self.value.split(args[0].value)
 
-                        # Create a Rocket Array
-                        arr = _array.Array().call(self, [])
+                        # Create a Rocket List
+                        arr = _list.List().call(self, [])
 
                         # Create fake token for getter
                         append_tok = _Token(_TokenType.STRING, 'append', 'append', 0)
 
-                        # Add chunks to Rocket Array
-                        for i in range(len(splitted_array)):
-                            arr.get(append_tok).call(self, [splitted_array[i]])
+                        # Add chunks to Rocket List
+                        for i in range(len(splitted_list)):
+                            arr.get(append_tok).call(self, [splitted_list[i]])
 
-                        # return new rocket Array with chunks
+                        # return new rocket List with chunks
                         return arr
 
                     else:
-                        return _array.Array().call(self, [self.value])
+                        return _list.List().call(self, [self.value])
                 else:
                     raise _RuntimeError('String', "IndexError: cannot index from an empty string")
 

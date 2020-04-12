@@ -1,19 +1,19 @@
 # Rocket Lang Grammar :bowtie:
 
----
-
-> **Notation notes**
+## Notation notes
 
 *Capitalization indicates terminals that are single lexemes of varying types*
 
-+ `→`       :- operand for production declaration. `production` (left) & `definition` (RIGHT)
-+ `...`     :- signifies a range
-+ `|`       :- separator indicating optionality. In place as `OR`
-+ `(` `)`   :- used to group items
-+ `;`       :- signifies end of grammar definition
-+ `+`       :- indicates a production can appear at least once
-+ `*`       :- indicates multiple reuse of an item or items
-+ `?`       :- indicates a production is optional. Can appear once or not at all
++ `→`       :- operand for production declaration; `production` (left) & `definition` (RIGHT).
++ `...`     :- signifies a range.
++ `|`       :- separator indicating optionality (serves as `OR`).
++ `(` `)`   :- used to group items.
++ `;`       :- signifies end of grammar definition.
++ `+`       :- indicates a production can appear at least once.
++ `*`       :- indicates multiple reuse of an item or items.
++ `?`       :- indicates a production is optional; can appear once or not at all.
+
+---
 
 ## General Syntax Grammar
 ```rocket
@@ -29,9 +29,14 @@ declaration     → class_decl
                   | statement ;
 
 class_decl      → "class" IDENTIFIER ("<" IDENTIFIER)? "{" function* "}" ;
+
 func_decl       → "func" function ;
-var_decl        → "var" IDENTIFIER ( "=" expression )? ";" ;
-const_decl      → "const" IDENTIFIER "=" expression ";" ;
+
+var_decl        → "var" ( single_var_decl | "{" single_var_decl* "}" ";"? ) ;
+const_decl      → "const" ( single_const_decl | "{" single_const_decl* "}" ";"? ) ;
+
+single_var_decl   → IDENTIFIER "=" expression ";" ;
+single_const_decl → IDENTIFIER ( "=" expression )? ";" ;
 ```
 
 ## Expressions
