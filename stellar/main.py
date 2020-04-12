@@ -22,7 +22,7 @@ from tools.autocompleter import AutoComp as _AutoComp
 
 
 # Version info
-header = "Rocket 0.6.1 | Rocket Labs | [Stellar 0.4.0]"
+header = "Rocket 0.6.3 | [Stellar 0.4.4]"
 
 
 def find_config(path='.'):
