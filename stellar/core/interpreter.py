@@ -137,9 +137,9 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # To make it uniform we only print it in 'visitVariableStmt'
             # to avoid duplicates
 
-            # TODO: Find a better way if searching for 'ReferenceError' and datatype errors
-            if not (('ReferenceError:' in error.msg) or ("'Bool'" in error.msg) or ("IndexError" in error.msg) or ("'Int'" in error.msg) or ("'Float'" in error.msg)):
+            if not (hasattr(error, 'willDup')):
                 self.errors.append(error)
+
             else:
                 pass
 
