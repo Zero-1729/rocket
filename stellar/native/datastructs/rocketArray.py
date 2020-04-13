@@ -238,25 +238,6 @@ class RocketArray(_RocketInstance):
 
             return rocketCallable
 
-        if name.lexeme == 'clear':
-            rocketCallable = _RocketCallable(self)
-
-            def arity():
-                return 0
-
-            def call(interpreter, args):
-                self.elements = []
-
-                # return the newly cleared array
-                return self
-
-            rocketCallable.arity = arity
-            rocketCallable.call = call
-            rocketCallable.toString = "<native method 'clear' of Array>"
-            rocketCallable.nature = 'native'
-
-            return rocketCallable
-
         if name.lexeme == 'length':
             rocketCallable = _RocketCallable(self)
 
@@ -370,26 +351,236 @@ class RocketArray(_RocketInstance):
 
             return rocketCallable
 
-        if name.lexeme == 'concat':
+        if name.lexeme == 'min':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 0
+
+            def call(interpreter, args):
+                if (self.arrayType != _number.RocketInt) and (self.arrayType != _number.RocketFloat):
+                    raise _RuntimeError(self, "Can only perform operation on number Arrays.")
+
+                if len(self.elements) == 0:
+                    return _RuntimeError(self, "Can't get min of empty an Array.")
+
+                min = self.elements[0].value
+
+                for i in range(1, len(self.elements)):
+                    if min > self.elements[i].value:
+                        min = self.elements[i].value
+
+                return _number.Int().call(self, [min])
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'min' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'max':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 0
+
+            def call(interpreter, args):
+                if (self.arrayType != _number.RocketInt) and (self.arrayType != _number.RocketFloat):
+                    raise _RuntimeError(self, "Can only perform operation on number Arrays.")
+
+                if len(self.elements) == 0:
+                    return _RuntimeError(self, "Can't get max of empty an Array.")
+
+                max = self.elements[0].value
+
+                for i in range(1, len(self.elements)):
+                    if max < self.elements[i].value:
+                        max = self.elements[i].value
+
+                return _number.Int().call(self, [max])
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'max' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'mean':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 0
+
+            def call(interpreter, args):
+                if (self.arrayType != _number.RocketInt) and (self.arrayType != _number.RocketFloat):
+                    raise _RuntimeError(self, "Can only perform operation on number Arrays.")
+
+                if len(self.elements) == 0:
+                    return _RuntimeError(self, "Can't get mean of empty an Array.")
+
+                sum = 0
+
+                for i in range(0, len(self.elements)):
+                    sum += self.elements[i].value
+
+                return _number.Float().call(self, [sum / len(self.elements)])
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'mean' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'dot':
             rocketCallable = _RocketCallable(self)
 
             def arity():
                 return 1
 
             def call(interpreter, args):
-                if (type(args[0]) != self.arrayType):
-                    raise _RuntimeError('Array', 'Array elm must be of type ' + str(self.arrayType) + '.')
+                if _isType(args[0], _number.RocketInt):
+                    for i in range(len(self.elements)):
+                        prod = args[0].value * self.elements[i].value
+                        self.elements[i].value = prod
 
-                if isinstance(args[0], RocketArray):
-                    # we return the mutation
-                    return Array().call(self, self.elements + args[0].elements)
-
+                    return self
+                
                 else:
-                    raise _RuntimeError('Array', "IndexError: can only concatenate 'Array' native type with another 'Array'.")
+                    raise _RuntimeError(self, "Expected an Int.")
 
             rocketCallable.arity = arity
             rocketCallable.call = call
-            rocketCallable.toString = "<native method 'concat' of Array>"
+            rocketCallable.toString = "<native method 'dot' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'fill':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 1
+
+            def call(interpreter, args):
+                if _isType(args[0], _number.RocketInt):
+                    for i in range(len(self.elements)):
+                        self.elements[i] = args[0]
+
+                    return self
+                
+                else:
+                    raise _RuntimeError(self, "Expected an Int.")
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'fill' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'sum':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 0
+
+            def call(interpreter, args):
+                if (self.arrayType != _number.RocketInt) and (self.arrayType != _number.RocketFloat):
+                    raise _RuntimeError(self, "Can only perform operation on number Arrays.")
+
+                if len(self.elements) == 0:
+                    return _number.Int().call(self, [0])
+
+                sum = 0
+
+                for i in range(len(self.elements)):
+                    sum += self.elements[i].value
+
+                return _number.Int().call(self, [sum])
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'sum' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'cumsum':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 0
+
+            def call(interpreter, args):
+                if (self.arrayType != _number.RocketInt) and (self.arrayType != _number.RocketFloat):
+                    raise _RuntimeError(self, "Can only perform operation on number Arrays.")
+
+                sum = 0
+
+                for i in range(len(self.elements)):
+                    sum += self.elements[i].value
+                    self.elements[i].value = sum
+
+                return self
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'cumsum' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'prod':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 0
+
+            def call(interpreter, args):
+                if (self.arrayType != _number.RocketInt) and (self.arrayType != _number.RocketFloat):
+                    raise _RuntimeError(self, "Can only perform operation on number Arrays.")
+
+                if len(self.elements) == 0:
+                    return _number.Int().call(self, [0])
+
+                prod = 1
+
+                for i in range(len(self.elements)):
+                    prod *= self.elements[i].value
+
+                return _number.Int().call(self, [prod])
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'prod' of Array>"
+            rocketCallable.nature = 'native'
+
+            return rocketCallable
+
+        if name.lexeme == 'cumprod':
+            rocketCallable = _RocketCallable(self)
+
+            def arity():
+                return 0
+
+            def call(interpreter, args):
+                if (self.arrayType != _number.RocketInt) and (self.arrayType != _number.RocketFloat):
+                    raise _RuntimeError(self, "Can only perform operation on number Arrays.")
+
+                prod = 1
+
+                for i in range(len(self.elements)):
+                    prod *= self.elements[i].value
+                    self.elements[i].value = prod
+
+                return self
+
+            rocketCallable.arity = arity
+            rocketCallable.call = call
+            rocketCallable.toString = "<native method 'cumprod' of Array>"
             rocketCallable.nature = 'native'
 
             return rocketCallable
