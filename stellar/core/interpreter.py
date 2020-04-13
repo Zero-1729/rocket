@@ -141,7 +141,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 self.errors.append(error)
 
             else:
-                pass
+                if not error.willDup: self.errors.append(error)
 
     def visitLiteralExpr(self, expr: _Literal):
         if type(expr.value) == int:
