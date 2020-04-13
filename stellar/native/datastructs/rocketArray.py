@@ -44,12 +44,12 @@ class Array(_RocketCallable):
                 return RocketArray([None for i in range(args[0].value)], arrayType, nin_lexeme)
 
             else:
-                raise _RuntimeError('Array', 'Array size must be Int.')
+                raise _RuntimeError("Array', 'Array size must be Int.")
 
         if len(args) > 1 and not (isArgArray):
             # Check that all elms are of the same type
             if not _isAllSameType(args, arrayType):
-                raise _RuntimeError('Array', 'Array elements must be adjacent types.')
+                raise _RuntimeError('Array', "Array elements must be adjacent types.")
 
         return RocketArray(args, arrayType, nin_lexeme) if not isArgArray else args
 
