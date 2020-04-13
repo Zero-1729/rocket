@@ -194,14 +194,14 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     return _rocketArray.Array().call(self, _opOverArray(left, right, self.sanitizeNum, expr.operator.lexeme))
 
                 else:
-                    raise _RuntimeError(expr.operator, "Array must contain Number elements.")
+                    raise _RuntimeError(expr.operator, "Array must contain Number elements.", False)
 
             if (self.isRocketArray(right)) and (self.isRocketNumber(left)):
                 if (self.isNumberArray(right)) and not right.isEmpty:
                     return _rocketArray.Array().call(self, _opOverArray(right, left, self.sanitizeNum, expr.operator.lexeme))
 
                 else:
-                    raise _RuntimeError(expr.operator, "Array must contain Number elements.")
+                    raise _RuntimeError(expr.operator, "Array must contain Number elements.", False)
 
         # overloaded operator '+' that performs:
         # basic arithmetic addition (between numbers)
@@ -224,7 +224,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             if ((isinstance(left, _rocketString.RocketString)) or (isinstance(right, _rocketString.RocketString))):
                 # Concatenation of 'nin' is prohibited!
                 if (type(left) == type(None)) or (type(right) == type(None)):
-                    raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.")
+                    raise _RuntimeError(expr.operator.lexeme, "Operands must be either both strings or both numbers.", False)
 
                 return _rocketString.String().call(self, [self.sanitizeString(left) + self.sanitizeString(right)])
 
@@ -240,10 +240,10 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     return _rocketArray.Array().call(self, _addArrays(left, right, self.sanitizeNum))
 
                 else:
-                    raise _RuntimeError(expr.operator, "Cannot concat empty Array(s).")
+                    raise _RuntimeError(expr.operator, "Cannot concat empty Array(s).", False)
 
             if (type(left) == type(None)) or (type(right) == type(None)):
-                raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.")
+                raise _RuntimeError(expr.operator, "Operands must be either both strings or both numbers.", False)
 
         # Arithmetic operators "-", "/", "%", "//", "*", "**"
         if (expr.operator.type == _TokenType.MINUS):
@@ -254,7 +254,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (expr.operator.type == _TokenType.DIV):
             self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
-                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
+                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero", False)
 
             sum = left.value / right.value
             return _rocketNumber.Int().call(self, [sum]) if type(sum) == int else _rocketNumber.Float().call(self, [sum])
@@ -262,7 +262,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (expr.operator.type == _TokenType.MOD):
             self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
-                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
+                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero", False)
 
             sum = left.value % right.value
             return _rocketNumber.Int().call(self, [sum]) if type(sum) == int else _rocketNumber.Float().call(self, [sum])
@@ -270,7 +270,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (expr.operator.type == _TokenType.FLOOR):
             self.checkNumberOperands(expr.operator, left, right)
             if right.value == 0:
-                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero")
+                raise _RuntimeError(right, "ZeroDivError: Can't divide by zero", False)
 
             sum = left.value // right.value
             return _rocketNumber.Int().call(self, [sum]) if type(sum) == int else _rocketNumber.Float().call(self, [sum])
@@ -358,7 +358,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         isNotClass = not self.isRocketClass(callee) # isinstance(callee, _RocketClass)
 
         if isNotCallable and isNotClass and isNotNative and isNotDatatype:
-            raise _RuntimeError(expr.paren, "Can only call functions and classes")
+            raise _RuntimeError(expr.paren, "Can only call functions and classes", False)
 
         function = callee if isNotNative else callee()
 
@@ -378,11 +378,11 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if hasattr(function, 'slice') or hasattr(function, 'splice'):
             if len(eval_args) != function.arity(function.inc):
-                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity(function.inc)}' args but got '{len(eval_args)}.'")
+                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity(function.inc)}' args but got '{len(eval_args)}.'", False)
 
         else:
             if len(eval_args) != function.arity() and not overideArity:
-                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'")
+                raise _RuntimeError(expr.callee.name.lexeme, f"Expected '{function.arity()}' args but got '{len(eval_args)}.'", False)
 
         if hasattr(function, 'inc'):
             return function.call(self, eval_args, function.inc)
@@ -400,7 +400,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                         # Reset counter
                         self.stackCount = 0
 
-                        raise _RuntimeError(expr.callee.name.lexeme, f"Maximum recursion depth reached from calls to '{expr.callee.name.lexeme}' fn.")
+                        raise _RuntimeError(expr.callee.name.lexeme, f"Maximum recursion depth reached from calls to '{expr.callee.name.lexeme}' fn.", False)
 
                     # We increment our stack counter if same fn called from previous call
                     if (self.fnCallee == expr.callee.name.lexeme):
@@ -431,17 +431,17 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 raise _RuntimeError(err.token, err.msg)
 
         else:
-            raise _RuntimeError(expr.name, "Only instances have properties.")
+            raise _RuntimeError(expr.name, "Only instances have properties.", False)
 
     def visitSetExpr(self, expr: _Set):
         obj = self.evaluate(expr.object)
 
         if hasattr(obj, 'kind'):
             if ('List' in obj.kind):
-                raise _RuntimeError('List', f"Cannot assign external attribute to native datatype 'List'")
+                raise _RuntimeError('List', f"Cannot assign external attribute to native datatype 'List'", False)
 
         if not isinstance(obj, _RocketInstance):
-            raise _RuntimeError(expr.name, "Only instances have fields.")
+            raise _RuntimeError(expr.name, "Only instances have fields.", False)
 
         value = self.evaluate(expr.value)
         obj.set(expr.name, value)
@@ -491,7 +491,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
 
         if (method == None):
             # Call works but 'msg' not printing
-            raise RuntimeError(expr.keyword, "Cannot find undefined method '{expr.method.lexeme}' in superclass")
+            raise RuntimeError(expr.keyword, "Cannot find undefined method '{expr.method.lexeme}' in superclass", False)
 
         # If we called the 'init' method of our superclass we just return an instance of the superclass
         if method.__str__() == "<fn 'init'>":
@@ -519,7 +519,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                 return None
 
             else:
-                raise _RuntimeError(name, f"can't undefined name '{name}'")
+                raise _RuntimeError(name, f"can't undefined name '{name}'", False)
                 return None
 
     def visitExpressionStmt(self, stmt: _Expression):
@@ -571,7 +571,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         ]
 
         if len(stmt.modules) == 0:
-            raise _RuntimeError(import_lexeme, f"{import_lexeme} statement requires atleast one module name.")
+            raise _RuntimeError(import_lexeme, f"{import_lexeme} statement requires atleast one module name.", False)
 
         for module in stmt.modules:
             if module.type == _TokenType.IDENTIFIER and module.lexeme in native_modules:
@@ -601,7 +601,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
                     self.interpret(stmts)
 
                 except FileNotFoundError:
-                    raise _RuntimeError(import_lexeme, f"No native or local module named '{module.lexeme}'.")
+                    raise _RuntimeError(import_lexeme, f"No native or local module named '{module.lexeme}'.", False)
 
         return None
 
@@ -633,21 +633,21 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             self.environment.define(stmt.name.lexeme, value)
 
         else:
-            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'class' or 'function'")
+            raise _RuntimeError(stmt.name.lexeme, "Name already defined as 'class' or 'function'", False)
 
     def visitConstStmt(self, stmt: _Const):
         value = self.evaluate(stmt.initializer)
 
         # check for variable before definition to avoid passing in 'const' redefinitions
         if self.environment.constExists(stmt.name):
-            raise _RuntimeError(stmt.name.lexeme, "Name already used as const.")
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as const.", False)
 
         if self.environment.varExists(stmt.name):
-            raise _RuntimeError(stmt.name.lexeme, "Name already used as variable.")
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as variable.", False)
 
         # stop 'const' re-decl for 'classes' 'functions'
         elif self.globals.isTaken(stmt.name):
-            raise _RuntimeError(stmt.name.lexeme, "Name already used as 'class' or 'function' name.")
+            raise _RuntimeError(stmt.name.lexeme, "Name already used as 'class' or 'function' name.", False)
 
         # Use different decleration function for consts
         self.environment.decl(stmt.name.lexeme, value)
@@ -668,7 +668,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
         if (stmt.superclass != None):
             superclass = self.evaluate(stmt.superclass)
             if not isinstance(superclass, _RocketClass):
-                raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.")
+                raise _RuntimeError(stmt.superclass.name, "Superclass must be a class.", False)
 
         self.environment.define(stmt.name.lexeme, None)
 
@@ -705,7 +705,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # First lets start with '++'
             if expr.value[2] == 'inc':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform arithmetic increment on string.")
+                    raise _RuntimeError(expr.name, "cannot perform arithmetic increment on string.", False)
 
                 value = _rocketNumber.Int().call(self, [init_value.value + 1]) if type(init_value.value) == int else _rocketNumber.Float().call(self, [init_value.value + 1])
 
@@ -719,7 +719,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # For our decrement post fix operator '--'
             if expr.value[2] == 'dec':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform arithmetic decrement on string.")
+                    raise _RuntimeError(expr.name, "cannot perform arithmetic decrement on string.", False)
 
                 value = _rocketNumber.Int().call(self, [init_value.value - 1]) if type(init_value) == int else _rocketNumber.Float().call(self, [init_value.value - 1])
 
@@ -748,7 +748,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Check for '-='
             if expr.value[2] == 'sub':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform subtraction arithmetic assignment on string.")
+                    raise _RuntimeError(expr.name, "cannot perform subtraction arithmetic assignment on string.", False)
 
                 value = init_value.value - var_value
                 value = _rocketNumber.Int().call(self, [value]) if type(value) == int else _rocketNumber.Float().call(self, [value])
@@ -760,7 +760,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Check for '*='
             if expr.value[2] == 'mul':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform multiplication arithmetic assignment on string.")
+                    raise _RuntimeError(expr.name, "cannot perform multiplication arithmetic assignment on string.", False)
 
                 value = init_value.value * var_value
                 value = _rocketNumber.Int().call(self, [value]) if type(value) == int else _rocketNumber.Float().call(self, [value])
@@ -772,7 +772,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Check for '/='
             if expr.value[2] == 'div':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform division arithmetic assignment on string.")
+                    raise _RuntimeError(expr.name, "cannot perform division arithmetic assignment on string.", False)
 
                 value = init_value.value / var_value
                 value = _rocketNumber.Int().call(self, [value]) if type(value) == int else _rocketNumber.Float().call(self, [value])
@@ -784,7 +784,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Check for '//='
             if expr.value[2] == 'flo':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform floor division arithmetic assignment on string.")
+                    raise _RuntimeError(expr.name, "cannot perform floor division arithmetic assignment on string.", False)
 
                 value = init_value.value // var_value
                 value = _rocketNumber.Int().call(self, [value]) if type(value) == int else _rocketNumber.Float().call(self, [value])
@@ -796,7 +796,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Check for '%='
             if expr.value[2] == 'mod':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform modulo arithmetic assignment on string.")
+                    raise _RuntimeError(expr.name, "cannot perform modulo arithmetic assignment on string.", False)
 
                 value = init_value.value % var_value
                 value = _rocketNumber.Int().call(self, [value]) if type(value) == int else _rocketNumber.Float().call(self, [value])
@@ -808,7 +808,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Check for '**='
             if expr.value[2] == 'exp':
                 if type(init_value) == str:
-                    raise _RuntimeError(expr.name, "cannot perform exponent arithmetic assignment on string.")
+                    raise _RuntimeError(expr.name, "cannot perform exponent arithmetic assignment on string.", False)
 
                 value = init_value.value ** var_value
                 value = _rocketNumber.Int().call(self, [value]) if type(value) == int else _rocketNumber.Float().call(self, [value])
@@ -946,12 +946,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
     def checkNumberOperand(self, operator: _Token, right: object):
         if self.is_number(right): return
 
-        raise _RuntimeError(operator.lexeme, "Operand must be number.")
+        raise _RuntimeError(operator.lexeme, "Operand must be number.", False)
 
     def checkNumberOperands(self, operator: _Token, left: object, right: object):
         if self.is_number(left) and self.is_number(right): return
 
-        raise _RuntimeError(operator.lexeme, "Operands must be numbers.")
+        raise _RuntimeError(operator.lexeme, "Operands must be numbers.", False)
 
     def checkValidOperands(self, operator: _Token, left: object, right: object):
         if ((isinstance(left, str)) and (isinstance(right, str))): return
@@ -962,7 +962,7 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             # Is comparing strings and numbers really important?
             # Maybe if you are trying to see if a number id transformed to an 'str'.
             # But wouldn't you just check the type with 'Type' native func?!
-            raise _RuntimeError(operator.lexeme, "operands must both be either 'strings' or 'numbers'.")
+            raise _RuntimeError(operator.lexeme, "operands must both be either 'strings' or 'numbers'.", False)
 
     def stringify(self, value: object):
         # Customize literals
