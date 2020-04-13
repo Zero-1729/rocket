@@ -38,10 +38,10 @@ class ParseError(Exception):
 
 
 class runtimeError(RuntimeError):
-    def __init__(self, token: _Token, msg: str):
+    def __init__(self, token: _Token, msg: str, willDup=True):
         self.token = token
         self.msg = msg
-        self.willDup = True
+        self.willDup = willDup
 
     def returnable(self):
         return False

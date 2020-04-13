@@ -1,7 +1,5 @@
 # The Rocket Language Specification
 
-> TODO: add info about Arrays and Lists
-
 ## Table of Content
 
 | No.   | Topic Name            |
@@ -147,9 +145,63 @@ This is our version of Python's `None`, or Javascript's `null`. It stands for **
 
 ## 3.0 Data Structures
 
+There are few native data structures in Rocket, which include Lists, Arrays, to name a few. More data structures would be included in later releases.
+
 ### 3.1 Lists
 
+This works as a the conventional serial list of elements, each of which can be of any data type. For example, we can have the following valid Lists below:
+
+```rocket
+var lst = List("Kali", "Ubuntu", "Arch"); /// List of single types
+
+var lst0 = List("M&Ms", 87, nin); /// List of different types
+
+func hello (name) {
+    return "Hello " + name;
+}
+
+var lst1 = List(hello, 7.6, 'hi'); /// Also valid
+```
+
+We also povide access to native methods for this type, such as `length` which returns the length of the List, for example. A few more methods are shown in the listing below:
+
+```rocket
+var lst = List(7, 5, 9, 3);
+
+print lst.length(); /// 4
+
+print lst.append(7); /// [ 7, 5, 9, 3, 7]
+
+print lst.pop(); /// 7
+
+print lst.concat(Array(2, 0)); /// [ 7, 5, 9, 3, 7, 2, 0]
+```
+
 ### 3.2 Arrays
+
+Rocket also has support for Arrays, which differ from Lists in that they require all elements to be of the same type. E.g:
+
+```rocket
+var arr = Array(8, 9.6); /// Invalid Array
+
+var arr1 = Array(9, 6, 100); /// Valid Array
+
+var arr2 = Array("kk", "lllll"); /// Also a valid Array
+```
+
+In addition, the Array native data structure has a few unique methods that can be used for performing math operations when it is a number Array, or simply, an Array with elements of the type 'Int' or 'Float'. These method include 'sum', 'min', 'max', 'mean', etc. which calculate the sum of all the elements, returns the minimum or maximum element, and the mean of all the elements in the Array respectively. Below are a few more of these methods:
+
+```rocket
+var arr = Array(1, 2, 3);
+
+print arr.prod(); /// 6
+
+print arr.cumprod(); /// [ 1, 2, 6]
+
+print arr.fill(4); /// [ 4, 4, 4]
+
+print arr.dot(2); /// [8, 8, 8]
+```
 
 ## 4.0 Expressions
 
