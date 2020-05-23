@@ -6,7 +6,7 @@
 
 ## About :book:
 
-Rocket is a High level Dynamically-typed, Object-Oriented Programming Language that facilitates easy keyword-syntax customization.
+Rocket is a High-level Dynamically-typed Object-Oriented Programming Language that enables easy keyword-syntax customization out-of-the-box.
 
 
 [More](docs/About.md)
@@ -53,7 +53,7 @@ Type "help", "copyright", "credits" or "license" for more information.
 ><>
 ```
 
-Or alternatively invoke the `rocket` command followed by a file path to execute a Rocket program like so:-
+Or alternatively, invoke the `rocket` command followed by a file path to execute a Rocket program like so:-
 
 ```
 $ rocket hello.rckt
