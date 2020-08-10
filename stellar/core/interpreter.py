@@ -574,12 +574,12 @@ class Interpreter(_ExprVisitor, _StmtVisitor):
             raise _RuntimeError(import_lexeme, f"{import_lexeme} statement requires atleast one module name.", False)
 
         for module in stmt.modules:
-            if module.type == _TokenType.IDENTIFIER and module.lexeme in native_modules:
+            if (module.type == _TokenType.IDENTIFIER) and (module.lexeme in native_modules):
                 # read and execute sorce file
                 contents = ''
 
                 # Get exec base home
-                basehome = _os.path.dirname(_os.path.realpath(__file__))
+                basehome = _os.path.dirname(_os.path.dirname(_os.path.realpath(__file__)))
 
                 # Assemble native module path
                 filename = _os.path.join(basehome, "native/modules/" + module.lexeme + '.rckt')
