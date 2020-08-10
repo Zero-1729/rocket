@@ -81,18 +81,8 @@ func floor () {}
 
 
 func gcd (a, b) {
-    var tmp;
-    var result;
-
-    while (b != 0) {
-        result = b;
-
-        tmp = a;
-        a = b;
-        b = tmp % b;
-    }
-
-    return result;
+    if (b == 0) return a;
+    return gcd(b, a%b);
 }
 
 
