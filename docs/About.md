@@ -1,13 +1,13 @@
 # About Rocket :book:
 
-The Rocket Programming Language is a high level Keyword-Syntax Hackable, Multi-paradigm, Dynamically Typed language, much like [Python](https://python.org), [Javascript](https://wikepedia.com/Javascript), etc.
+The Rocket programming language is a high-level keyword-syntax hackable, multi-paradigm, dynamically-typed language, much like [Python](https://python.org), [Javascript](https://wikepedia.com/Javascript), etc.
 
 ## Inspiration
 
-The language is inspired by Python's clean syntax and OOP structure and certain Javascript design choices. This makes the language feel like a cross between Python and Js, and some extra stuff.
+The language is inspired by Python's clean syntax and OOP structure and certain Javascript design choices. This makes the language feel like a cross between Python and Js with some extra stuff.
 
 
-## What do we mean by **hackable**?
+## What Do We Mean by **Hackable**?
 
 The language comes with a set of default keywords ([list of keywords](https://github.com/Zero-1729/rocket/tree/master/docs/Specification.md#x.x-list-keywords)), operator signs (op signs), etc. like all other languages. However, You can customize Rocket's keywords to your liking by writing a small `config.rckt` file.
 
